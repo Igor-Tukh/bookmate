@@ -1,0 +1,554 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" xmlns:l="http://www.w3.org/1999/xlink">
+ <description>
+  <title-info>
+   <genre>prose_classic</genre>
+   <author>
+    <first-name>Эрнест</first-name>
+    <middle-name>Миллер</middle-name>
+    <last-name>Хемингуэй</last-name>
+   </author>
+   <book-title>Столица мира</book-title>
+   <annotation>
+    <p>В этой книге много разных рассказов. Надеюсь, что некоторые вам понравятся. Когда я перечитывал их, то помимо тех, которые стали, довольно известными и даже вошли в школьные хрестоматии и при чтении которых всегда испытываешь какое-то смущение и не знаешь, в самом ли деле ты их написал или просто где-то слышал, — мне больше всего понравились: «Недолгое счастье Фрэнсиса Макомбера», «В чужой стране», «Белые слоны», «Какими вы не будете», «Снега Килиманджаро», «Там, где чисто, светло» и рассказ под названием «Свет мира», который, кроме меня, никогда никому не нравился. Нравятся мне также и другие рассказы. Ведь если бы они мне не нравились, я не стал бы их печатать.</p>
+    <p><emphasis>Эрнест Хемингуэй</emphasis></p>
+   </annotation>
+   <date>1936</date>
+   <coverpage>
+    <image l:href="#fifthbook222.jpg"/></coverpage>
+   <lang>ru</lang>
+   <src-lang>en</src-lang>
+   <translator>
+    <first-name>Евгения</first-name>
+    <last-name>Калашникова</last-name>
+   </translator>
+   <sequence name="Пятая колонна и первые сорок девять рассказов" number="3"/>
+  </title-info>
+  <document-info>
+   <author>
+    <first-name>Михаил</first-name>
+    <last-name>Тужилин</last-name>
+   </author>
+   <author>
+    <first-name>bokonon</first-name>
+    <last-name></last-name>
+   </author>
+   <program-used>doc2fb, FB Editor v2.0</program-used>
+   <date value="2009-12-09">2009-12-08</date>
+   <id>FB237747-AA30-45E7-8512-F27D2A7482AD</id>
+   <version>2</version>
+  </document-info>
+ </description>
+ <body>
+  <title>
+   <p>Эрнест Хемингуэй</p>
+   <p>Столица Мира</p>
+  </title>
+  <section>
+   <p>В Мадриде полно мальчиков по имени Пако — уменьшительное от Франсиско, — и есть даже анекдот о том, как один отец приехал в Мадрид и поместил на последней странице «Эль Либераль» объявление: «Пако жду тебя отеле Монтана вторник двенадцать все простил папа», и как пришлось вызвать отряд конной жандармерии, чтобы разогнать восемьсот молодых людей, явившихся по этому объявлению. Но у того Пако, который служил младшим официантом в пансионе Луарка, не было ни отца, от которого он мог ждать прощения, ни грехов, которые нужно было прощать. У него были две старшие сестры, служившие горничными в пансионе Луарка, куда они попали благодаря тому, что прежняя горничная Луарки, их землячка, оказалась честной и работящей и тем заслужила добрую славу своей деревне и ее уроженкам; и эти сестры дали ему денег на автобус до Мадрида и пристроили его младшим официантом в тот же пансион.</p>
+   <p>Он был родом из Эстремадуры, где живут в первобытной дикости, едят скудно, а об удобствах не имеют понятия, и сколько он себя помнил, ему всегда приходилось работать с утра до вечера. Это был складный подросток с очень черными, слегка вьющимися волосами, крепкими зубами и кожей, которой завидовали его сестры; и улыбка у него была открытая и ясная. Он был расторопен и хорошо справлялся со своим делом, любил своих сестер, казавшихся ему красавицами и умницами, любил Мадрид, для него еще полный чудес, и любил свою работу, которой яркий свет, чистые скатерти, обязательный фрак и обилие еды на кухне придавали романтический блеск.</p>
+   <p>В пансионе Луарка постоянно жило человек десять-двенадцать, но для Пако, самого молодого из трех официантов, прислуживавших в столовой, существовали только те, кто имел отношение к бою быков.</p>
+   <p>Второразрядные матадоры охотно селились в этом пансионе, потому что Калье-Сан-Херонимо было респектабельным адресом, кормили там превосходно, а за стол и комнату брали недорого. Всякому тореро необходимо производить впечатление человека если не богатого, то, по крайней мере, солидного, поскольку в Испании декорум и внешний лоск ценятся выше мужества, и тореро жили в Луарке, покуда в кармане оставалась хоть песета. Не было случая, чтобы кто-нибудь из них сменил Луарку на лучший или более дорогой отель, — второразрядные тореро никогда не переходят в первый разряд; зато падение с высот Луарки бывало стремительным, потому что всякий, кто хоть что-нибудь зарабатывал, мог жить там спокойно, и если уж гостю подавали счет, не дожидаясь требования, — значит, хозяйка пансиона убедилась, что случай безнадежный.</p>
+   <p>В то время в Луарке жили три опытных матадора, а кроме того, два очень хороших пикадора и один превосходный бандерильеро. Для пикадоров и бандерильеро, которым приходилось жить в Мадриде всю весну, а семью оставлять в Севилье, Луарка была роскошью; но им хорошо платили, и они имели постоянную работу у матадоров, подписавших несколько контрактов на весенний сезон, и этот подсобный персонал всегда зарабатывал больше, чем любой из трех матадоров, живших в Луарке. Из этих трех матадоров один был болен и тщательно скрывал это, другой когда-то привлек к себе внимание публики, но быстро вышел из моды, а третий был трус.</p>
+   <p>Матадор-трус прежде, до страшной раны в живот, полученной им в одно из первых его выступлений на арене, был на редкость смелым и замечательно ловким, и у него еще сохранились кое-какие замашки от времен его славы. Он был всегда безудержно весел и хохотал по всякому поводу, а то и без всякого повода. В свои лучшие дни он любил подшутить над другими, но теперь он это бросил. Для этого нужна была уверенность в себе, которой он уже не чувствовал. У этого матадора было умное, открытое лицо, и он держал себя с большим достоинством.</p>
+   <p>Матадор, который был болен, больше всего боялся показать это и считал своим долгом не пропускать ни одного блюда, которое подавалось к столу. У него было очень много носовых платков, которые он сам стирал у себя в комнате, и за последнее время он стал распродавать свои пышные костюмы. Один он задешево продал перед рождеством, а другой — в начале апреля. Костюмы были очень дорогие, он всегда очень бережно обращался с ними, и у него еще оставался один. До своей болезни он подавал большие надежды, имел даже шумный успех, и хотя был неграмотен, но хранил у себя вырезки из газет, где говорилось, что в свой мадридский дебют он превзошел Бельмонте. Он ел один, за маленьким столиком, почти не поднимая глаз от тарелки.</p>
+   <p>Матадор, который вышел из моды, был очень маленького роста, смуглый и важный. Он тоже ел за отдельным столом, улыбался редко и никогда не смеялся. Он был родом из Вальядолида, где не любят шуток, и он был способным матадором, но его стиль устарел, прежде чем он успел заслужить симпатии публики своими главными достоинствами — мужеством и уверенным мастерством, и теперь его имя на афише не делало сборов. Вначале он привлек к себе внимание своим маленьким ростом: глаза его приходились на одном уровне с загривком быка, но, кроме него, были и другие невысокие матадоры, и ему так и не удалось стать любимцем публики.</p>
+   <p>Из пикадоров один был седой, худощавый, с ястребиным лицом, тщедушный на вид, хотя руки и ноги у него были как из железа; он всегда носил охотничьи сапоги и брюки навыпуск, слишком много пил по вечерам и влюбленно глядел на всех женщин в пансионе. Другой был рослый детина, смуглый, красивый, с черными, как у индейца, волосами и огромными ручищами. Оба были отличные пикадоры, хотя о первом ходили слухи, что пьянство и разврат сильно вредят его искусству, а про второго говорили, что из-за своего упрямства и сварливости он ни с кем из матадоров не может проработать больше одного сезона.</p>
+   <p>Бандерильеро был уже немолод, с проседью, невысокого роста, увертливый, как кошка, несмотря на свои годы, и когда он сидел за столом с газетой, то походил на дельца среднего достатка. Ноги у него еще были крепки, а когда они утратят силу, у него хватит смекалки и опыта, чтобы еще надолго удержаться на работе. Разница только в том, что, утратив быстроту движений, он постоянно будет испытывать страх, тогда как сейчас он всегда спокоен и уверен и на арене, и вне ее.</p>
+   <p>В тот вечер все уже кончили ужинать, и в столовой оставались только пикадор с ястребиным лицом, который слишком много пил, бродячий ярмарочный торговец с родимым пятном на всю щеку, который тоже слишком много пил, и два священника из Галисии, которые сидели за угловым столом и пили, если не слишком много, то, во всяком случае, достаточно. В то время в Луарке за вино особой платы не брали, это входило в стоимость пансиона, и официанты только что подали по новой бутылке вальдепеньяс сначала торговцу, потом пикадору и, наконец, священникам.</p>
+   <p>Все три официанта стояли у дверей. В Луарке было заведено, что официант мог уйти, только когда освобождались все его столы, но в этот вечер тот, за чьим столиком сидели священники, торопился на собрание анархо-синдикалистов, и Пако пообещал его заменить.</p>
+   <p>Наверху матадор, который был болен, лежал ничком на постели, один в своей комнате. Матадор, который вышел из моды, сидел у окна и смотрел на улицу, собираясь отправиться в кафе. Матадор, который стал трусом, зазвал к себе в комнату старшую сестру Пако и чего-то от нее добивался, а она, смеясь, отмахивалась от него. Он говорил:</p>
+   <p>— Да ну же, не будь такой дикаркой.</p>
+   <p>— Не хочу, — говорила сестра. — С какой стати?</p>
+   <p>— Просто из любезности.</p>
+   <p>— Вы хорошо поужинали, а теперь сладкого захотели?</p>
+   <p>— Один разочек. Тебя от этого не убудет.</p>
+   <p>— Не приставайте. Говорят вам, не приставайте.</p>
+   <p>— Ведь это же такие пустяки.</p>
+   <p>— Говорят вам, не приставайте.</p>
+   <p>Внизу, в столовой, самый высокий официант, тот, что опаздывал на собрание, сказал:</p>
+   <p>— Вы только посмотрите, как они лакают вино, эти черные свиньи.</p>
+   <p>— Что за выражения, — сказал второй официант. — Они вполне приличные гости. Они пьют не так уж много.</p>
+   <p>— Самые правильные выражения, — сказал высокий. — Два бича Испании: быки и священники.</p>
+   <p>— Но не каждый же бык и не каждый священник, — сказал второй официант.</p>
+   <p>— Именно каждый, — сказал высокий официант. — Только борясь против каждого в отдельности, можно побороть весь класс. Нужно уничтожить всех быков и всех священников. Всех до одного перебить. Тогда мы от них избавимся.</p>
+   <p>— Прибереги это для собрания — сказал второй официант.</p>
+   <p>— Мадридская дикость, — сказал высокий официант. — Уже половина двенадцатого, а они еще торчат за столом.</p>
+   <p>— Они только в десять сели, — сказал второй официант. — Ты же знаешь, блюд много. Вино это дешевое, и они заплатили за него. Это не крепкое вино.</p>
+   <p>— С такими дураками, как ты, где тут думать о рабочей солидарности, — сказал высокий официант.</p>
+   <p>— Слушай, — сказал второй официант, которому было лет под пятьдесят. — Я работал всю свою жизнь. Весь остаток жизни я тоже должен работать. Я на работу не жалуюсь. Работать — это в порядке вещей.</p>
+   <p>— Да, но не иметь работы — это смерть.</p>
+   <p>— Я всегда работал, — сказал пожилой официант. — Ступай на собрание. Можешь не дожидаться.</p>
+   <p>— Ты хороший товарищ, — сказал высокий официант. — Но у тебя нет никакой идеологии.</p>
+   <p>— Mejor si me falta eso que el otro, — сказал пожилой официант (в том смысле, что лучше не иметь идеологии, чем не иметь работы). — Ступай на свое собрание.</p>
+   <p>Пако ничего не говорил. Он еще не разбирался в политике, но у него всегда захватывало дух, когда высокий официант говорил про то, что нужно перебить всех священников и всех жандармов. Высокий официант олицетворял для него революцию, а революция тоже была романтична. Сам он хотел бы быть добрым католиком, революционером, иметь хорошее постоянное место, такое, как сейчас, и в то же время быть тореро.</p>
+   <p>— Иди на собрание, Игнасио, — сказал он. — Я возьму твой стол.</p>
+   <p>— Мы вдвоем возьмем его, — сказал пожилой официант.</p>
+   <p>— Да тут и одному делать нечего, — сказал Пако. — Иди на собрание.</p>
+   <p>— Pues me voy, — сказал высокий официант. — Спасибо вам.</p>
+   <p>Между тем, наверху сестра Пако ловко вывернулась из объятий матадора, как борец из обхвата противника, и сердито говорила:</p>
+   <p>— Уж эти мне голодные. Горе-матадор. От страха едва на ногах стоит. Поберегли бы свою прыть для арены.</p>
+   <p>— Ты говоришь, как самая настоящая шлюха.</p>
+   <p>— Что ж, — и шлюха — человек, да только я не шлюха.</p>
+   <p>— Ну, так будешь шлюхой.</p>
+   <p>— Только не по вашей милости.</p>
+   <p>— Оставь меня в покое, — сказал матадор; оскорбленный и отвергнутый, он чувствовал, как позорная трусость снова овладевает им.</p>
+   <p>— В покое? А я, кажется, вас и не беспокоила, — сказала сестра. — Вот только приготовлю вам постель. Мне за это деньги платят.</p>
+   <p>— Оставь меня в покое! — сказал матадор, и его широкое красивое лицо исказилось гримасой, как будто он собирался заплакать. — Шлюха. Дрянная шлюшонка.</p>
+   <p>— Мой матадор, — сказала она, закрывая за собой дверь. — Мой славный матадор.</p>
+   <p>Матадор сидел на постели. На его лице все еще была гримаса, которую во время боя он превращал в застывшую улыбку, пугая ею зрителей передних рядов, понимавших, что происходит перед ними.</p>
+   <p>— Еще и это, — повторял он вслух. — Еще и это! И это!</p>
+   <p>Он помнил то время, когда был еще в форме, и это было всего три года назад. Он помнил тяжесть расшитой куртки в тот знойный майский день, когда его голос еще звучал одинаково на арене и в кафе, и как он направил острие клинка в покрытое пылью место между лопатками, щетинистый черный бугор мышц за широко разведенными, могучими, расщепленными на концах рогами, которые опустились, когда он приготовился убить, и как шпага вошла, легко, словно в ком застывшего масла, а он стоял, нажимая ладонью головку эфеса, левая рука наперекрест, левое плечо вперед, тяжесть тела на левой ноге, — и вдруг нога перестала чувствовать тяжесть тела. Вся тяжесть была теперь внизу живота, и когда бык поднял голову, одного рога не было видно, рог был весь в нем, и он два раза качнулся в воздухе, прежде чем его сняли. И теперь, когда он готовится убить, а это бывает редко, он не может смотреть на рога, и где какой-то шлюхе понять, что он испытывает, выходя на бой? А много ли пришлось испытать тем, что смеются над ним? Все они шлюхи, и черт с ними.</p>
+   <p>Внизу, в столовой, пикадор сидел и смотрел на священников. Если в комнате бывали женщины, он разглядывал женщин. Если женщин не было, он с любопытством разглядывал какого-нибудь иностранца, un ingles, но, так как сейчас не было ни женщин, ни англичан, он разглядывал весело и дерзко двух священников за угловым столом. Между тем торговец с родимым пятном на щеке встал, сложил свою салфетку и вышел, оставив на столе наполовину недопитую бутылку. Если б его счет в Луарке был оплачен, он выпил бы все вино.</p>
+   <p>Священники не смотрели на пикадора. Один из них говорил:</p>
+   <p>— Вот уже десять дней, как я здесь, и целые дни я просиживаю в передней, а он меня не принимает.</p>
+   <p>— Что же делать?</p>
+   <p>— Ничего. Что можно сделать? Против власти не пойдешь.</p>
+   <p>— Я уже две недели здесь, и тоже ничего.</p>
+   <p>— Все дело в том, что мы из захолустья. Вот выйдут все деньги, и придется ехать назад.</p>
+   <p>— В свое захолустье. Мадриду нет дела до Галисии. Провинция бедная, глухая.</p>
+   <p>— Можно вполне понять поступок брата Базилио.</p>
+   <p>— И все-таки я как-то не очень доверяю Базилио Альваресу.</p>
+   <p>— В Мадриде многое научишься понимать: Мадрид — погибель Испании.</p>
+   <p>— Хоть бы уж принял и отказал.</p>
+   <p>— Нет. Раньше нужно вымотать человека, извести ожиданием.</p>
+   <p>— Ну что ж, посмотрим. Я умею ждать не хуже других.</p>
+   <p>В эту минуту пикадор поднялся с места, подошел к столу священников и остановился — седой, похожий на ястреба, разглядывая их и улыбаясь.</p>
+   <p>— Torero, — сказал один священник другому.</p>
+   <p>— И хороший torero, — сказал пикадор и вышел из столовой — тонкий в талии, кривоногий, в серой куртке, узких брюках навыпуск и сапогах скотовода, каблуки которых пощелкивали, когда он шел к выходу, ступая вполне твердо и улыбаясь самому себе. Его жизнь была замкнута в узком, тесном мирке профессиональных достижений, ночных пьяных подвигов и неумеренного хвастовства. В вестибюле он закурил сигару и, сдвинув шляпу на одно ухо, отправился в кафе.</p>
+   <p>Священники вышли тотчас же за пикадором, смущенно заторопившись, когда заметили, что они позже всех задержались за столом и в комнате никого не осталось. Пако и пожилой официант убрали со столов и вынесли на кухню бутылки.</p>
+   <p>На кухне сидел Энрике, парень, который мыл посуду. Он был тремя годами старше Пако и уже озлоблен и циничен.</p>
+   <p>— На, выпей, — сказал ему пожилой официант, налил стакан вальдепеньяс и подал ему.</p>
+   <p>— Можно, — Энрике взял стакан.</p>
+   <p>— А ты, Пако? — спросил пожилой официант.</p>
+   <p>— Спасибо, — сказал Пако. Все трое выпили.</p>
+   <p>— Ну, я ухожу, — сказал пожилой официант.</p>
+   <p>— Спокойной ночи, — ответили они ему.</p>
+   <p>Он вышел, и они остались одни. Пако взял салфетку, которой утирал губы один из священников, и, выпрямившись, сдвинув пятки, опустил салфетку вниз и потом провел ею по воздуху, следуя головой за движением руки в неторопливой, размеренной веронике. Он повернулся и, чуть выставив вперед ногу, сделал второй взмах, затем шагнул вперед, заставляя отступить воображаемого быка, и сделал третий взмах, неторопливый, безукоризненно ритмичный и плавный, потом, собрав салфетку, прижал ее к боку и, сделав полуверонику, увернулся от быка.</p>
+   <p>Энрике следил за его движениями критическим и насмешливым взглядом.</p>
+   <p>— Ну, как бык? — спросил он.</p>
+   <p>— Бык очень храбрый, — сказал Пако. — Смотри.</p>
+   <p>Став в позу, стройный и прямой, он сделал еще четыре безукоризненных взмаха, легких, закругленных и изящных.</p>
+   <p>— А бык что? — спросил Энрике, стоя у водопроводной раковины в фартуке, со стаканом вина в руке.</p>
+   <p>— Еще хоть куда, — сказал Пако.</p>
+   <p>— Не глядел бы я на тебя, — сказал Энрике.</p>
+   <p>— А что?</p>
+   <p>— Смотри! — Энрике сбросил фартук и, дразня воображаемого быка, исполнил четыре безукоризненных, томно-плавных вероники и закончил реболерой, описав фартуком четкий полукруг под самой мордой быка, перед тем, как отойти от него.</p>
+   <p>— Видал? — сказал он. — А я посуду мою.</p>
+   <p>— Почему же?</p>
+   <p>— Страх, — сказал Энрике. — Miedo. Такой же страх и ты бы почувствовал на арене, перед быком.</p>
+   <p>— Нет, — сказал Пако. — Я бы не боялся.</p>
+   <p>— Leche! — сказал Энрике. — Все боятся. Только матадоры умеют подавлять свой страх, и он не мешает им работать с быком. Я раз участвовал в любительском бое быков, и мне было так страшно, что я не выдержал и убежал. Все очень смеялись. И ты бы тоже боялся. Если бы не этот страх, в Испании каждый чистильщик сапог был бы матадором. Ты бы еще больше меня струсил — ведь ты деревенский.</p>
+   <p>— Нет, — сказал Пако. Он столько раз проделывал все это в своем воображении. Столько раз он видел рога, видел влажную бычью морду, и как дрогнет ухо, и потом голова пригнется книзу, и бык кинется, стуча копытами, и разгоряченная туша промчится мимо него, когда он взмахнет плащом, и снова кинется, когда он взмахнет еще раз, потом еще, и еще, и еще, и закружит быка на месте своей знаменитой полувероникой, и, покачивая бедрами, отойдет прочь, выставляя напоказ черные волоски, застрявшие в золотом шитье куртки, а бык будет стоять как вкопанный перед аплодирующей толпой. Нет, он бы не боялся. Другие — может быть. Но он — нет. Он знал, что не боялся бы. А если бы он и почувствовал когда-нибудь страх, он знал, что сумел бы проделать все, что нужно. Он был уверен в себе.</p>
+   <p>— Я бы не боялся, — сказал он.</p>
+   <p>Энрике повторил ругательство. Потом он сказал:</p>
+   <p>— А давай попробуем.</p>
+   <p>— Как?</p>
+   <p>— Смотри, — сказал Энрике. — Ты думаешь о быке, но ты не думаешь о рогах. У быка сила знаешь какая, — его рог режет, как нож, колет, как штык, и глушит, как дубина. Смотри. — Он выдвинул ящик и достал два больших кухонных ножа. — Я их привяжу к ножкам стула. Я буду за быка, и стул буду держать над головой. Ножи — это рога. Вот если ты <emphasis>так</emphasis> проделаешь все свои приемы, это уж будет всерьез.</p>
+   <p>— Дай мне твой фартук, — сказал Пако, — мы это сделаем в столовой.</p>
+   <p>— Нет, — сказал Энрике, вдруг забыв свою злость. — Не надо, Пако.</p>
+   <p>— Давай, — сказал Пако. — Я не боюсь.</p>
+   <p>— Будешь бояться, когда увидишь перед собой ножи.</p>
+   <p>— Посмотрим, — сказал Пако. — Давай фартук.</p>
+   <p>В то время, когда Энрике, взяв два тяжелых, отточенных, как бритва, кухонных ножа, накрепко привязывал их к ножкам стула грязными салфетками, до половины прихватывая нож, туго прикручивая и потом завязывая узлом, обе горничные, сестры Пако, направлялись в кино, смотреть «Анну Кристи» с Гретой Гарбо. Один из двух священников сидел на постели, в нижнем белье и читал свой требник, а другой надел уже ночную сорочку и бормотал молитвы, перебирая четки. Все тореро, за исключением того, который был болен, уже совершили свой вечерний выход в кафе Форнос, и высокий смуглый пикадор играл на бильярде. Маленький неразговорчивый матадор пил кофе с молоком за столиком, вокруг которого теснились пожилой бандерильеро и еще несколько настоящих профессионалов.</p>
+   <p>Подвыпивший седой пикадор сидел за рюмкой коньяка и с удовольствием поглядывал на соседний стол, где матадор, который утратил мужество, сидел с другим матадором, который сменил шпагу на бандерильи, и с двумя довольно потрепанного вида проститутками. Торговец остановился на углу и беседовал с приятелями. Высокий официант сидел на собрании анархо-синдикалистов и ждал случая выступить. Пожилой официант расположился на террасе кафе Альварес и потягивал пиво. Хозяйка Луарки уже заснула, лежа на спине: большая, толстая, честная, опрятная, добродушная, очень набожная, все еще не переставшая оплакивать и каждый день поминать в своих молитвах мужа, который умер двадцать лет назад. Один в своей комнате, матадор, который был болен, ничком лежал на постели, зажимая рот платком.</p>
+   <p>А в пустой столовой Энрике затянул последний узел на салфетках, которыми ножи были привязаны к ножкам стула, и поднял стул. Он повернул его ножками вверх и держал над головой так, что ножи торчали по обе стороны лица.</p>
+   <p>— А тяжело, — сказал он. — Смотри, Пако, это очень опасно. Лучше не надо. — Он весь вспотел.</p>
+   <p>Пако встал к нему лицом и во всю ширину расправил фартук, захватив по складке каждой рукой: большие пальцы вверх, указательные вниз, во всю ширину, чтобы привлечь внимание быка.</p>
+   <p>— Кидайся прямо вперед, — сказал он. — А потом поворачивай, как бык. Кидайся столько раз, сколько захочешь.</p>
+   <p>— А как ты узнаешь, когда делать последний взмах? — спросил Энрике. — Лучше всего, делай три полных и одну полуверонику.</p>
+   <p>— Ладно, — сказал Пако. — Только ты иди прямо вперед. Ю-у, torito! Иди, бычок, иди!</p>
+   <p>Низко пригнув голову, Энрике разбежался прямо на него, и Пако взмахнул фартуком в тот самый миг, когда острие ножа прошло около его живота. И когда оно мелькнуло перед ним, это был для него настоящий рог: черный, гладкий, с белым концом. И когда Энрике, проскочив мимо него, повернулся, чтобы снова броситься, — это разгоряченная, израненная туша быка прогрохотала мимо, потом извернулась по-кошачьи и снова пошла на него, когда он медленно взмахнул плащом. Потом бык снова повернул и, не сводя глаз с приближающегося острия, он ступил левой ногой вперед на два дюйма дальше, чем нужно. И нож не мелькнул мимо, но вонзился: легко, словно в мех с вином, и что-то брызнуло, обжигая, из-под внезапного упора стали внутри, и Энрике закричал: «Ай! Ай! Дай я вытащу!» — и Пако повалился, все еще не выпуская из рук фартука-плаща, а Энрике тянул стул к себе, и нож поворачивался в нем — в нем, в Пако.</p>
+   <p>Наконец нож вышел, и он сидел на полу, в расплывающейся все шире теплой луже.</p>
+   <p>— Приложи салфетку. Прижми ее! — сказал Энрике. — Крепче прижми! Я побегу за доктором. Постарайся сдержать кровотечение!</p>
+   <p>— Нужно резиновый жгут, — сказал Пако. — Он видел, как это делают на арене.</p>
+   <p>— Я шел прямо, — сказал Энрике плача. — Я только хотел показать, как это опасно…</p>
+   <p>— Ничего, — сказал Пако, и голос его шел как будто издалека, — только приведи доктора.</p>
+   <p>На арене тогда поднимают и несут, почти бегом, в операционную. Если почти вся кровь из бедренной артерии вытечет по дороге, тогда зовут священника.</p>
+   <p>— Позови священника сверху, — сказал Пако. Он никак не мог поверить, что это случилось с ним.</p>
+   <p>Но Энрике бежал уже по Каррера-Сан-Херонимо к пункту скорой помощи, и Пако оставался один до самого конца. Сначала сидел, потом скорчился на полу, потом упал ничком и так лежал, пока все не кончилось, чувствуя, как жизнь выходит из него, словно вода из ванны, когда откроют сток. Ему было страшно, у него кружилась голова, он хотел прочитать покаянную молитву и уже вспомнил начало… но едва он успел сказать скороговоркой: «Велика скорбь моя, Господи, что я прогневил тебя, который достоин всей любви моей, и я твердо…» — голова у него закружилась, еще сильнее, и он уже ничего не мог вспомнить и только лежал ничком на полу. Все кончилось очень скоро. Кровь из бедренной артерии вытекает быстрее, чем думают.</p>
+   <p>Когда врач «Скорой помощи» поднимался по лестнице вместе с полицейским, который держал Энрике за плечо, обе сестры Пако все еще сидели в кинотеатре на Виа Гранде. Они все больше разочаровывались в фильме с Гарбо, где знаменитая звезда являлась в жалкой, нищенской обстановке, тогда как они привыкли видеть ее окруженной роскошью и богатством. Публика была очень недовольна фильмом и в знак возмущения свистела и топала ногами. Все остальные обитатели пансиона были заняты почти тем же, что и в момент несчастия, только оба священники кончили уже молиться и готовились лечь спать, а седой пикадор перенес свой коньяк на стол, где сидели потрепанные проститутки. Немного спустя он снова вышел из кафе с одной из них. Это была та, которую угощал матадор, утративший мужество.</p>
+   <p>Мальчик Пако так и не узнал ни об этом, ни о том, что делали эти люди на следующий день и все другие дни. Он ничего не знал о том, как такие люди живут и умирают. Он даже не думал о том, что они вообще умирают. Он умер, как говорится, полный иллюзий. И он не успел потерять ни одной из них, как не успел прочесть до конца покаянную молитву.</p>
+   <p>Он не успел даже разочароваться в фильме с Гарбо, что уже две недели разочаровывал весь Мадрид…</p>
+  </section>
+ </body>
+ <binary id="fifthbook222.jpg" content-type="image/jpeg">/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAwICQoJCAwKCgoODQwOEh4UEhAQEiUaHBYeLCYu
+LSsmKikwNkU6MDNBNCkqPFI9QUdKTU5NLjpVW1RLWkVMTUr/2wBDARYYGCAcID4iIj6DV0pX
+g4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4P/wAAR
+CAGpASwDASIAAhEBAxEB/8QAGwAAAQUBAQAAAAAAAAAAAAAABgABAgQFAwf/xABPEAABAwID
+AwUJCwkJAQEAAwABAAIDBBEFEiEGMUETUWFxsRQVIjKBkZKhwQcjJTNCQ1JTcrLRFjQ1YmNz
+gsLhJCY2RFR0k6LwZPE3R4P/xAAZAQEBAQEBAQAAAAAAAAAAAAAAAQIDBAX/xAAnEQEBAAIC
+AQQCAwADAQAAAAAAAQIRAxIhEzEyUSIzQWFxQkOB0f/aAAwDAQACEQMRAD8A5Pp4Cxhnle2J
+sALQLHhoLdJWXM8PNiXBo3NA0VmZ8boWXncXBgBAbp/VVw+AXJLneSy4V9LjnhCNpebNBPkX
+QhjD4b/I1MZ7izXFgPABc7NJNi13Tqjok+d9srPAbe9hxPSohw4taSehJzWne9t+YBPHG03c
+4+COlDwiHHcLBLMbjqUpHR/IZu433pi92lo2stxDUQwD3XAa49QukIpjujk8jCjDYBxy1wJ4
+s9q2MQ2lw7Dqp9LO6blGWvlZcao5XksupHmzo5Bo5rm/aFu1NFDLK4tjY555mtutravFabFa
+uGWlz5WR5Tnbl1urewIvi055oP5gjfazHtoOPp5YT75G+P7bS3tUS3hcL1Wor8PbVCgqpoxM
+9txHKNHA9eiHtotko+SfVYWzK4eE6nG532eY9G5HPHl3fILDOkKTGXOlz9kEqCKfc/8A0hV6
+/Mj7yO2V647Dosw2LbW4OSy3NmtJPQLoq2/pMstLWBujgYnH1j2qlsQfhy37B/aEYme8OzAL
+S3R7XNvzi3amJaNLaIq90LSpoePgP7QhG4Kjphe2O3eOKRwzMikcOdrSVLkZzvgl9Ar0DY6/
+5PU2pGr/ALxVU7ZYZnPgVPN4g/FHH1LuyQD3cwkEWN9xGqWcAm4VjEqhlZiVTUxghkshc3Nv
+U8GwyTFa9lMwlrR4Uj/ot/FHfxJup4dhVbiTJpaeK7IwSXHS5+iOlUBdzsrWkuOmUC5XpOIV
+9Hs7h0bWxgDxYYW6F3/t5KA6XEGtxqPEZWBjRNyrmxDd1I5YZ3Ld14VhTVVvzWb/AI3fgpNp
+am2tNP8A8Z/BHVDtLSYhWQ0kTJw6Q6Fw03X51cxjGYMJZE6pbKRKSBkF9yMXly3rq8zlZJFp
+JG9l/pNtdQvotvabFabFpKd0Ae0RNIOcW3lYZAN7HcjvjdzzD5hrqlcam6gd4T8yN6OTpvTX
+smsUxGqInmG/VOXDeAuXPqnCGnS99VGS5I8LhxThwsucx8IdSrnXZni71BwvexUo75bbkxPD
+glXCGLXb09jx1SB0TcEbJ1uATDpTjcBZK17HiiG6lLMddd+9MW6phvQGfufgGKvP6zOwrG2y
+J/KCo6mH/qFs+57oyv1+UzsKxtsh/eKo+yz7oR58f2VikG17adCJtgf0pUfuP5ghxxy2B3WR
+HsFri09vqf5gjpyfCo7e278x3F/eG9pWtsTjElVE+gqHF0kIzRvJ1LOY9Sydvv01Hb6hvaVD
+YYOdjd2jRsLy71I52S8TjtdQiixmTkwBHOOVAHAnf6+1Xvc/v3yqrjfCPvKfugub3TRMHjhj
+ieq4XP3Pf0nVafMD7wUW3fEJtraTuvAqkAXMQErf4d/quhTYewx4/uX29S9Aka2Vjo36tcC0
+joKA9koDS7TSQP8AGiZKzrsQq54X8Mose6F8fQX+g/tCERbnRd7oVu6KH7D+0IR00uo9HD8I
+9I2Mt+TtNfnf94rzqT419r+MdPKvRdjP8PU9t2Z/3ivO5R79J9o9qMcXzyMSdyPtiKNsOEd0
+/LqHkk9A0HtQARuXpGyT2ybO0oadwc0257lF5/iCto8RdiOKzShxMUZMcY5gPxKy+srpUROg
+nlhkBD2PLXA9BXMWBR2xmpqNbZMn8oaP7Tvulb/ugn+zUR/aO7FgbKf4iogOd33St/3QR/Za
+L947sRwz/bARqpA8b2TFJHoIjmS3dKa6cngga5TG4S/9om3IElcf1SPEJcyImCCNLrjN4w14
+LqNOlcp7Zx1KsV3Z8XvB04KPQlGLt8iR00RcUnWum0ITFIgEaKNl5ktUwCWiIe+5SiifPNHE
+yxe9waAdBcrnbXRdaeZ9PPHM0AujcHAHdcFVL/Q92RwetwoVQrGsbypaW5H5t11R2i2axLEM
+XmqqYRGJwbbNJY6DmWhsrjtVjL6ltSyJpiDS3ILb7/gqW0O09fhmKy0kMdOY2hpBe0l2o60e
+Od+/9hfGMLqsMlZHVBl5G5m5XZuhbWwHg4tPf6j+YLIxbFajGJI5ahsbXMblGQEaeta+wYti
+s2nzB7Qjtlvp5S23ppqrHoYqeF8j3QNs1gvxK39mMFGC0b5agtFRILyG+jAOF/WV17s5Lak0
+jt1RSAjXi0n2FYm3lZXRcjStc1tJM27i3e4jgejcjjLctYB/aPEm4pi0tRGfeW+BF9kcVr+5
+9bvlVa/MfzBCltLop9z0/ClTb6j+YKO/JNceoJoKvJtPVUROklPHI3rFwfYqJpu5tuhKB4NT
+Tuf5QAD7FRxqqNFtrSVBNmhjGu6jcHtRRUUYmr6SqBs6nD2m/EOH4qvNfx/9gW90IWloCPov
+7QhnD6KbEaxlLT5OUfcjMbDTVE3ug2MtCf1X+xDGH1s2HVbKqDKJGXALhcaiyj1cW/T8PS9n
+KGbDcJipagsMjXOJyG41JKE5NjMTdI9wlprOcSPDPP1Io2ar5sQwmKoqXM5RznA5RYaFCsu2
+GLNkezNBZriPiunrVcMO/a6YldTSUVTLSyFpkidlcW7kUbA4g0cthshs4nlI+n6Q9qF6uqkr
+aiWpmtykpu6wsLrlTzS007KiF+SSNwc13Mo9OWPbHVFO3OEOZMMThbdklmzW4O4O8u5CNivU
+sLrafH8KLnsBDwY5oidx4j8F57jOHSYTXy0rzmA1Y76TTuPsRjhzvwvvHfZT/EVFf6R+6UQe
+6CP7LRfvHfdQ7ssf7xUX2z90oi90H80oh+0d91Ez/bAQRxTdG5PfXVLRHoMOtI7+lO3nTHig
+il1p0wGvBAkholbW3rSyoJtC4TC71Zb4IVWfR4HQq5u8R8G/QNybrSj+LH2R2JcLpVwLyKQO
+l1Ebk4AyqNmTu0G9I7k3VZER4pApxv3JW4oUYe55flq77DO0rL22I/KCb7DOxafuen32tH6r
+O0rM200x+cb/AAGfdVeaftrDDrN7EUbAG+Ly/uD94IWA0Ot0UbAaYvN+4PaEdOT4132yqnUO
+0dFVMJDoo2u8mY3WvthSMrsBNRH4XI2maR9E7/V2LA2/v35hNr/2cfeKItkKpmIYAyCXwjFe
+F4PNw9RRwvjHHJ5yQW9KJ/c/FsWqP3H8wWBXUjqGvnpnXvFIWjpHD1Ig2BA77zkbjAfvBHfk
+u8K5bdD4aGtjyDO0o2weqFdhVLUg3L2DN1jQ+sIJ25ae/QN/mG9pWx7n1XymHz0jj4UMmYdT
+v6go45zfHKq+6ALPoQddH+xCJGvUi/3Q9JKDqk08yEDu13qO3F8I9D2NHwHDb6x/agOqI7pm
+0+cd2lH2xWuAQn9o/wC8vP6q3dU3D3x3aVWOL55OdgSoutc2GikBv0UTodfOo9Ig2Hq3w40I
+ATkqGFpA3XGo9q0/dDhY6Kjn0zBzmeS1/YquwdA+StlrnNtHEzI087jv9Xap+6BVh9RTUYcP
+e2l7vLu9V0ea+ebwxtlRfaKit9M/dKJPdB/M6P8Aeu+6hzZX/ENFpazz2FEXuhfmdHb6133U
+XP8AbAQRpvS+SlbW9019OCPQW5MntcpHptZAyRvfoSNr6JiP/wAQIWsl1pwNU+UnU+dEOHXX
+CfV9+hd92/zrjN4+5VhODxG/ZHYpHXcoU+rGjnaFJKuJwE5HBRKdRo3CyayW/W6Wt0Dnp1SG
+/col2u9IEHciC/3PvziuFvkM7SltPgGJ1+MS1FNTZ4yxoDs4G4dKx8Axw4NJM4U4m5VoFi/L
+a1+jpW1+Xb7272t/5j+CrzWZzPtiHK7C6zDHsjrIuTMgJaMwNx5FtbBaYzNfT+zn7wWdj+OO
+xmaFxp2w8k0tsH5r6+RccDxd2C1r6hsLZiWFhBdYb7+xHSzLLHV92xt6wnGISB8wPvFPsTWd
+z4m6mOjKlltfpDd7VlY3jD8XqGVDoBEWMyWDs19bqrTVMtPNHUR2D43BzUZ63pqiLbehyV0d
+a0aTtyu+03+nYo7BtIxee27kD94Kti20r8WpBTSUccVnhzXteSQfMq2DYs/CKh9RHE2UujyW
+c62n/gh1y6davbdA9+W6/MN7SuOxNWaTG2wnxKlpjPXvHtCo43iz8WrBUOhbEQwMsHXGip0s
+z6epjqGeNE8PB6ijcxvTrRZ7oos7D7cz/YhH+FauO47JjToTJTti5HNbK4m97fgsyw3niovH
+LjjJXomxWmAQjd74/tQvPsrjMk8r20zCC9xF5W7ibpYTtTPhdE2kjpI5A1xdmc8g69SvHbiq
+A/MIbfvHI5THkxytk9w3VU09FUvppmZZYzZwBvbitbBtnKvEiJJY3U9PfV7hZzvshZmJVr6+
+tmq3MEb5XA2ad2nBEbNtnMw2Jnc5krQ3K5zjZlxx5yjrn314nlu1dZRbOYY2NjQ0NFoogdXn
+/wBvK88q6iWsqJKid15JHXcVCtramuqTUVMhkkdpfmHMFyDtNUOPj6+b7tXZfTaKi1+WfulE
+W335pR3+sd91COH1jsProayONr3ROvlJsDor+N7QzYxBFHLTxx8m4uBY4m9xZGcsbc5WPpdI
+W4pDVMd6O5JEJgOhORYoFbRQNh1qRJS3hEIcd6VyEuCYIJ7wCuE1g8b9y7XPBcZfG4+ZVhKm
+8Rn2R2KRtcqNKPe2H9ULQwfDRimIMpOV5LMHHNlvuSksnmqJSO6y18fwQYPLCzunluUaXXy5
+bWXDBMLGLV/cvLGLwHOzBubcovaa2zgEtbrX2hwPvM+BoqTMJQT4mW1rfisgD/8AUWZTKbiD
+tHG43phu5rouoNjY6yigqDXvYZmB+Xkhpfyq0NgojY98ndfJD8U05+thAQL83nU7E66LtiFL
+3FXz0okziF5ZmIteyIcJ2RGJYVHXCsex0jXER5ARcXG/yItykm6FTvIITA+Fa+llMg3IcNQb
+EJmtBNkbSZcDcpC5H4IpotkG1eFxVklY9j5IuUyBgIHFCzLgX4KsTKZexw3TmScTYEbkR7P7
+NxYxROqXVL4rSFmVrAb6D8Vh1lOKarngDszYpCwHnsbITKW6V3DMy9tVFu8DXRbOz2FNxaqf
+TvnMQbHmzAX42XPHMK7017qYvMrSwOa8ixIKizOb6swb/IpWN9CFp7P4O3F659O+YxZY84cB
+m4qWPYSzB6uOBszpQ5mbMW2tqRZF7zfVleEXblNzmjiNU1stulItJN9LI0iSN438Ux3nT1q5
+RYdU18pipIXSuG+25vWUQ0mw0sgDqqsbGT8mNuY+cppnLkxx96Ei2wv6k/BbW0uCMwaaCOGV
+8jJWE5n77g9C0cL2Vgr8LhqhWyNdI25YGCwPMiepjrYVy3sk5vHS3Wn1aTpqOCKa/ZGOlwya
+sbWSOfHFnyZRbchlnMfcKcNCmPWu9FTmpq4Ke5HKyBl+a5W/juzMOFYc6pZWSSOzhoa5gF7l
+Fucl1QyN9k+/8UtxtZEcmzDI8C75d0v5XkeV5PKLdV0Mspj7ho79+iV7XT21RJgWzNLi1A2p
+NZLG/MWuaGggEf8AgiZZTGbobGoUSu00LoZpIXjwo3Fp8mi1NncEZjEk/KSuiZEBq0XuT1oX
+KSbrGO5cpbh2/gtbGqCLDcQkpIpHSBgaS5wtqVkzi796qS78xKl+KYR9ELf2ONseh+w/sQ/R
+/EM+yt3ZA/3hgH6r/upWb8a1dvh77RH9R/aFn7E/p0W+pf7FobfD3yhH6rx6ws/YrTHmD9k/
+sCjOP6l73QfjKIniH+xCAtqjH3QR4VD1P9iDRoCjfF8HqGFlw2Zpi0kOFLcHmOUoCbtBjIaP
+hOo9JHuDi+zNNfjS/wApXloPUq58Ult27SyPmmdLM8vkecznHeSvS9j9NnqT+L7xXmTefivT
+Nj/8O0mv0vvFF5/iBNpKUUWOVcIFmZ87ep2qzmtc54Y3Uu0HlRX7oNLkrqWqAsJYywnpafwK
+xNnaU1WOUUNrjlQ8joGvsRvHL8NvThCIKDkWgBscOWw6GryNpJAPCy9hqQeQk+w7sXj7NOqy
+OPD/ACPtgz8DyajSod2BB2Lgd9q0ft39pRhsIPgeX9+7sCD8XFsXrTb59/ajWHzrZ2D/AErU
+X0HIfzBaG31Hmp6asAvyZMbj0Hd6wqGwVjis/PyHm8IIvxujNbhFVTgeE6MlvWNR2Ixnlrk2
+D9hSO+8xvvgPaE+3lhitOOeC/wD2KhsHZ2LSb79zknzhT27t3zp/3H8xR0/7Q74NlsbOYBLi
+8vKSZo6Rh8N43uP0R+KzMNo34hXQ0kR8KV1r/RHE+ZejV1TS7OYMCxvgxtyRRn5Tv/alGuTO
+4/jj701XV4Xs7RsjytibbwIYx4Tv/c5QvXbY4hMSKUR0zOGmZ3nWBXVk1dUuqaiQvlfvPN0D
+oXHpCGPDJ5y81aq8TrK8juupfNl8XNwRxsXJymBsF9WSvb67rzwHVHPufyXoKqPi2YHzt/oh
+zYyY+AnNTnvy+nH+pLLfxr0+thEtHURHc6NzbeRBL4P79ckW+CaoSf8AW6PC0EDpRx5ct6eY
+7MRiXHqFvM/N5hdE+30mXDaeO+r5r+YFY+ycFtpHi3xIl7bK1t7Jeoo4h8ljnEeUD2I3l55I
+Era9a9Ukps2Eup//AJ8lv4V5jTRGWrgjAPhyNb6163lG4662ROe+zx4Ajf5UXbB1NjVUp5hI
+0eo+xC9XHyNVPGRqyRzfMVo7J1Xc2OQFxs2W8R8u712R1znbA+1lP3Pjk5Hiy2kHlGvrCJNi
+afk8IMxGs0hPkGn4qnt9AQKSqDdfCjd2j2rSkccJ2YLdzo6Ww+0R+JRxuW8JANidQKvEKmov
+cSSuI6uCoS+MurRpZcZR4W9V31p2a8ufmLAwu3tG4LY2S02hp/sv+6scNeHDldHkXcOk6o82
+W729xUhHcwrcp5uU4+XclcsstYs/b3V1EToLP3+RZ2xhtj0eu+J49SN8QbhpMffAU36nL28t
+rrjRDBBUA0YouX1tyWXN07llicn4ddMD3QibUP8AH7EGoz90HdQn7fsWPsn3CMTd3wEHJckf
+jrZb3HPxVduO649jXBnX2Zpf9t7CvLrNv0da9gg7mNI0wcn3Pl8HJbLl6OhZZGzFtO9n/VHH
+j5Otvh5tcXXpmxuuzlLb9b7xXn+NcgMXqu5snIcqcnJ2y26LI+2PcW7N01t4z/eKN83nGOW2
+9Ly+CGW3hU8gf5Doe1YOwUAkxeWYjSGI69Ljb2FGM2XFcIkYLEVEGnWR+Kwfc/p8lFVTvFi+
+UMv9ka+squWOWsLBPUEmB4F/FPYvIA+w0K9YpKru3CxU5Q0SxuIAPWvJAbt3aKN8H8vQtgz8
+DSn9u7sCD8YPwtWj9u/tRhsFYYNJ+/d2BBuNH4WriL6Tvv50aw+dbWwf6Wnsde5z94I6ZPG6
+WSEOvJGA4t5r7uxAewBvi1QbfMfzBbxqxT7ZiBx8GppWtHWCSPajny47yrO2dpDQ7WV1PuDI
+3Fn2SQR2qrt9+lYDf5j+YomNNye0zKkDSWkc0252uHsKGdv/ANKwG+6AfeKNYXecrvsBSh1R
+VVhb8W0Rt8up7Aqu3VcanFRSh3vdM21h9I6n1WWzsGB3qncN5nIPohC2PEvxitJ38s4exGsf
+PLazLWIAKkBpfh0p7eFc3K39jqWnqcRmZUQMlYIbhrxcXzBHfLLrNsB7bajciv3P5S2etiPF
+rHdoVHa+mgpcUbHBCyKMwg5WNsL3K7bEyWxh7L/GQn1EFHPO9uPbWfT/AN/I5Lb4OU8trImz
+tvlzC43qhJTfDEVVxFO+P/sD+KqUk4ftLiEN9BBFp5/xR5b+X/jP2bgybTYw62jCQLdLrrK2
+2lEmNln1cLR2n2oqwyER4pisgGskrLegPxQRtLJyuO1p4Nky+YBHXj857c9n4+VxqiYdffQf
+NqvTb8y872QZnx2E28Rjneq3tRqJz+UHc4Pg9yZrfxonN5yAO0sXIY5WsG4yZh5RdZsMphlZ
+K3exwcD1Lf21iDMdc4fORMd2j2IdIFt6PRh5xj1HE6OPGMPibfwXPjlHVcE+q6y9uagR4dHC
+N8sl7dDdfwV7ZSp7pwGmJN3RgxnyH8EMbcVXK4u2nzHLBGBb9Z2p9VkebCfnr6D+m/n4LjJ4
+2+y6XA0HFcZh4WnMq9NTp5HyRNc9xc9wuXHUnyra2V/xFSG2vhfdKwqbWGK27IFubLf4hpB9
+r7pUrN+NbG39uSoTv1ePUFj7HkflBTdTx/1Wzt/rDRfaf2BYuyOm0NLfTx/ulRnD9TZ90IHJ
+Q9b/AGING5GfuhC0VDr8p/sQXuVb4fg9N2f12Zo7D5g+1eYkbwvTdnf8N0gv8z+K8zdbMjHF
+8qZunBem7Gf4dpue7h/2K8zboV6VsZ/h6mP6z/vFDn9kNiqsz4dJTuPhUszmj7JNx7Qr08MW
+DYLWui0AbLL5XXP9EL7D1Qixqqpi6wnDiBzlpPsJW1tvUclgTmAm80jWeTeexVxyx/PS5s9/
+hmjAG6nt6ivLmmw0Gi9Q2e02ZpP9v7CvLmnW3FR14fevQdgHAYNL/uHdgQXjn6Yrh+3f2oy2
+DcRg8p/+h3YEH40PhiuJ+vf2ocfzrZ9z3TFakE/MfzBT2uqDR7TU9Q06xRxvB6iVD3Pv0tUH
+9h/MFDbzXHW83IN7ShrfI9Bjc2RrZG2IIzNNuBQPt5l76wE7jB/MURbIVndmBwZjd0N4neTd
+6rIb29s3FKcX3wfzFHPjms9L+wEoMFZTXuWva8dRFvYsTaunNNjtQTultI3puPxC57M4m3Dc
+XjkkfaGX3uToB3HyGyK9scIdX0Aqqdt54NbDUuZxHtR0+HJ5/l59fpCJthLHFZ9fmP5ghtsf
+Kuyh1jbQE70SbBsLMYqGne2D+YI68vwqG3JtjDB+wb2lVNlJsmP03M/MzTpCubcgd+2Xv8Q3
+tKy8BdyeNULydBM0efRGZ+t6aS5nUhXCZw7bavbe4eHNH8OX8EXi1wF55gFTm2wbJwklkHnu
+jzcc3K9CbGxpLwLFxueleTV8wmrqiW/jyuPrXqdXNyVHPJuyRuPqXlVBC2praaCS+WWRrXEH
+WxKOnB/NEGwUYfiVTJbxIbX6z/RafdH9/BGDpyHJn0cy08GwWkwh84pjK4ygZjI6+7/9TnA6
+IYuMVzy90Zr2zjLutuRjLOXK0N+6BHlraSX6Ubm+Y39qEibo490CO9JSS/Rkc3zj+iCLdKPR
+xfCDnYC5w6pBOgm3fwoZ2jB7/Vx5pT2Il2AHwfUn9t/KEN7Rn4drv3p7EYx/ZWU7Q2XOQm46
+l1Paucm/cjtTUtjFFr8gLc2V/wAQUp5833SsOk+Jj4eDu8q2dmHBu0FISQBc7z+qUYvtW5t7
+8TRfaf2BYuyf+IKTrd90rY27c10FHZwPhv3HoCxdlCG7QUhJFru1v+qVGcP1tz3QviKL7T+w
+IKHSbo090BzXQ0eVzTZ79x6AgsEeRG+H4PTNm9dm6T9yfavNHDU621XpWy8kX5PUbXSMHvdj
+dw5yuP5K4Afkuv8A7hVxwzmGV28642Xpexdzs9TX+k/7xQFjVNBSYvU09MPeo32brm0tzo62
+NmjZs/TgyNBzP0LgPlFGua7xgLwiqFJj0M24Nns49BNj2rf90Go8OjpgfFDpD2D2oQldaaUt
+PyibjrWhtBiPfPEGzg6NiY2457XPrJRq4/lKP8B02bpLHQ09/UV5YN69QwGaIbNUrXSsBFNa
+xcOYrzEEaA7kZ4vevQdgh8ESH9u7sCCsZd8MVu4gzv0PWjTYSaKPCJGvlY338kBzgDuCDcVe
+w4vVnKHjuh5379UOP51ue56L4rU6fM/zKvt4QMeaP2DO0rvsHJHFilS57mMDoeLrDxhzqvtw
+5kuOgsc1wELdWm/Oiz9rQ9zyraJ6uic7xgJGi/EaH2Ljt+Q3FIQRe9OPvFZGz1YKDGqSd3i5
+8jyT8l2n9Vq7eyMlxSDk3teBDYlrr/KKHXXLsMjUXt5EdbIbQCaJmG1klpmC0LyfHHN1oGaN
+3OujRcD2I654TOao12i2TE8j6vDrNkdq+DcHHnHMehUtiIJafGqqOaN8bxBq17bHxgo4PtdU
+UobBXMNREBYSA+GB086KaHGsLrrOiq4w61srzlcPIUefK5449b7BLbk/DTP3Le0rCp5hDURy
+gA5XAi/QVt7bODsXblII5BuoPSUOF2jt6O2E/CPXZ5RHTSTfRYXeq68wwSbJjVDM4/PNuT0/
+/qN8SxCH8mJXtnjMjqUDKHi9yAF55A/kp43j5D2m/UUcuLHxXp200nI4HWuO/k8o8ui8xBs7
+TQjcj3bSshdgjmRzxuMkjBZrgTbf7F5/uN0a4J+L0DYRhbhD3uJOed1rngLIMFSe/PdGY27p
+zb+GdGOz09PSbMxudPGHhj35c4vxQGAb3G/eiYTeWQ/22i5TBHP+rla72e1efX1XoeO1FNVb
+OTgVEJcYmvDc4vcWO5eeHd7Ci8PxHOwP6Mqf338oQxtBrjtd++PsRFsRUQQ4bUCWeNhM257w
+DuCGsde1+M1r2vDmmU2INwUTH51Q46rlIPC3+tdhpquTxd11XWpUdNU8gzLFIdLHwV37gqz/
+AJaT0St/Cb8k3Va7b2Gqxa805rAV3vqx/l5PRKbvdVnXueT0Ub3P/ipAnnU7NevfoCjDK0/5
+WX0SkcNrt5pZPRR3c77p7nnU7Hr36Afe2tt+ayeil3urONLL6KO7nnT3PAlOx61+gEcOrR/l
+JbD9VJuH1v8ApZevIUe5iOpMCd107U9a/QDGH1n+ml9Epjh9bb82lvzZUe3O+/rS8pTsetfo
+BDDqsH80l9Epzh1af8rNp+qj0H/101zwKdqetfoC97qs76ST0U/e+sP+Vl9Eo4uQnJPOVex6
+1+gN3vrLWNJKetqdmH1g/wAtIB9lHFymuQnanrUEmgqzupZPRKcUFVb82k9FG1zzpEnnKdj1
+r9ArvfWk/m0lvsqYw+sDSO5pL/ZRmCedK5J3p2PXv0DBQ1gBBpZLkWvbcm7hrC67qd/olGl0
+1zzp2PXv0DjQ1Wv9nkOnMuXe6s39zSeija550rnnU7U9egnvbWZtaV9/spDDqwf5WT0UbXKW
+qdqevfoE97qu9xSvHU1LvdWcaeT0UbXKVyOKdqevQT3tq737nk9FI4dWf6eT0SjXMelLMb71
+ex61BXe2s/0z/RS721hFu55L9SNbnnS8pTsetQT3rrf9M/0VIYZWD/LSW6kaEqOqdj1qDu91
+Zb82k8y4yYdW3/N5PRRq42UCdd6dmfVrLwjSNvUthu7ehvC8SpmQxkl276K1W4vRhoGZ/oFK
+5zGtGydZ3fiiv47/AECnGM0X03+gVlet+mgnWf34ovpv9Apu/FF9J/oFNHWtFKyz+/VF9Y/0
+Cl36oR84/wBApo61oHeks/v3Q/Wu9Apd+6D6x/oFNHW/TQ4JFZwxug+sf6BT9+6A/Ou9Apo6
+1oJlQ79UB+dd6BTd+qH61/oFNHW/TQsL3skqAxmg3cq70Cn78UH1x9Eodb9L3lSVDvxQfXH0
+CnGL0P1p9Aodb9LySo99qE/PH0Cn77UI+ePolDrfpe150udUu+1F9afRKXfaiPzp9Eodb9Lt
+kyp99aL60+iU/fSjPzp9EodauJlT760QPxp9Epd9aLU8qfRKHWrqSpd9KL60+iUu+1F9afRK
+Gr9LiSpd9aI6csfRKXfWi+uPolDV+lyySpd9qH64+iU/fait8d/1KHWrqSpDFqHX30+iUu+1
+Dwm/6lDVXClZUu+1F9d/1KfvrR2+O/6lNHWrL9QuZGu5V3YrR8Jf+pXWGZlSzlInXbuV0llD
+eGx4eaSOSQPb+rc3Vtz8MbYCCdwHEvsqeB0jKmFsjpc2vijf5Voz0s1MQY4oi3eMrbm3SDqr
+XTHTiyTD3OsaWe5+jJcqxLBhUTAZBK15+bzXcOvmXF9UJWNbG2OnkGhc1u/y8Fbp8HjMeZ0r
+ZHkaW8X1b1Fvj3UTLhoOlNOeuVdqduGTuymCobznNcBRlFTRy3LIHsabENYC3y8Qoub3dKGs
+lZEHH4twytH49qquk4waJxDWyyEfQdp51xEmFE609SB+8VubCDTx5o2MndbXlDa3UFUbUMbG
+6KWniY8bpBHq3ycUJq+y13Pg/Ics98rGncHEgnqCqPfhANm09U4c+eysUWE92e/T1Ac2+9jr
+k9d9y51lK+klLI4IHNGtgM5t0g6oTW9bNA3BpntjLKljjzuv2KdTHgsBIDpZHDhG+/rVV8kd
+Q0NZkpTuIaCGO8u9aDMEayDOyRk0m8ZyQz1KF8e9Z/KYbm/Nai374K5T0+EzRGU8vExu8yOs
+PIeKriaWkfaekp3xngGC3kIT09K2vqRmq2taBo0jK4dAG5VaaR2FB3vcNS/pz5R608RwyR2V
+0FUCfovzdi7VdHLRm8UELmDW9s7rdIK4yT91ZWx8nTkgBwaMrXfxexD/AB3mgweG3vkznHXK
+11yPwVYuw2+kVT5XhaDMFDYg7O2SU7gfE9W9U3GejktLTRWv4pYLHyqJLL/KVPHhs7wwNqmk
+9IIU5YcJiOXl5ZD+zN1xcDWS5YjHE1x+L8UD8Vanwl8LLx5JbDXOS23Uh7e9cWjCTvNS3pKt
+OosMjjEjp3ta4XHhanyWVJsgiBY+nbHKDpIG6t8h7V3p8PNRGZuWbK/6Oe1+soX/AFB3ewGw
+FS4c+gXWCHDZ3hjXztcfpLhc0spE9HGR9Eg9qVjUuEUMjI2OPxfi2/FUd54sMiOXl5Xu5mG6
+4g4Zrfum3PorL8IMUBc1zJHjfyhyt8n9VUa/kHls1MzoIFiOkHioTz7VZNLhgiEjp5Wg7g7e
+fJZVXd7gbBtS4dYCsUdDBVvc41Rfr4trO8v9E1TTT0jswghdHwIbm899UJfPu5RNw578p7pB
+PUexWJ6TC4fHneTzNdc9irPlZMLQ5KcnRzRoHeXgu7sIlZFmZkmcRq3NYeTnQv8Arge9l7AV
+Nue4XeOkwyWN0gnla1u8uNvYq8cjIy5k9JG6/wCrZw/Fdaaikrn5jOwxt+jv8g4Kl8fy5vGG
+MdZhqH9IIA9ahmw+4vHUDpzhWqigng8KKKNzRx8Z3mK5irjdG6OSmiZJu5QR7usIf46R0mGP
+i5UzSMb+ubexcHDDWkhhqHgcRYdq7UuH91kySVQcOAYbn+i51VIaeR2SOORrdbeMQOkIn862
+aOLD5XBjTU5jwI/BatGyOGHJC7O0E63vqsZ8jJgGxFlPfRzODvKtjD4hT0zWB7ZNSczdyM5B
+jCXTck3ueHK88WNJPrWk+nlicJKnlC7eA25PpcFQwx2JCFgbyvqWq1+L20E3ohKsVpahkuXN
+SszW3i9z1rrT91uBZTROY12/IMt/KuubF73Al9EJ8+MWPx3ohRpx5GSieXGF75egHJ6t65nw
+nEiiZfmDXW8ytcpjFre/eiEuVxk/XeiEEHU9dUMzVALImDcRoOpoXB9RTiLkXU5eBufI+zh5
+tyscpjP0ZvRCYuxc6lkhPTG1BWp5ZQ4ijhLXOFszLuPnSdBJSv5SaKR0l7ga28rlY5TGgLBs
+oHNyYT8tje4Nm9AIKs0/dLr9wx5jvLGu18y6Mo66WIs5MxQby22UeYaldTNjY+RN/wAYTGox
+sWu2b/jCK4RVEVGXMEDpcws7lbtB/hTQulkdmpaQNdwLWl1vKdysGfGXb45T1xBOJ8a+jNbo
+jCDjJBNSvE9QJjLvGW+/pcuUtRHO7M6lYHnfkcWg+RXBUYzbxZv+MJcti31cn/ELom3KCWuM
+XJ00T42ccoPaVyikjgeS+R0n0mNOh6yd6td04zfxJf8AiCi5+Jv8aFzjzuhBRXB8tK5946Xf
+8kyEjzBdnxVcsQM4eyBugbl08g/FOx+KM8WBzfswj8F1FTi43tk1/ZIKwqoxEYjAJBwMjjmH
+4eRdIBUOP9lhLSflNGvnK6mfFL3Mb/LCPwS7qxX6MnVyaIiaeak1fFJK47xYlnl51yDbu8Cg
+FzwIcQFY7pxX6En/ABJ+6cW+jJ/xoeXOSlr5o7zNe2Nu5g9jQuTZeRaYjT3Yd4lBv/RWO6cV
+GmWT/jTGpxQ/Jk8sSHlXjdIXjkKVoeNxa0uPrUpo5Y3iWrfJym8AHwvPuC7904pbxJAP3SY1
+OKG12Sf8SHlWlqaeQgmkYHDec516+ddI2VtQzkoYzHFzDwW+veuhnxIE5YneSEfgkarFSPFk
+v+6QcnGKnBiljdNwOa7QPsrixzOUvBE4uB0u4kjzK4ajFHAXY8//AOSYVGKjdG8dUSDnOyqk
+AkrXPazg21/MPxXN9Ux7eT5Br7eK6RxL/OrPdOK/Qk/4k3L4nvEb784iCDhDFVyAiCEsB0Ja
+MvrSfTyUbw50cjpBqC24aPKNSu4qMVO9sn/GkanFfoS/8aHlWlnM7y7uWPOfotPYtXDg/uUc
+sC11zYWtp1KkajFLeJJ/xK9RGV8F6hrs9zvbbRVnJRwf4lq247WWHg594Gi3I/FHOpXGJ6JD
+d0JAJ7aKKcptEv8A2qVlA1wDZOkRqdNEt2t1VLS2qXan50raXF1ELfomT69KaxugXUUkuPSU
+rcUCJt/RI+ZK2qSoa+qV09k1rIEn3pju6UkU/FJKxS1RC0SSsbJWKBJkk9kDApJW1T2QN0p/
+/XTEJHgikU90x8iSISSVjxT24IqN0109k1tUQuG9cXNJcux0Crk3N0gzsIhkjiaHMc0g2Nwt
+yNji0eCfMudM9sVNyhvkYMzupPFtPhkcDJHmdrH3ykwmxtzLdx2SW+zvybh8k+ZIMOuh8ynF
+tDQSzQwt5fPOM0QMRGcdCiNo8NdUCmD5eWLsmTknZr8ynVeuX0Rbz38yYgWNuxdq/GKPDntb
+VukZm8U8mSD5V0psQgqqXumBkz4uBEZu7qCvRNVUa0ZjYepSynioU2P4dPK6OB8kkmpytiJK
+tUONUFdUupYJHGZoJLXRltrb96dF1fpwypFq2RcDoHBZtRtHhtJLyVTJJFJa+V8Tgbc6dEm7
+7OGTUJZNV3n2hw6me1lRJJCXeKHxOF/UnqdosLpJeTqZ3xPtezo3ajn3J0XWX0rZDb+iQYdN
+NVqd8afuXuo8ryR1vyTrgc9rbulVYtpMLmJEVUZHNFyGRuNhz7k6pq/StyZtpv6kxjdfd2q2
+3aTCXQyTNrA5sRAcQw6X3cFzO1eCaf206jQGN1z6k6L1y+nDk3cxSETyPF9Suw7QYbUGXkqh
+zjALyN5J128N1lKkx7C6ybkaarEj3bg1rvwTqav0ocm69rG/Un5F9/FKuTbQYVDJyUtYGPGm
+VzXA9i0IXsljEsYdlIuLggp1S7jDELvonzJxA/6J8y3flDRVqrEaSklZDNKeVfq2NjS5xHPY
+a26U6nmsvkJLeIR5E3Iv+g7zLXjxGmllhjikEjpg4jKdwbvupVtbTUMJmqZQxt7XPE8wHEp1
+Tyx+QkPyHeZLkH/Qd5lp0+KU1RUOpg5zJw3NycrSx1ucDmT1eJ0VD+dT8kOdzTbzp1Xz7Mvk
+JPoO8yQgffVjvMtSjxOjrsxpJ+VDd5a02XOrxehon5KqpELuGcHX8U6nn20z+Qf9B3mKXIP+
+g70StOHEaSalfVRzZoGXJflNrKtHtDhE8jYoq6N73mzWgHX1J1NX6VTTyW8V3mTcg/XwXeYq
+yNocJEohdWBshOXK9jmm/lGi0juTqXc92KIX38R3olNyL/oO9Eq3UY5hdNO6nlrGtlYbFhBJ
+v5l0qsRpKSMS1EpjY4XzOY6w69NE6mr9M8wv+g70SomGQ/Id5itGixOixAvFJUslLNXBt9Fx
+qMbwuCV8U1fCyRhyuaTqCp1NX20qOp5AD727zKs6F4NsjvMtuKoiqYGTQPEkTxdrm7iq7vGK
+vVGYNKCc7veX9ixdpYGwUWFxN3MiI9QW/ThrqbK4AtcCCDxCydsfBbRDLYDOB6lp04r+UXaK
+nEmH4DUW8KF7RfocD/RYcA/vczX/ADZ7UW4CxkmB0OYeLG1w6whRmm19/wD7D2o6Y3zWlt03
+3uj+0/2LY2ZHwBSfYPaVkbc/E0f2n9gWxssPgGj5sh7SjN/XApsjYbQC+7JIiw0bY9ooK1gA
+M0D2PtxItY+ZCuyNvyiA/UkRvHO11c+mDQXRxh+bmuSLepDk8Vc4WK8922AGNW/Yt0869BHX
+ogDbi3fsX+pb7VWeL5CXaGjjrcEcS28kLBJGeYj+iGNtTmxWMjjTj2o2qntZSMY5oeJXMiIP
+M7QoL23b8JRi2UCnAHnKNcd8jN36DP8Atf5EI7A/pObU/m/tCMG37zWtp3Nv/gQfsEcmJyn/
+AOf2hDH45NPF8Hjdic0TG5Y6x0BeBzh5zepYm1jGx7QZY25WNZEGgcAjiF0VXXT523dSua1r
+gecX9qCtsQPyjdb6Eai8VtuhRPRtgxmsnbp3TQkutxINr+ayH9hpHPxZ5cST3Nb1gI0qmNdD
+M8jwxE4A21AsgjYNwOLvvv7mPaETHzjXLa8EbQPJPyI+xeiN3arzzbHTaBxP0I16E2+UFE5P
+ji41tSyipJ6qTxYmFxHOhjYoy1tdiGJ1Ls0rrMv1629QV/bebksEdGD8dI1vk3+xV9gW2wyo
+d9Kc/dCEmuO137jbT7aMnY2wqaZ7j9oEA+xZUlUcZ2ygjvmp6eQ5BwGUXJ86JcUa6OWKsaNI
+I5STzXbp6whDYpufHs/EQvcfLZGsfMuX9L22zpKPEcPrYDaVrTY9RB9pVvayZtXs5DUR+JI+
+N4HWCuW3w96onfruHqCz5pTLsRC06mKcM8xP4ouM3jjWvsNrhEt/r3dgVLb247hJJv4fsV3Y
+b9ESfv3dgVTb0XZQ9b/YiT9rX2X8LZ+jv9Aj1lV8OpoGbS4o9sLA5rYy0geLca25rrvsuD3i
+pBwDT2lRof8AEOK3+ri7Ec770G7VXGP1Z1vmaf8AqF6FQzioo4J735SNrvUgjaqAHEKqoHCd
+rD1GMH2LZwatMeyEkt9aeORvm3dqOuc3jAlJO6pxl05JOeozf9kc7WguwGqA3ktt6QQVUQdz
+4rTwWsWiG/XZpKN9qP0NPYfKZ98IufviE9j6g02NiFxsJmujcOneOxEmO0dNNW4Y6SBji+qy
+uJb4wynQ8+5DGORuwvaKSWPc2RszOm+v4otxN7ZZ8HkYbtfUhw8rCiZ+8yn8r5ayNjWMa1rW
+iwaBoB0KuWg6qxKDvtwVfeOZHnZdBK2ejZLGTkeLg21WZtl4tH/Hv8i08JjyUcMfBrAPUs7b
+EeBRa6eHp5kdOP5xvbO64HRfuh2oSdn/ACsPJZc/dZy5t178UXbPfoShv9UEJiw2wH+89qN4
+e+S7tl3XyVKankAMzsvJF3MN91t7L/oCk+yfvFZe3PxFH9t3YFqbL64DSfZPaUS/rgT2c5fv
+7/ZxGZA1+khIb6kQ7Nvq3YxihrhafwA4DcBra3QsXZO35QjpbIjSOnazEJKoEe+RNYRxNifY
+UXkurpbaQUBbcn4aH7hvaUeC29AW3GuMt1+Zb2lGeH5NWumxQ4thMdXFEymMzS0wuLszrcb8
+Vm7cn4UZf/TjtKMKmnNTT02VozRSxyDha2/1XQdt1fvpHz9zjtKLhd5DNn6Gsb/m3D7CCNkH
+1Qrpe4o4ZJRAdJXlo3joRswfBA42pv5EIbBW76S83c57Qhh8cm5si+oc3EDV35c1J5S43OsE
+P7Xi20Lgd+WNG9PS8hVVUthlnc13WQ2x7EEbYG20TvsxovHd57H1Tm7mm1+bd2Lz3Ys1DcTe
+aWON7+QNxI8tFrjmC9CqB/ZZf3buxAmwY+FpB/8AOe0ImHxyV9qjO7HCZ2MZJlZcRuLhbrIX
+o4Gg6NV59tjY4+T+zjXoDCdyHJ8cQ1t+fg2mHPP/AClddhrDBndM7vYo7dML8LhcNzZxfygq
+Wwx+By3mmf7EP+po4874Grbae8uHqQtsO0d9pjzQHtCL8Wi5bDKuP6ULx6kIbDH4UlGlnQE+
+sIYfCtHbvWlpB+0d2LGjB/JCa+7uwH1Ba+3RtT0f7x3Ys+aJ0exkbiLcpPmHUT/RG8PjP9a+
+w4+CZf357Aqm3l8lFr8p/YFa2F/Rc3789gVPbiZs0NG5l7NkkbrziwRmftbOy5HeGkH6h7So
+UOm0GKm/yIuxT2W1wCkP6p7So0X6exXnyw9iOd96yMah5aDHTbWOWJ/maFkYdVA4NVYdfwqi
+eJrR0E69iKWxCepxyE/Lyt88aENnoeWxqjaRufmPkF0dsfONWMfaG7UvA3CSMdiLNp/0PN9t
+n3whTH9dqX2PzkfsRVtMfgib7bPvhGcv+LH27pLspqxo1BMbu0e1PhlT3VQ4ICfCiquTd5Gm
+3qstnaKl7rweqiAzODc7OtuqDdmp3DEqSn+QZxJrwOUj2ouP5Yf4Pnm4txVVpOoINwV2kNnC
+3Earg4WcetR51DDfiGcPBCzdsvEov4/YtKgF4wuWO4RVYryIgMLGxX1e43JPkVb47Jlur+z3
+6Eov3Q3oVd/jHT/We1F2E0s9Hh0VNK1jnxNygtdo71aLDds/iXfnvjanty3K8nyh817I3jlJ
+afbojkKP7buwLT2WI7xUnUfvFcNo8KrMWbDHEIWCM5i5z95I3blZwimrMOw1lLJFE90W4tl0
+dckk7tES2dJAvsoQNo7fqyIwnmb32ooQbuMcr7dFgEPYTgWJ4diHdzW08ujgGcoRv8iv0FBi
+px/vlXmDLyRYGxvvl5gi56t3sQBAm2+mMC31DfajwDpQpj+AYpi1eaiKGJjMgZZ0wubcdyM8
+dky8i2AWgZ9kdiBNuwO+0d/qOHWUb0fKmnaJo+SkAtlzZt3ShjaPA8UxetE0FNG1jY8gzyjX
+U6ocd1l5EDS0YONd9Pv/AIEI7BC2Kyf7f2hFOStbhbYe4ry5OTLTM0ADLbNf2LF2awXFcJr+
+Wmp2OY9mQlsw8HUaouNnWi4uIO7Ree7YG+0Lr/QjXofk1CDMbwPFsUxQ1kdMxjbNGV0wvoic
+VkvkXVH5rLY/Id2ID2C/S7/9ue0I3mfUuoTalcZntLeS5Rul9L33IZ2awPFcLxATVFOwsczk
+yWyi41Gvq60XCyY2M3bEjv8Am27k416CzVrbcyDcfwHFsUxI1cVKxjMrW5XTNvoi+mc90QMs
+JiduyFwdbyhDOzrGftJSOq8FqGNBLmt5Ro6W6/iszYWcSUNSzTMyUOt0ED8ET6E2shynwmsw
+fFZajDoWT0k48OHOGOZx0voiY38bjWnUvMmJ0lOHnKGvkkHO22Ues+pCuzkb6DaiSkfa7WyM
+69xHqRfRUsjZJKqpDeXlsLNNxG0bmg8ee6p4lg75MQp8Uoi0VMJ8JjtBK3da/AoY5SbjI25e
+57qGBou45nAdOgCsbT04pdmIacfNuiarYwuauxhmIV0QjjgaGwxZw4k/SJ3JtpKWrxCkNHTU
+xd4bX5y8AaetGplPE+lfYUfBcovb389gWPtHI2fDaSZpu11TOQf4lcoaDHqHDJqSnpWNfK8k
+y8sPBBFtBzq5Fs9JU7OQ0FVaKeJxc0ghwabnz6FGtyZdtreybr4BS9AI/wCxSobHaDFncMsI
+9SyMPo9psKa6mp4KeWEuuC54IaeccVs0NHVUFJUSuy1OITnlH65WudwHUEc8pN2790cPPwti
+w/aR/cWHs9R8ltNWAjSnz28p07Vdw+LH4MTlqJqWAx1LwZQ2QeDYWuPItKmo30+J4hV5CRMG
+ZbHfYa+tF3rYSx8W2ofb6yPd5EUbTD4Imt9Nn3wsTE8GxSsxh1cyjysc5jsrpG30t+C0toYc
+Xr4G09JSsbC4Ne8vkGbMDeyNXV6+W462twgLDafuTauOntbk6ggdWtkaYe6rfSMNdG2OoGjg
+w3B6VlVeEVD9pafEImt5FoHKEusbgEbuPBGMLrca8g0uVXb4Vzl4qzIPBOiquBzKOanQfFBa
+sPi84WTRfELVp9QTawQdr3CV9Cn4Jm+Lqgfmuk4eC7qTeVSuqObSQxo5wF0AtpxTaac66DxU
+QzbC1/Upt0sL7+lAlbUPh20bPdzWcu1gN9LeKVv7WU4kweVwjaZgWta75XjDQFHTpqz+27x9
+qlu04oDwExV+ztdTzZjJSZpY3BxBbdu/zgq3j1FBRbNwmAOD87CXFxLvCGuqL086GBcLX4qB
+fdBWSah2cocXo5XsmbblhmJEgJtqCinCa5uI4fFVsblLx4Tb7ncQjOWOvLQGv9FJvQD5kLY5
+SCetxCpe547noQWNDiAHnMb6c1llYRSmqwR9YZJRPT1LSHco7wm+Ddp85RqYbm9j47r2UAOg
+2QRF4G2zqZpdyImNo8xyjwb7k+UN21bTNLhCJBaPOcviX3daHp/2OATzHrSOvA+ZBG2H9nxW
+lEL3xiVoLwx5Acc+9bL6KKmx+ikp5HMDw9r4c5IPg3BseohE6eJW6NDxunII3AqL2CWMscLt
+cLEc6CKBgl2sqKR75HU4dIBHyjrAAacUTHHtsda7rHRRtcDTRCFdRPocNxaLl5H8lJG6F7pD
+maHW438ilgzBJsvWTPLnSDlDnLjfwRprdGunjexb4VtyRIteyCMEhfWYLiEvLyieI5o5BI67
+bNvbfuWhh2PTjZqarm8OeA8m1xHjE2y386F47BMQLXsogX8Xchmeg7swNtdSVMorDFyhlEhB
+kNvCB9fUqOIUzm4fWV/LTAt5FkQbIQGjK259aJMJf5GpaL3IPXZRcBY2QrgFM5zMLruVlJe+
+RkgdISHaGx16kVaIzljq6QbrofIpC6ZwuCAdeBTAnjv5kRIblG4unvrYpigRUehOVG6CEm5V
+N996ty+LoVVGlx0qDPo9afRa1MfB3rKoh7wbb7cVp0ua2t7Kos7ikDv6EhuTiyim4p9bhOep
+M42BPQqGBve3VuXVvDmXCMuNrnpSq5u56WeYusI43O16AiAnaON3cNFXje6aU363kjsRTikg
+mw2GUah8sDvO9qwsZwyCLZeKZsLROxsbnPtqb7+1XKKp5bZSjeT4TZImX6RIAjvfMjFaDhGO
+4jSbo5o5Gt6i0ub+C3Nq7HZmIj6UXYs33QKQxz09YwWztMbiOcaj1LS2qP8AdiJx+lF2Ivvc
+a4O//j8Cw+I/nVjYNzjg8gtoJ3W8wus6qnEWwtMy9zPZjW8T4RPsRFs3h7sPwiGF7csrvDeO
+YlEy+N/10xpjRhNe/KA51O654nRZWw2WXCalrm5mme1nfZC2ca0wetv9Q/sWLsA74MqN3x/8
+oRmfCsx5czbl7mRmRwlPgggE+Bzp2vc/bmMyRmJ5kF2kg28DoUv/AOwna6ct/InnNtv4yN2d
+v3Edv/h9uNMVoDa9maD+NbWGVFRUY/WCqpeQMULBG1xubZjrdYu3H6Vw/wCzv/jCJKiRsWMU
+bQ60szXtcOdjRftIRzy+MaLvFJv5kD0z5Ytsql8UBnfnktGHAE6c5RySAEF4ef78TgDe6TsC
+Jx/ysTyyT7I1ksrMsr5Hlzbbjym7yJYAb7JVnVL2LS2jhZDgVcGCwd4Z6y4XWds/Y7K1fN77
+2I1LvH/1l4TNUQYBXPiYOSL2tkeD4TARYkDjvW/RUFDW7OGloXHk5Wkh7/Gz858oWFhNzsti
+/NdvYFZwuqkpdnHmP6Ur+nwcp0RrOfX2p4RiU+C1j6KtY4Qk2kZ9En5Q6FvbTRRRbPTtiADb
+sNx1hcdqKanxHCe+cVszGB7XD5TDvCbFxIzY9gk8cRxXvz3CM7lsq5so1rsDpswByOcWnmNy
+tm/MsjZO5wKnPS/7xWv1lHLP5Uju1CYgb+KdNfVGEbW604HOkdTqlqEDG3BQIU1E71Fc5B4N
+lUcbG3Yrj9ypuOu5BSofiCtOlI5NvOdVlYefewOJBWpSC0LL6kILI3J0yfggfpSI0smCTyLX
+VCDbHnVTFMNhxSFsM8krYwbkMdbN186tjVStohLpmuwWB2HDDjUVHIbrFwJI5rkcFV/JShdT
+spzPVCKNxc1vKaXPFbjRdcq2sjoIOWmjldGAS4xszZR0o1Msv4VqnA6WrwxmH1Ekz42G7Xl3
+h+f1J8RwaHEKSOklqJmwsDfBbbW24nRVRtXhjoXTtFQYmmzpBAcrT0rTNdTMou7ZJQyAtD87
+9NEPyinR7P0VKYCTJP3OLQ8qbiPqC1m7tVlR47TGSFs8U9Oyo+JkmADX/h5VPEcZpcN/OmzN
+abWe2MuaTzX50LMrfKziFGaynfT8s+JrwWvyAXIPDVVcIwWPCY3x09RK5jzcteAbHnvZNTY9
+QTmIcq6LltY+WaWCTqK7VuM0NDOIKmbJI5uYANJuPIh+Xspx7NxNxUYmauZ1RnzG4bY6W3WS
+fs1G/EhiRrpu6Q4EOyNtutu6l0btPhBYXirOQEAv5N1geuy7RY7h01V3LHOXT3y5OTdcIu81
+fFNnIsTqWVFTWTAx6MDWtAaL35l0psDZFiYxKWtqJ5w0tHKWsBzaBTGP4a6r7kFQeWL8mTI7
+f5leqJ2QR53h9r28BhcfMETeU8JuBLSAbHgRwWPDs7HDiXfFtZMZ3OJcS1tjfQqxS47htXyp
+gqc/IszvAY64AXODaPC6l+SCodI+2bK2Jx048EJMp7LOKUAxGmNO+Z8bH+MGgEn8FVpsBZSY
+fJQw1kwikJJJa0kXGqnTY9h1U8sgmdI8C5DY3aepdIsbw6aqbSMqff3GwY5pBvv4hF/OeFfD
+dn6eggnp+WkmhnFnteBzW4KEOzdLBST08UspEwykvN8ovuHmXUbRYSZeRFWOUzZcpY6991ty
+k7H8NE/c5ncJr2ycm7Nfqsi/mhHgNJDGYGyVHcxNzAZLsJ7V2xPDm4lTmnkmeyI2u1gGtty6
+UeKUdfJKymlzui0eC0jL51YdbMBa3SjFuW/KpheHswylFNHK+SNpu3Pa48yuGxS6QUju6US3
+aLnaFMNEt5snvpvRCPD2pidbWumyi9zqnKCICZwUlFyK5ybiqjrq3JqFQkkyusUFDDSHN1Gt
+lr0fgwAOKycMI5Ma6rYp9IWkW3Iixe40TJkgoqQKZ5s3RONy5VJtG22/ONyqOkZvfXQLoN+9
+cafVpXZoQSBH9VTx3XBa79y7sVviqmNfoitH7F/Yiz3DWyD4o8Dr3TM5SPlLObz3aB7VX2uk
+fDT4fhAdcRsBkPAnxR2FccConVWCVUjZ5WclOx/JtPgvtY6hdNsmkbQw5r2cxlvSR6P+bV24
+ib3jgFrZJWAeiQqeMVT6zY2hneSX8owPPORcexaG3BtgzW7/AH9vtWPVtLdh6TSxMwPnLkTH
+2n+umKtadiMOc612loaPOtWkopxSCoq2O5ZuG5M7jqDqT5bWWRK+SgwbB8QcRUxt0FPN4jTr
+qLceu6LZallVhDqhjSGzU5fY8LtRMrdBLZSlFbg+K0xGblGtAHTlNvWumIk4dtdS1B8ES5HO
+8oyuXb3PB7zW812dhT+6CxoFFO24eC5oI8hRrf56EGGtbPW1tWAT4QgYehm//sT5lo6i+hWK
+3DZKzBKKCnrZKWzGvc5mrnEi/aV1wjCJsPqHyy4jPVZm5WiQ6N8l0cbJ9hHAXuw3H6cvOWOo
+BF+h17esIuwiNjKnFC1jQTVG9hb5IQrjtM4YLhldHo5mZhcOHhEj1hEuzNS2tiq6hvzswcev
+I26OufmbYuw+mJVulve/5lR2g5Slx2auad1Rp9poafar2xR+E63T5v8AmVjGaPuqhxhzRd8N
+SJW+Rjb+q6Nb1m0oTBPj0VVG1pz0WZrrfrBYdQCNumn9q37i67G1XLVEcROsFM5lzzZwQuNf
+G6TbRrGPcxzpGeG3ePB6UZk1lZ/QkpWMOJVdRGBubHJzl7dewhXw64CysBppKVlZTzSGSQVD
+nZzvcCAQStVt7ao45e6XC99E3DemO+yYGxRk9rahNvBCV+ATG99AgkTbemKa3Sl0IEd/Qou3
+nnTpnIOb9yzJtZDYXWo82CzX+Nv3qKoYXo2x4hbdKQYW25li4dcMB6Ny2KVwMLT0b1UdydQn
+4phvUgopBc5mZgzUizr6FdBZM9ocADwKqHjAaLLoCNFBthdT0QOQCFRxyRkeE1ed7Wl0Tg25
+tc2V3hvSIabXANudFngK7AvYKWoiLgJHS3DSdSMo4KxtlhstRFBWwxue6C4c1oucu+/nCJGs
+YDcNF+eymN6NXL8thDGn9+6eio6OVs8srg95ZujaBvdzb102tjgpsDhpI3NvG5gDb65QDrZF
+IY1t8rQL77CyZ8LHG7mtJ5y0FCZ60B8SIk2MoCyzxG4Z7G+XfvWthdRnwGR7pbQMpmxtLjYZ
+gw3t5wERCKPKWhjBfeA0WKUkTC0NMbS0fJLRbzIvfc0EPc+LMtWzMMxLCBfXdzKXuguZyVGz
+MMwc7S+trcyLGwwtdmbEwOG4hgBSMULn53xRud9IsB9aHf8ALs4YO9kmGUrmuDrRMBsb20Xa
+rq6ehgdUVMgjiZvcV0YyONto2NaL3IaLBKRjZAWyNa4b7OF0Z35CtM+nxbZKakgkD5oWOcWc
+WuDi4LrsNI0YRO5zg0CY3cTYDQIkZDEy+SNjb/RaAkIIshbyTMp3tyixRrv4sBOxs8ceI1rp
+JGtHJk6u/WWzguI0NdWYjAyZrzPMXNb9NmUAkLZ7ngvpBECNL5ApRwxMddsTGnnDQEXLOXyE
+Nkac0mO11K/xooy23QHb1yq54Rts2QysEYkbd2YW8XnRuI4w4uEbQ46E5RcrkKWmaLdzQ26I
+wh6nnbMwyvgxDE6s0rw+OGNjM4+Ubkla9uN1Fkccd8kbW335W2UjcahHO+fYzgAelRCm4KJG
+qIQGuqfzp93Qkgj2JgnOgTG6BKDt6kSLqD7IrnObRuJ5lTkb4atzDM3LzkKnIbvPBIM7DiOR
+APBq2KbSNo6Fh0DiWsA4tW5E0EN6ER3Clx3qHDRSCin5lLjfgoXUgQqHUgmba6cEkm3rRDjp
+ClYKPFP2oJ9SWtrqAJunB03oM+pxCR+JDDaV8bJhHyr5HtzAC9gAOJWfNi+JU9TiEMzIQ6kp
+TKwsByyG+jrcOayydqmVeF43Fi1OSA8AB3C43tPWFt0j6XaCB1XE/I98HISs3uYSQfxR11JJ
+WfVY/jNHW0tJOyk5SoawnKx3gZja2/Va1HiVUybEY8TMTGUdnB8YIDmEE31JWBtTb8p6G2gt
+H99aG2zeQw+WVrjmqXxxOHQ0ko1qXU17ukeM4jWYbPidJHDHBCTkilaXOkDd5JB06lZp8Wfi
+OD930bmxuY1xeyRuaxA3f1UNnogNmIWn5cL3ee6wdjZSaHE4L+DyWceiQh1l3/S9QbQ4vW0N
+VWRwUrhTWL4zmBcLXNtVqYVjRxjD5JqdrYZ4tHseC8br8LIX2crYKTB8SY9w5WYNZFHxeS0j
+REGy+Dy4Vh0pqCBNP4Tmj5IA0CLnjjNobO45XYy+dr208IiaCLNJuT5VGlx7EanGpcLtTNyF
+45TI43y9F1Q2A+Orj+qztK5Uc8dNtnVyyEhjXS3LWlx3dCLcZuzQmw+uq3urGYhHFE6mcNY7
+2c2176qvDiWJ1VB3ypYad0RuWQOvnLRpfNz6blPDHsxahrJ2EgVLnsaTvDdzVgbN4o/Bqt+F
+4gCyMvsCfm3fgUYmO9ijAKuWtwqCpm8eS7j0alXzqLAKthtJ3FSNgBuGlxFuYuJ9qs8Sjlfc
+uOnBMd6e3EKJ6EQuF0iNEwO9SugifUl0JFIIGB0SO7emB0SvYoIkrm93Wp31XOQ6KKi/ULPk
+DWOIGnFaDrEKhI6zyFUZmFsu5hNyMu/gt6LQELEwu4dGBfxedbULr5tNxQdrG29ONyYFK+qi
+pJwVEFOLKiYda+iTblxN7KGYkgjdxU4+lET1unBTdKQRUuKQUU7URnTOhrqyswupYx8YjY8N
+4kG9/Wh3AqWfB9qX0IOeORh1+k3eD7FrVWHVz8efiNI9sZijawMkHgyjW4vwV2loJTiD8Rqg
+wTGMRsYw3DB18SUdZdQObVG209Dfg2P761duYnSYLnG6KZrj6x7VwxrBsRr8YhrIoomshygX
+l1dY3vu0W/UQNr6OSnqYy1szbPbmvbyovaTTNwB7fyWp3X8SF4811g7GRE0OKTnRphyA9OUl
+atNhmLUWGVGFwiGWJ+YR1Dn5crXb7t4lXqXDO9uDOoqVnKvLSCScuZxG9F7Sb/sMbMQxy4Bj
+DZGBwyAjML2IaVqbE1jnYTJFNKTlkyRA6723t2qWz2C1tDS1lLVRsDalts7JL20I3eVc8Bwb
+FMN5SOaGN7GPztyyavdlLR1DW6LlZdq3uf8Axtd9lnaUsKuNuao7vCl7ArezOFYjg8s5qKdr
+2ytAGSUaWueKhS4XidPtBNincYdG8vIZyzQddyLbN1qiRuGUmIciBmiLpw3gA65t6iqe1WEx
+4jQd8IAOWijzXHy2b7Lo2lxKWkxd9VC1stUy0UbH5rANIt609HRYzR0ZoM1LPFkyslc4tdHc
+cRxRieLuV32TrJKvBIXSuLnsJjzHiAdPUtfyqrhtFFh1FFSRElsYtmO8niVaJRzyu7uEN1+K
+Yp78E3ajJWSF019bcU1ze43IH6Uja2ibfokdyBuCYpEqJKBjvKg7d0KRUHkAaqKg9ZzvCcTd
+XZCQNNypganTiqjOw1pdUMcG2DNN62oXAl5HE86xcE8d/wBorYp9yotNsdU+9c+IUmqKkFIX
+TDcm5kQznHM37SnmPDVQ+ipjigld/wBLzpw53O1MNyXBBPM624edMJTutcpjuSPyUgdr+e46
+1MOHAqA3KI8YoO/DVMbDck3xUyCQJ4etIFQG9ON/lQTuLJrpcEx4opE+ZK+9MdyQ8VQTBAAS
+B4rnzJ+ARE+CVxdN8kpgqJEhNcbrqPyQmO9BM2KVxzpuAUHb0VPTnSJUeCYojnPIY43PDc1t
+bXss1mJz5Hh8A5TMGty6AHpv5T5FarvzeT/3ELPo/iJ/tSexG57LcNc6WVsTo7Zm5817DLrr
+6hp0q05zd1ws3DfGl+y32q85Gb7mltdU3aknW3Qu8vHqVcoj/9k=</binary>
+</FictionBook>

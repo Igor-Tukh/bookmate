@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" xmlns:l="http://www.w3.org/1999/xlink">
+ <description>
+  <title-info>
+   <genre>prose_classic</genre>
+   <author>
+    <first-name>Эрнест</first-name>
+    <middle-name>Миллер</middle-name>
+    <last-name>Хемингуэй</last-name>
+   </author>
+   <book-title>В чужой стране</book-title>
+   <annotation>
+    <p>Сборник Хемингуэя "Мужчины без женщин" — один из самых ярких опытов великого американского писателя в «малых» формах прозы.</p>
+    <p>Увлекательные сюжетные коллизии и идеальное владение словом в рассказах соседствуют с дерзкими для 1920-х годов модернистскими приемами. Лучшие из произведений, вошедших в книгу, продолжают биографию Ника Адамса, своеобразного альтер эго самого писателя и главного героя не менее знаменитого сборника "В наше время".</p>
+   </annotation>
+   <date>1927</date>
+   <coverpage>
+    <image l:href="#hemingway111.jpg"/></coverpage>
+   <lang>ru</lang>
+   <src-lang>en</src-lang>
+   <translator>
+    <first-name>Л</first-name>
+    <last-name>Кислова</last-name>
+   </translator>
+   <sequence name="Мужчины без женщин" number="2"/>
+  </title-info>
+  <document-info>
+   <author>
+    <first-name>Dan</first-name>
+    <last-name></last-name>
+   </author>
+   <author>
+    <first-name>bokonon</first-name>
+    <last-name></last-name>
+   </author>
+   <program-used>doc2fb, FB Editor v2.0</program-used>
+   <date value="2009-12-05">2009-12-05</date>
+   <src-url>lib.ru</src-url>
+   <id>59839D09-18A2-49AE-AC1F-C3D2A1B9CCE6</id>
+   <version>2</version>
+  </document-info>
+ </description>
+ <body>
+  <title>
+   <p>Эрнест Хемингуэй</p>
+   <p>В чужой стране</p>
+  </title>
+  <section>
+   <p>Осенью война все еще продолжалась, но для нас она была кончена. В Милане осенью было холодно и темнело очень рано. Зажигали электрические фонари, и было приятно бродить по улицам, разглядывая витрины. Снаружи у магазинов висело много дичи, мех лисиц порошило снегом, и ветер раздувал лисьи хвосты. Мерзлые выпотрошенные оленьи туши тяжело свисали до земли, а мелкие птицы качались на ветру, и ветер трепал их перья. Была холодная осень, и с гор дул ветер.</p>
+   <p>Все мы каждый день бывали в госпитале. К госпиталю можно было пройти через город разными путями. Две дороги вели вдоль каналов, но это было очень далеко. Попасть в госпиталь можно было только по какому-нибудь мосту через канал. Мостов было три. На одном из них женщина продавала каштаны. Около жаровни было тепло. И каштаны в кармане долго оставались теплыми. Здание госпиталя было старинное и очень красивое, и мы входили в одни ворота и, перейдя через двор, выходили в другие, с противоположной стороны. Во дворе мы почти всегда встречали похоронную процессию. За старым зданием стояли новые кирпичные корпуса, и там мы встречались каждый день, и были очень вежливы друг с другом, расспрашивали о здоровье и садились в аппараты, на которые возлагались такие надежды.</p>
+   <p>К аппарату, в котором я сидел, подошел врач и спросил</p>
+   <p>— Чем вы увлекались до войны? Занимались спортом?</p>
+   <p>— Да, играл в футбол, — ответил я.</p>
+   <p>— Прекрасно, сказал он, — вы и будете играть в футбол лучше прежнего.</p>
+   <p>Колено у меня не сгибалось, нога высохла от колена до щиколотки, и аппарат должен был согнуть колено и заставить его двигаться, как при езде на велосипеде. Но оно все еще не сгибалось, и аппарат каждый раз стопорил, когда дело доходило до сгибания. Врач сказал:</p>
+   <p>— Все это пройдет. Вам повезло, молодой человек. Скоро вы опять будете первоклассным футболистом.</p>
+   <p>В соседнем аппарате сидел майор, у которого была меленькая, как у ребенка, рука. Он подмигнул мне, когда врач стал осматривать его руку, помещенную между двумя ремнями, которые двигались вверх и вниз и ударяли по неподвижным пальцам, и спросил:</p>
+   <p>— А я тоже буду играть в футбол, доктор?</p>
+   <p>Майор был знаменитым фехтовальщиком, а до войны самым лучшим фехтовальщиком Италии.</p>
+   <p>Врач пошел в свой кабинет и принес снимок высохшей руки, которая до лечения была такая же маленькая, как у майора, а потом немного увеличилась. Майор взял здоровой рукой снимок и посмотрел на него очень внимательно.</p>
+   <p>— Ранение? — спросил он.</p>
+   <p>— Несчастный случай на заводе, — сказал врач.</p>
+   <p>— Весьма любопытно, весьма любопытно, — сказал майор и вернул снимок врачу.</p>
+   <p>— Убедились теперь?</p>
+   <p>— Нет, — сказал майор.</p>
+   <p>Было трое пациентов одного со мною возраста, которые приходили каждый день. Все трое были миланцы; один из них собирался стать адвокатом, другой — художником, а третий хотел быть военным. И после лечебных процедур мы иногда шли вместе в кафе «Кова», рядом с театром "Ла Скала". И потому, что нас было четверо, мы шли кратчайшим путем, через рабочий квартал. Нас ненавидели за то, что мы офицеры, и часто, когда мы проходили мимо, нам кричали из кабачков: "Abasso gli ufficiali!".<a l:href="#n_1" type="note">[1]</a> У пятого, который иногда возвращался из госпиталя вместе с нами, лицо было завязано черным шелковым платком: у него не было носа, и лицо ему должны были исправить. Он пошел на фронт из Военной академии и был ранен через час после того, как попал на линию огня. Лицо ему потом исправили, но он происходил из старинного рода, и носу его так и не смогли придать должную форму. Он уехал в Южную Америку и служил там в банке. Но это было позже, а тогда никто из нас не знал, как сложится жизнь. Мы знали только, что война все еще продолжается, но что для нас она кончена.</p>
+   <p>У всех у нас были одинаковые ордена, кроме юноши с черной шелковой повязкой на лице, а он слишком мало времени пробыл на фронте, чтобы получить орден. Высокий юноша с очень бледным лицом, который готовился в адвокаты, был лейтенантом полка Ардитти и имел три таких ордена, каких у нас было по одному. Он долго пробыл лицом к лицу со смертью и держался особняком. Каждый из нас держался особняком, и нас ничто не связывало, кроме ежедневных встреч в госпитале. И все-таки, когда мы шли к кафе «Кова» через самую опасную часть города, шли в темноте, а из кабачков лился свет и слышалось громкое пение, и когда пересекали улицы, где люди толпились на тротуарах, и нам приходилось расталкивать их, чтобы пройти, — мы чувствовали, что нас связывает то, что мы пережили и чего они, эти люди, которые ненавидят нас, не могут понять.</p>
+   <p>Все было понятно в кафе «Кова», где было тепло и нарядно и не слишком светло, где по вечерам было шумно и накурено, и всегда были девушки за столиками, и иллюстрированные журналы, висевшие по стенам на крючках. Посетительницы кафе «Кова» были большие патриотки. По-моему, в то время самыми большими патриотками в Италии были посетительницы кафе, да они, должно быть, еще и теперь патриотки.</p>
+   <p>Вначале мои спутники вежливо интересовались моим орденом и спрашивали, за что я его получил. Я показал им грамоты, где были написаны пышные фразы и всякие «fratellanza» и "abnegazione",<a l:href="#n_2" type="note">[2]</a> но где на самом деле, если откинуть эпитеты, говорилось, что мне дали орден за то, что я американец. После этого их отношение ко мне несколько изменилось, хоть я и считался другом по сравнению с посторонними. Я был их другом, но меня перестали считать своим с тех пор, как прочли грамоты. У них все было иначе, и получили они свои ордена совсем по-другому. Правда, я был ранен, но все мы хорошо знали, что рана, в конце концов, дело случая. Но все-таки я не стыдился своих отличий и иногда, после нескольких коктейлей, воображал, что сделал все то, за что и они получили свои ордена. Но, возвращаясь поздно ночью под холодным ветром, вдоль пустынных улиц, мимо запертых магазинов, стараясь держаться ближе к фонарям, я знал, что мне никогда бы этого не сделать, и очень боялся умереть, и часто по ночам, лежа в постели, боялся умереть и думал о том, что со мной будет, когда я снова попаду на фронт.</p>
+   <p>Трое с орденами были похожи на охотничьих соколов, а я соколом не был, хотя тем, кто никогда не охотился, я мог бы показаться соколом; но они, все трое, отлично это понимали, и мы постепенно разошлись. С юношей, который был ранен в первый же день на фронте, мы остались друзьями, потому что теперь он уже не мог узнать, что из него вышло бы; поэтому его тоже не считали своим, и он нравился мне тем, что из него тоже, может быть, не вышло бы сокола.</p>
+   <p>Майор, который раньше был знаменитым фехтовальщиком, не верил в геройство и, пока мы сидели в аппаратах, занимался тем, что поправлял мои грамматические ошибки. Он как-то похвалил мой итальянский язык, и мы с ним подолгу разговаривали по-итальянски. Я сказал, что итальянский язык кажется мне слишком легким, для того чтобы серьезно им заинтересоваться. Все кажется в нем так легко. "О, да, — сказал майор. — Но почему же вы не обращаете внимания на грамматику?" И мы обратили внимайте на грамматику, и скоро итальянский язык оказался таким трудным, что я боялся слово сказать, пока правила грамматики не улягутся у меня в голове.</p>
+   <p>Майор ходил в госпиталь очень аккуратно. Кажется, он не пропустил ни одного дня, хотя, конечно, не верил в аппарат и как-то раз даже сказал, что все это чепуха. Аппараты тогда были новостью, и испытать их должны были на нас. "Идиотская выдумка, — сказал майор. — Бредни, и больше ничего". В тот день я не приготовил урока, и майор сказал, что я просто позор для рода человеческого, а сам он дурак, что возится со мной. Майор был небольшого роста. Он сидел выпрямившись в кресле, его правая рука была в аппарате, и он смотрел прямо перед собой в стену, а ремни, в которых находились его пальцы, с глухим стуком двигалась вверх и вниз.</p>
+   <p>— Что вы будете делать, когда кончится война, если она вообще кончится? — спросил он. — Только не забывайте о грамматике.</p>
+   <p>— Я вернусь в Америку.</p>
+   <p>— Вы женаты?</p>
+   <p>— Нет, но надеюсь жениться.</p>
+   <p>— Ну и глупо, — сказал майор. Казалось, он был очень рассержен. — Человек не должен жениться.</p>
+   <p>— Почему, signor maggiore?</p>
+   <p>— Не называйте меня "signor maggiore".</p>
+   <p>— Но почему человек не должен жениться?</p>
+   <p>— Нельзя ему жениться, нельзя! — сказал он сердито. — Если уж человеку суждено все терять, он не должен еще и это ставить на карту. Он должен найти то, чего нельзя потерять.</p>
+   <p>Майор говорил раздраженно и озлобленно и смотрел в одну точку прямо перед собой.</p>
+   <p>— Но почему же он непременно должен потерять?</p>
+   <p>— Потеряет, — сказал майор. Он смотрел в стену. Потом посмотрел на аппарат, выдернул свою высохшую руку из ремней и с силой ударил ею по ноге. — Потеряет, — закричал он. — Не спорьте со мною! — Потом он подозвал санитара: — Остановите эту проклятую штуку.</p>
+   <p>Он пошел в другую комнату, где лечили светом и массажем. Я слышал, как он попросил у врача разрешения позвонить по телефону и закрыл за собою дверь. Когда он опять вошел в комнату, я сидел уже в другом аппарате. На нем были плащ и кепи. Он подошел ко мне и положил руку мне на плечо.</p>
+   <p>— Извините меня, — сказал он и потрепал меня по плечу здоровой рукой. — Я не хотел быть грубым. Только что моя жена умерла. Простите меня.</p>
+   <p>— Боже мой, — сказал я, чувствуя острую боль за него, — какое несчастье.</p>
+   <p>Он стоял около меня, кусая губы.</p>
+   <p>— Очень это трудно, — сказал он. — Не могу примириться. — Он смотрел мимо меня в окно. Потом заплакал. — Никак не могу примириться, — сказал он, и голос его прервался. Потом, не переставая плакать, подняв голову и ни на что не глядя, с мокрым от слез лицом, кусая, губы, держась по-военному прямо, он прошагал мимо аппаратов и вышел из комнаты.</p>
+   <p>Врач рассказал мне, что жена майора, которая была очень молода и на которой он женился только после того, как был окончательно признан негодным для военной службы, умерла от воспаления легких. Болезнь продолжалась всего несколько дней. Никто не ожидал, что она умрет. Майор три дня не приходил в госпиталь. Затем в обычный час он снова пришел с черной повязкой на рукаве мундира. За это время на стенах появились большие снимки всяких ран до и после лечения аппаратами. Перед аппаратом майора висели три снимка, на которых были руки, такие же, как у него, ставшие вполне нормальными после лечения. Не знаю, где врач достал эти снимки. Я всегда думал, что нас первых лечат этими аппаратами. Но майору снимки не внушали никакой надежды, — он смотрел мимо них, в окно.</p>
+  </section>
+ </body>
+ <body name="notes">
+  <title>
+   <p>Примечания</p>
+  </title>
+  <section id="n_1">
+   <title>
+    <p>1</p>
+   </title>
+   <p>"Долой офицеров!" (итал.)</p>
+  </section>
+  <section id="n_2">
+   <title>
+    <p>2</p>
+   </title>
+   <p>"Братство" и «самоотверженность» (итал.)</p>
+  </section>
+ </body>
+ <binary id="hemingway111.jpg" content-type="image/jpeg">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</binary>
+</FictionBook>
