@@ -105,6 +105,8 @@ def add_book_to_main_table(book_id, book_stats):
     item['avr_sentence_len'] = book_stats['num_of_words'] / book_stats['num_of_sentences']
     item['avr_dialogues'] = book_stats['num_of_dialogues'] / item['num_of_paragraphs']
 
+    item['_id'] = book_id
+
     db.books.insert_one(item)
     print ('Book %s added to database' % (book_id))
     return
@@ -284,12 +286,12 @@ def count_new_vocabulary(book_id: str) -> None:
 
 
 def count_new_vocabulary_for_windows(book_id: str) -> None:
-    windows = db[book_id + '_window'].find()
+    windows = db[book_id + '_pages'].find()
     for window in windows:
         window_vocabulary = 0
         for i in range(window['_id'], window['end_id'] + 1):
             window_vocabulary += db[book_id].find_one({'_id': i})['new_words_count']
-        db[book_id + '_window'].update({'_id': window['_id']},
+        db[book_id + '_pages'].update({'_id': window['_id']},
                            {'$set': {'new_words_count': window_vocabulary}})
 
 
@@ -325,7 +327,7 @@ def count_sentiment(book_id: str) -> None:
 
 
 def count_sentiment_for_windows(book_id: str) -> None:
-    windows = db[book_id + '_window'].find()
+    windows = db[book_id + '_pages'].find()
     for window in windows:
         window_sentiment = 0
         sentiment_words_portion = 0
@@ -333,7 +335,7 @@ def count_sentiment_for_windows(book_id: str) -> None:
             window_sentiment += db[book_id].find_one({'_id': i})['sum_sentiment']
             sentiment_words_portion += db[book_id].find_one({'_id': i})['sentiment_words_portion']
         sentiment_words_portion /= (window['end_id'] - window['_id'] + 1)
-        db[book_id + '_window'].update({'_id': window['_id']},
+        db[book_id + '_pages'].update({'_id': window['_id']},
                            {'$set': {'sum_sentiment': window_sentiment,
                                      'sentiment_words_portion': sentiment_words_portion}})
 
@@ -361,19 +363,19 @@ def count_labels_portion(book_id) -> None:
 
 
 def count_labels_for_windows(book_id: str) -> None:
-    windows = db[book_id + '_window'].find()
+    windows = db[book_id + '_pages'].find()
     for window in windows:
         words_with_labels = 0
         for i in range(window['_id'], window['end_id'] + 1):
             words_with_labels += db[book_id].find_one({'_id': i})['words_with_labels']
         labels = words_with_labels / window['num_of_words']
-        db[book_id + '_window'].update({'_id': window['_id']},
+        db[book_id + '_pages'].update({'_id': window['_id']},
                            {'$set': {'labels_portion': labels,
                                      'words_with_labels': words_with_labels}})
 
 
 def get_disjoint_windows_ids(book_id) -> None:
-    table = book_id + '_window'
+    table = book_id + '_pages'
     X, Y = [], []
     i = 0
     collection_size = db[table].find().count()
@@ -392,7 +394,7 @@ def get_disjoint_windows_ids(book_id) -> None:
 
 def count_word2vecs_for_windows(book_id: str, model) -> None:
     print ('Building word2vec vectors...')
-    windows = db[book_id + '_window'].find()
+    windows = db[book_id + '_pages'].find()
     window_vector = np.zeros(model.vector_size)
 
     for window in windows:
@@ -414,7 +416,7 @@ def count_word2vecs_for_windows(book_id: str, model) -> None:
 
         window_vector /= words_count
         window_vector = window_vector.tolist()
-        db[book_id + '_window'].update({'_id': window['_id']},
+        db[book_id + '_pages'].update({'_id': window['_id']},
                                        {'$set': {'vector': window_vector}})
     return
 
@@ -422,7 +424,7 @@ def count_word2vecs_for_windows(book_id: str, model) -> None:
 def count_begin_end_window_percentage(book_id: str) -> None:
     # [begin, end)
     print ('Begin to count percentages for windows')
-    windows = db[book_id + '_window'].find()
+    windows = db[book_id + '_pages'].find()
     book = db.books.find_one({'_id': book_id})
     total_words = book['num_of_words']
 
@@ -430,7 +432,7 @@ def count_begin_end_window_percentage(book_id: str) -> None:
     for window in windows:
         begin = cur
         end = begin + float(window['num_of_words']) / float(total_words)
-        db[book_id + '_window'].update({'_id': window['_id']},
+        db[book_id + '_pages'].update({'_id': window['_id']},
                                        {'$set': {'from_percent': begin * 100,
                                                  'to_percent': end * 100}})
         cur = end
