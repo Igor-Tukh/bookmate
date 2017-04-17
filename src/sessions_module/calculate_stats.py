@@ -1,7 +1,8 @@
 import pickle
+import pandas as pd
 
 books_users_dict = pickle.load(open("dumps/book-users-dict.pk", "rb"))
-users_books_dict = pickle.load(open("dumps/user_books-dict.pk", "rb"))
+# users_books_dict = pickle.load(open("../dumps/user_books-dict.pk", "rb"))
 
 
 def get_most_popular_books(n):
@@ -73,4 +74,16 @@ def get_core_books_users(n_books, m_users):
     print(len(result))
 
 
-# print(get_most_popular_books(60)[30:59])
+most_popular_books = get_most_popular_books(1000)
+all_books = pd.read_csv('meta/books.csv')
+place = 1
+for book in most_popular_books:
+    book_id = book[1]
+    if book_id != None:
+        book_row = all_books[all_books['id'] == book_id]
+        try:
+            book_row = list(book_row.values)[0]
+            print ('%d. %s, %s, %s, %d' % (place, str(book_row[0]), str(book_row[1]), str(book_row[3]), book[0]))
+            place += 1
+        except:
+            continue

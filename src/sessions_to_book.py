@@ -3,7 +3,7 @@ import datetime
 
 
 READINGS_DB = 'readings'
-BOOKS_DB = 'books'
+BOOKS_DB = 'bookmate'
 log_step = 100000
 
 
@@ -31,25 +31,25 @@ def convert_sessions_time(book_id):
 
 
 def calculate_session_speed(book_id, user_id):
-    db = connect_to_mongo_database(BOOKS_DB)
+    db = connect_to_mongo_database(READINGS_DB)
     sessions_collection = db[book_id]
-    sessions = sessions_collection.find({'user_id': user_id})
+    sessions = db[book_id].find({'user_id': user_id})
 
     total_symbols = 0
     total_time = 0
 
     for session in sessions:
-        previous_session = sessions_collection.find({'to_percent': session['from_percent'],
+        previous_session = sessions_collection.find({'_to': session['_from'],
                                                      'user_id': user_id,
-                                                     '_id': { '$lte': session['_id']}})
+                                                     'read_at': { '$lte': session['read_at']}})
         stats = dict()
         stats['session_time'] = -1
         if previous_session.count() > 0:
-            previous_session = sessions_collection.find_one({'to_percent': session['from_percent'],
+            previous_session = sessions_collection.find_one({'_to': session['_from'],
                                                              'user_id': user_id})
             if session['size'] > 0:
                 stats['symbols'] = session['size']
-                stats['session_time'] = (float)((session['_id'] - previous_session['_id']).total_seconds() / 60)
+                stats['session_time'] = (float)((session['read_at'] - previous_session['read_at']).total_seconds() / 60)
                 stats['speed'] = stats['symbols'] / stats['session_time']
 
                 total_symbols += stats['symbols']
@@ -59,21 +59,23 @@ def calculate_session_speed(book_id, user_id):
                                    {'$set': stats})
 
     avr_speed = total_symbols / total_time
-    unknown_sessions = sessions_collection.find({'session_time': 1})
+    unknown_sessions = sessions_collection.find({'session_time': -1})
     for session in unknown_sessions:
         sessions_collection.update({'_id': session['_id']},
                        {'$set': {'speed': avr_speed}})
 
 
 def process_sessions_to_pages(book_id, user_id):
+    if user_id == 'None':
+        print ('User ID cannot be None!')
+        return
+
     db_sessions = connect_to_mongo_database(READINGS_DB)
     db_books = connect_to_mongo_database(BOOKS_DB)
 
     # FIXME remove this after successful work
     # copy collection for easy work
     book_sessions_collection = book_id + '_sessions'
-
-    user_sessions = db_sessions[book_id].find({'user_id': user_id})
     book_pages = db_books[book_id + '_pages'].find()
 
     for page in book_pages:
@@ -93,7 +95,7 @@ def process_sessions_to_pages(book_id, user_id):
             if initial_session['_to'] < page['to_percent']:
                 session['_to'] = initial_session['_to']
             else:
-                session['_to'] = page['_to']
+                session['_to'] = page['to_percent']
             session['size'] = session['_to'] - session['_from']
 
             page['sessions'][user_id].append(session)
@@ -125,6 +127,10 @@ def process_sessions_to_pages(book_id, user_id):
             session['size'] = session['_to'] - session['_from']
             session['speed'] = initial_session['speed']
             page['sessions'][user_id].append(session)
+
+        db_books[book_sessions_collection].remove({'_id': page['_id']})
+        db_books[book_sessions_collection].insert(page)
+        print ('Page {%s} updated with {%d} sessions.' % (page['_id'], pages_sessions.count()))
 
 
 def get_book_users(book_id):
@@ -158,6 +164,13 @@ def filter_book_core_users(book_id):
     print('Users in the {%s book} collection: {%d}' % (book_id, len(users)))
 
 
-filter_book_core_users('210901')
+book_id = '210901'
+control_users = get_book_users(book_id)[0:20]
+print (control_users)
+for user_id in control_users:
+    if user_id != None:
+        calculate_session_speed(book_id, user_id)
+        print ('Session speed calculated for user {%s}' % user_id)
+process_sessions_to_pages(book_id, control_users[1])
 
 
