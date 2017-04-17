@@ -35,13 +35,13 @@ def config(item):
     return re.sub('{[^>]+}', '', item)
 
 
-def connect_to_database_books_collection() -> None:
+def connect_to_database_books_collection():
     client = MongoClient('localhost', 27017)
     global db
     db = client.bookmate
 
 
-def get_athor_information(description) -> dict():
+def get_athor_information(description):
     first_name = 'None'
     second_name = 'None'
     middle_name = 'None'
@@ -63,7 +63,7 @@ def get_athor_information(description) -> dict():
     return author
 
 
-def number_of_words(text: str) -> int:
+def number_of_words(text):
     '''
     :param text: Text from one paragraph
     :return: Number of words in text exclude the punctuation
@@ -76,7 +76,7 @@ def number_of_words(text: str) -> int:
         return 0
 
 
-def number_of_sentences(text: str) -> int:
+def number_of_sentences(text):
     try:
         sentences = nltk.sent_tokenize(text)
         return len(sentences)
@@ -154,7 +154,7 @@ def process_book_simple_features_by_paragraph(book, _id):
     return book_stats
 
 
-def build_pages_table(book_id: str, window_size = 2000):
+def build_pages_table(book_id, window_size = 2000):
     # divide book into pages of ~1000 words till the end of the sentence
     collection_name = book_id + '_pages'
     book_table = db[book_id]
@@ -165,7 +165,7 @@ def build_pages_table(book_id: str, window_size = 2000):
     return
 
 
-def count_simple_text_features(text: str) -> dict():
+def count_simple_text_features(text):
     if text is None:
         return None
     if len(text) == 0:
@@ -190,7 +190,7 @@ def count_simple_text_features(text: str) -> dict():
     return stats
 
 
-def count_window_features(book_table: str, beginId: int, window_size: int) -> None:
+def count_window_features(book_table, beginId, window_size):
     window = dict()
     text = ''
     paragraphs = 0
@@ -239,7 +239,7 @@ def count_window_features(book_table: str, beginId: int, window_size: int) -> No
     return window
 
 
-def count_morphological_stats(text: str) -> None:
+def count_morphological_stats(text):
     words = nltk.word_tokenize(text)
     morphological_stats = dict()
     morphological_stats['person_verbs_num'] = 0
@@ -264,7 +264,7 @@ def count_morphological_stats(text: str) -> None:
     return morphological_stats
 
 
-def count_new_vocabulary(book_id: str) -> None:
+def count_new_vocabulary(book_id):
     print("Counting new vocabluary")
     new_vocabulary = dict()
     items = db[book_id].find()
@@ -285,7 +285,7 @@ def count_new_vocabulary(book_id: str) -> None:
     return
 
 
-def count_new_vocabulary_for_windows(book_id: str) -> None:
+def count_new_vocabulary_for_windows(book_id):
     windows = db[book_id + '_pages'].find()
     for window in windows:
         window_vocabulary = 0
@@ -295,7 +295,7 @@ def count_new_vocabulary_for_windows(book_id: str) -> None:
                            {'$set': {'new_words_count': window_vocabulary}})
 
 
-def count_sentiment(book_id: str) -> None:
+def count_sentiment(book_id):
     print("Begin sentiment processing")
     items = db[book_id].find()
     with open('../resources/sentiment_dictionary.json', 'r') as f:
@@ -326,7 +326,7 @@ def count_sentiment(book_id: str) -> None:
                                      'sentiment_words_portion': sentiment_words_proportion}})
 
 
-def count_sentiment_for_windows(book_id: str) -> None:
+def count_sentiment_for_windows(book_id):
     windows = db[book_id + '_pages'].find()
     for window in windows:
         window_sentiment = 0
@@ -340,7 +340,7 @@ def count_sentiment_for_windows(book_id: str) -> None:
                                      'sentiment_words_portion': sentiment_words_portion}})
 
 
-def count_labels_portion(book_id) -> None:
+def count_labels_portion(book_id):
     # count part of words with labels in each window/paragraph
     print ('Begin labels processing')
     with open('../resources/word_to_labels.json', 'r') as f:
@@ -362,7 +362,7 @@ def count_labels_portion(book_id) -> None:
                                      'words_with_labels': words_with_labels}})
 
 
-def count_labels_for_windows(book_id: str) -> None:
+def count_labels_for_windows(book_id):
     windows = db[book_id + '_pages'].find()
     for window in windows:
         words_with_labels = 0
@@ -374,7 +374,7 @@ def count_labels_for_windows(book_id: str) -> None:
                                      'words_with_labels': words_with_labels}})
 
 
-def get_disjoint_windows_ids(book_id) -> None:
+def get_disjoint_windows_ids(book_id):
     table = book_id + '_pages'
     X, Y = [], []
     i = 0
@@ -392,7 +392,7 @@ def get_disjoint_windows_ids(book_id) -> None:
             db[table].remove({'_id': window['_id']})
 
 
-def count_word2vecs_for_windows(book_id: str, model) -> None:
+def count_word2vecs_for_windows(book_id, model):
     print ('Building word2vec vectors...')
     windows = db[book_id + '_pages'].find()
     window_vector = np.zeros(model.vector_size)
@@ -421,7 +421,7 @@ def count_word2vecs_for_windows(book_id: str, model) -> None:
     return
 
 
-def count_begin_end_window_percentage(book_id: str) -> None:
+def count_begin_end_window_percentage(book_id):
     # [begin, end)
     print ('Begin to count percentages for windows')
     windows = db[book_id + '_pages'].find()

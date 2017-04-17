@@ -83,7 +83,7 @@ for book in most_popular_books:
         book_row = all_books[all_books['id'] == book_id]
         try:
             book_row = list(book_row.values)[0]
-            print ('%d. %s, %s, %s, %d' % (place, str(book_row[0]), str(book_row[1]), str(book_row[3]), book[0]))
+            print ('%d. %s, %s, %s, %s, %d' % (place, str(book_row[0]), str(book_row[1]), str(book_row[2]), str(book_row[3]), book[0]))
             place += 1
         except:
             continue
