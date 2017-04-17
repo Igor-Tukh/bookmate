@@ -1,5 +1,6 @@
 import pickle
 import pandas as pd
+import meta_indexes
 
 books_users_dict = pickle.load(open("dumps/book-users-dict.pk", "rb"))
 # users_books_dict = pickle.load(open("../dumps/user_books-dict.pk", "rb"))
@@ -74,16 +75,32 @@ def get_core_books_users(n_books, m_users):
     print(len(result))
 
 
-most_popular_books = get_most_popular_books(1000)
-all_books = pd.read_csv('meta/books.csv')
-place = 1
-for book in most_popular_books:
-    book_id = book[1]
-    if book_id != None:
-        book_row = all_books[all_books['id'] == book_id]
-        try:
-            book_row = list(book_row.values)[0]
-            print ('%d. %s, %s, %s, %s, %d' % (place, str(book_row[0]), str(book_row[1]), str(book_row[2]), str(book_row[3]), book[0]))
-            place += 1
-        except:
-            continue
+
+def print_top_books():
+    most_popular_books = get_most_popular_books(1000)
+    all_books = pd.read_csv('meta/books.csv')
+    books, subjects, users = meta_indexes.load()
+    place = 1
+    for book in most_popular_books:
+        book_id = book[1]
+        if book_id != None:
+            genres = meta_indexes.get_genres(book_id, books)
+            for i in range(0, len(genres)):
+                genres[i] = meta_indexes.genres[genres[i]]
+            isFiction = ''
+            if meta_indexes.is_fiction(book_id, books):
+                isFiction = 'fiction'
+            else:
+                isFiction = 'non-fiction'
+            book_row = all_books[all_books['id'] == book_id]
+            try:
+                book_row = list(book_row.values)[0]
+                print ('%d. %s, %s, %s, %s symbols, %d users, genres: %s, %s' % (place, str(book_row[0]), str(book_row[1]),
+                                                                             str(book_row[2]), str(book_row[3]), book[0],
+                                                                             str(genres), isFiction))
+                place += 1
+            except:
+                continue
+
+
+print_top_books()
