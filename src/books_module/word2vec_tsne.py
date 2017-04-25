@@ -15,7 +15,7 @@ def tsne_for_windows(book_id: str) -> list():
     db = connect_to_database_books_collection()
     table_name = book_id + '_window'
     windows = db[table_name].find()
-    model = TSNE(learning_rate=100, n_components=2, random_state=0)
+    model = TSNE(learning_rate=10, n_components=2, perplexity=7, n_iter=10000)
     np.set_printoptions(suppress=True)
 
     vectors_list = list()
