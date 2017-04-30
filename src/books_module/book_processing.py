@@ -68,6 +68,7 @@ def process_book(book, _id, page_size):
     page_stats = PageStats()
     page_stats.begin_symbol_pos = position
     section_flag = False  # if we are inside section or not
+    section_num = 1
     for item in root.iter():
         if config(item.tag) == 'section':
             if not section_flag:
@@ -79,22 +80,28 @@ def process_book(book, _id, page_size):
                     continue
                 page_stats.end_of_section = True
                 page_stats._id = id
+                page_stats.section_num = section_num
+                page_stats.clear_text += '\n'
                 book_table.insert(page_stats.to_dict())
                 position += page_stats.symbols_num + 1
                 page_stats = PageStats()
                 page_stats.begin_symbol_pos = position
                 id += 1
+                section_num += 1
                 continue
 
         if config(item.tag) == 'p':
             update_page_stats(page_stats, item.text)
             page_stats.p_num += 1
+            page_stats.section_num = section_num
             update_book_stats(book_stats, page_stats)
 
         if page_stats.symbols_num >= page_size:
             page_stats._id = id
             book_stats.pages_num += 1
             position += page_stats.symbols_num + 1
+            page_stats.section_num += 1
+            page_stats.clear_text += '\n'
             book_table.insert(page_stats.to_dict())
             page_stats = PageStats()
             page_stats.begin_symbol_pos = position
@@ -153,6 +160,7 @@ def count_morphological_features(page_stats, text):
                 page_stats.person_verbs_num += 1
             if p.normal_form in person_pronouns_list:
                 page_stats.person_pronouns_num += 1
+            page_stats.clear_text += p.normal_form + ' '
             # use break here to process only most possible word form
             break
 

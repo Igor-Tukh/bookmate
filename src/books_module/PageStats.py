@@ -22,7 +22,8 @@ class PageStats(object):
         self.p_num = 0
         self._to = 0
         self._from = 0
-        self.clear_text = 0
+        self.clear_text = ''
+        self.section_num = 0
 
     def to_dict(self):
         return self.__dict__
