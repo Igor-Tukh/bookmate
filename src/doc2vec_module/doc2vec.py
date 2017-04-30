@@ -1,5 +1,5 @@
 from gensim.models import Doc2Vec
-from gensim.models.doc2vec import LabeledSentence
+from gensim.models.doc2vec import TaggedDocument
 import glob
 import os
 import json
@@ -27,6 +27,7 @@ def iterate_lemmatized_sentences(parsed_text):
 
 
 class FlibustaMystemmedSentences(object):
+    sentences = list()
     def __iter__(self):
         mystem_out_filenames = glob.glob('mystem_out/*.mystem.out')
         step = 100
@@ -35,19 +36,21 @@ class FlibustaMystemmedSentences(object):
             flibusta_id = filename.split('/')[-1].split('.')[0]
             symbols = 0
             max_symbols = 1000
-            stop = False
             with open(filename, 'r') as paragraphs:
+                page_num = 1
+                page = ''
                 for paragraph in paragraphs:
                     paragraph = paragraph[:-1]
                     for sentence in iterate_lemmatized_sentences(paragraph):
                         symbols += sum(len(x) for x in sentence)
-                        if symbols <= max_symbols:
-                            yield LabeledSentence(sentence, [flibusta_id])
-                        else:
-                            stop = True
-                            break
-                    if stop:
-                        break
+                        for x in sentence:
+                            page += x + ' '
+                        if symbols >= max_symbols:
+                            yield TaggedDocument(page, ['%s_%d' % (flibusta_id, page_num)])
+                            page_num += 1
+                            page = ''
+                            symbols = 0
+                yield TaggedDocument(page, [str(flibusta_id) + '_' + str(page_num)])
             index += 1
             if index % step == 0:
                 print('{0} books processed'.format(index))
@@ -57,6 +60,7 @@ class FlibustaMystemmedSentences(object):
         self._sentences = []
         for sentence in self:
             self._sentences.append(sentence)
+            print (sentence)
         print('Collecting done')
 
     @property
