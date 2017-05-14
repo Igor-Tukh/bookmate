@@ -91,10 +91,9 @@ def process_book(book, _id, page_size):
                 continue
 
         if config(item.tag) == 'p':
-            update_page_stats(page_stats, item.text)
             page_stats.p_num += 1
             page_stats.section_num = section_num
-            update_book_stats(book_stats, page_stats)
+            update_page_stats(page_stats, item.text)
 
         if page_stats.symbols_num >= page_size:
             page_stats._id = id
@@ -103,6 +102,7 @@ def process_book(book, _id, page_size):
             page_stats.section_num += 1
             page_stats.clear_text += '\n'
             book_table.insert(page_stats.to_dict())
+            update_book_stats(book_stats, page_stats)
             page_stats = PageStats()
             page_stats.begin_symbol_pos = position
             id += 1
@@ -248,6 +248,20 @@ def count_labels_portion(book_id):
                                      'labeled_words_num': words_with_labels}})
 
 
+def count_percents_for_pages(book_id):
+    print ('Percentage calculation begins...')
+    db = connect_to_database_books_collection()
+    pages = db['%s_pages' % book_id].find()
+    book = db['books'].find_one({'_id': book_id})
+    _from, _to = 0.0, 0.0
+    for page in pages:
+        _from = _to
+        _to = _from + page['symbols_num'] / book['symbols_num']
+        db['%s_pages' % book_id].update({'_id': page['_id']},
+                                        {'$set': {'_from': _from * 100.0,
+                                                  '_to': _to * 100.0}})
+
+
 def main():
 
     parser = argparse.ArgumentParser(description='Book(s) processing script')
@@ -263,10 +277,11 @@ def main():
         except:
             continue
         start_time = timeit.default_timer()
-        book_xml = ET.XML(book)
-        process_book(book_xml, book_id, 1000)
-        count_new_vocabulary(book_id)
-        count_sentiment(book_id)
+        # book_xml = ET.XML(book)
+        # process_book(book_xml, book_id, 1000)
+        # count_new_vocabulary(book_id)
+        # count_sentiment(book_id)
+        count_percents_for_pages(book_id)
         elapsed = timeit.default_timer() - start_time
         print('Book with id %s was processed in %s seconds \n' % (book_id, str(elapsed)))
 
