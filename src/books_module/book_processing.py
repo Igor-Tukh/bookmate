@@ -57,9 +57,9 @@ def number_of_sentences(text):
 
 
 def process_book(book, _id, page_size):
-    print ("Process book text now.")
+    print ("\nProcess book text now.")
     db = connect_to_database_books_collection()
-    book_table = db[str(_id)]
+    book_table = db['%s_pages' % str(_id)]
     book_stats = BookStats()
     book_stats._id = str(_id)
     root = ET.ElementTree(book).getroot()
@@ -169,7 +169,7 @@ def count_new_vocabulary(book_id):
     print("Process new vocabulary now.")
     new_vocabulary = dict()
     db = connect_to_database_books_collection()
-    items = db[book_id].find()
+    items = db['%s_pages' % book_id].find()
     for item in items:
         new_words_count = 0
         words = nltk.word_tokenize(item['text'])
@@ -189,7 +189,7 @@ def count_new_vocabulary(book_id):
 def count_sentiment(book_id):
     print("Process sentiment now.")
     db = connect_to_database_books_collection()
-    items = db[book_id].find()
+    items = db['%s_pages' % book_id].find()
     with open('../resources/sentiment_dictionary.json', 'r') as f:
         sentiment_dict = json.load(f)
 
@@ -229,7 +229,7 @@ def count_labels_portion(book_id):
     with open('../resources/word_to_labels.json', 'r') as f:
         words_to_labels = json.load(f)
     db = connect_to_database_books_collection()
-    items = db[book_id].find()
+    items = db['%s_pages' % book_id].find()
     for item in items:
         text = item['text']
         labels = 0
@@ -265,7 +265,6 @@ def count_percents_for_pages(book_id):
 def main():
 
     parser = argparse.ArgumentParser(description='Book(s) processing script')
-    parser.add_argument("-file", type=str, help='Path to file with fb2 book source')
     parser.add_argument("-folder", type=str, help="Path to folder with fb2 books sources")
     args = parser.parse_args()
     connect_to_database_books_collection()
@@ -277,10 +276,10 @@ def main():
         except:
             continue
         start_time = timeit.default_timer()
-        # book_xml = ET.XML(book)
-        # process_book(book_xml, book_id, 1000)
-        # count_new_vocabulary(book_id)
-        # count_sentiment(book_id)
+        book_xml = ET.XML(book)
+        process_book(book_xml, book_id, 1000)
+        count_new_vocabulary(book_id)
+        count_sentiment(book_id)
         count_percents_for_pages(book_id)
         elapsed = timeit.default_timer() - start_time
         print('Book with id %s was processed in %s seconds \n' % (book_id, str(elapsed)))

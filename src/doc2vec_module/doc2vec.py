@@ -107,7 +107,7 @@ def build_and_store_word_map():
 sentences = FlibustaMystemmedSentences()
 sentences.collect_data()
 
-model = Doc2Vec(workers=8, window=10, size=300, negative=5, iter=1)
+model = Doc2Vec(workers=8, window=10, size=300, negative=5, iter=5)
 
 print('Building vocabulary started')
 model.build_vocab(sentences.data)
@@ -117,7 +117,7 @@ print('Training started')
 for epoch in range(10):
     print('Epoch #{0}'.format(epoch))
     sentences.shuffle()
-    model.train(sentences.data)
+    model.train(sentences.data, total_examples=model.corpus_count, epoch=model.iter)
 print('Training done')
 
 model.save('flbst.d2v')
