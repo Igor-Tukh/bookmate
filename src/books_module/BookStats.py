@@ -10,6 +10,7 @@ class BookStats():
         self.pages_num = 0
         self.avr_word_len = 0.0
         self.avr_dialogs_part = 0.0
+        self.text = ''
 
     def to_dict(self):
         return self.__dict__
