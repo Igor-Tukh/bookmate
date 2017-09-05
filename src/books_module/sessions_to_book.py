@@ -704,7 +704,7 @@ def count_number_of_users(book_id):
 def count_number_of_stops_per_border(book_id):
     db = connect_to_mongo_database(BOOKS_DB)
 
-    all_users_number = len(db[book_id].find().distinct('user_id'))
+    all_users_number = len(db['%s_target' % book_id].find().distinct('user_id'))
     borders = db['%s_borders' % book_id].find({'avr_abs_speed': {'$exists': True}})
     counter = 0
     symbols, users_num = list(), list()
@@ -806,9 +806,9 @@ def full_book_process(book_id):
                         borders_sessions_num=[0 for i in range(len(all_borders))])
 
 
-book_id = '2207'
-full_book_process(book_id)
-aggregate_borders(book_id, symbols_num=1000)
-plot_book_abs_speed(book_id)
+book_id = '2206'
+# full_book_process(book_id)
+# aggregate_borders(book_id, symbols_num=1000)
+# plot_book_abs_speed(book_id)
 count_number_of_stops_per_border(book_id)
 count_speed_stats_per_border(book_id)

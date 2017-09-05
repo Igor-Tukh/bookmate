@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from pymongo import MongoClient
 import numpy as np
+import json
 
 BOOKS_DB = 'bookmate'
 
@@ -63,7 +64,7 @@ def plot_abs_speed_plus_stats(book_id, stats):
     plt.savefig('images/%s_speed_stats.png' % book_id)
 
 
-def plot_stats(stats):
+def plot_stats(book_id, stats):
     db = connect_to_mongo_database(BOOKS_DB)
     pages = db['%s_pages' % book_id].find()
 
@@ -102,16 +103,47 @@ def get_correlation(book_id, stats):
         correlation = np.corrcoef(speed, values)[0][1]
         file.write('[speed] and [%s]: %.3f \n' % (stat, correlation))
 
-book_ids = ['2289']
+
+def merge_speed_to_pages(book_id):
+    db = connect_to_mongo_database(BOOKS_DB)
+    borders = db['%s_borders' % book_id].find({'avr_abs_speed': {'$exists': True}})
+    pages = db['%s_pages' % book_id].find()
+
+    for (page, border) in zip(pages, borders):
+        db['%s_pages' % book_id].update({'_id': page['_id']},
+                              {'$set': {
+                                  'avr_abs_speed': border['avr_abs_speed'],
+                                  # 'users_in_page': border['users_in_border'],
+                                  # 'users_part_in_page': border['users_part_in_border'],
+                                  # 'skip_part': border['skip_part']
+                              }})
+    return
+
+
+def tsne_to_pages(book_id):
+    db = connect_to_mongo_database(BOOKS_DB)
+    pages = db['%s_pages' % book_id].find()
+    with open('tsne/%s.txt' % book_id) as tsne_file:
+        tsne = json.load(tsne_file)
+
+    projections = tsne[0]['projections']
+    for (projection, page) in zip(projections, pages):
+        db['%s_pages' % book_id].update({'_id': page['_id']},
+                                        {'$set': {'tsne_x': projection['tsne-0'],
+                                                  'tsne_y': projection['tsne-1']}})
+
+book_ids = ['2206']
 for book_id in book_ids:
-    # plot_abs_speed_plus_stats(book_id, ['person_verbs_part', 'labeled_word_part', 'dialogs_part',
-    #                                     'sentiment_word_part'])
-    # plot_stats(['avr_word_len'])
+    merge_speed_to_pages(book_id)
+    # tsne_to_pages(book_id)
+    # plot_stats(book_id, ['avr_abs_speed', 'person_verbs_part', 'labeled_word_part', 'dialogs_part',
+    #                                     'sentiment_words_portion'])
+    # plot_stats(book_id, ['avr_word_len'])
     get_correlation(book_id, ['avr_word_len',
                               'person_verbs_part',
                               'labeled_word_part',
                               'dialogs_part',
-                              'sentiment_word_part',
+                              'sentiment_words_portion',
                               'words_num',
                               'sentences_num',
                               'p_num',

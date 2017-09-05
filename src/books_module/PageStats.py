@@ -15,7 +15,6 @@ class PageStats(object):
         self.end_of_section = False
         self.begin_of_section = False
         self.new_words_count = 0
-        self.sentiment_word_part = 0.0
         self.labeled_word_part = 0.0
         self.labeled_word_num = 0
         self.begin_symbol_pos = 0

@@ -47,7 +47,8 @@ def smooth_points(Y, N=10):
 
     return new_Y
 
-def config(item):
+
+def get_tag(item):
     # Some magic with xml tags
     return re.sub('{[^>]+}', '', item)
 
@@ -83,7 +84,7 @@ def get_book_size_in_symbols(book, book_id):
 
     full_book_text = ''
     for item in root.iter():
-        if config(item.tag) == 'p':
+        if get_tag(item.tag) == 'p':
             if item.text is None:
                 continue
             full_book_text += item.text + ' '
@@ -103,7 +104,7 @@ def process_book(book, book_id):
     db = connect_to_database_books_collection()
     book_table = db['%s_pages' % str(book_id)]
     root = ET.ElementTree(book).getroot()
-    borders = db['%s_borders' % book_id].find({'avr_abs_speed': {'$exists': True}})
+    borders = db['%s_borders' % book_id].find({'avr_abs_speed': {'$exists': True}}).sort('symbol_from')
 
     position = Int64(0)
     page_stats = PageStats()
@@ -114,7 +115,7 @@ def process_book(book, book_id):
 
     for item in root.iter():
         # if len(current_text) <= current_border['symbol_to']:
-        if config(item.tag) == 'p':
+        if get_tag(item.tag) == 'p':
             if item.text is None:
                 continue
             else:
@@ -129,10 +130,10 @@ def process_book(book, book_id):
                 if len(full_text) >= current_border['symbol_to']:
                     page_stats._id = current_border['page']
                     update_page_stats(page_stats, page_stats.text)
-                    get_full_page_stats(page_stats)
                     page_stats._from = position
                     page_stats._to = page_stats._from + page_stats.symbols_num
                     page_stats.clear_text += '\n'
+                    get_full_page_stats(page_stats)
                     book_table.insert(page_stats.to_dict())
                     position = page_stats._to + 1
 
@@ -143,6 +144,7 @@ def process_book(book, book_id):
                     try:
                         current_border = borders.next()
                     except Exception:
+                        print ('Last page calculated')
                         return
 
                 else:
@@ -169,10 +171,13 @@ def get_full_book_stats(book_stats):
 
 
 def get_full_page_stats(page_stats):
-    page_stats.person_verbs_part = page_stats.person_verbs_num / page_stats.words_num
-    page_stats.dialogs_part = page_stats.dialogs_num / page_stats.p_num
-    page_stats.person_pronouns_part = page_stats.person_pronouns_num / page_stats.words_num
-    page_stats.avr_word_len = page_stats.symbols_num / page_stats.words_num
+    try:
+        page_stats.person_verbs_part = page_stats.person_verbs_num / page_stats.words_num
+        page_stats.dialogs_part = page_stats.dialogs_num / page_stats.p_num
+        page_stats.person_pronouns_part = page_stats.person_pronouns_num / page_stats.words_num
+        page_stats.avr_word_len = page_stats.symbols_num / page_stats.words_num
+    except Exception as e:
+        print(e)
 
 
 def count_simple_text_features(page_stats, text):
@@ -230,7 +235,7 @@ def count_sentiment(book_id):
     print("Process sentiment now.")
     db = connect_to_database_books_collection()
     items = db['%s_pages' % book_id].find()
-    with open('../resources/sentiment_dictionary.json', 'r') as f:
+    with open('../../resources/sentiment_dictionary.json', 'r') as f:
         sentiment_dict = json.load(f)
 
     for item in items:
@@ -336,11 +341,11 @@ def main(is_calculate_size, is_process_book):
     connect_to_database_books_collection()
     start_time = timeit.default_timer()
     # book_ids = ['2207', '2289', '2543', '11833', '210901', '259222', '266700', '275066']
-    book_ids = ['2289']
+    book_ids = ['259222']
     if is_calculate_size:
         for book_id in book_ids:
             try:
-                book = open(args.folder + '/' + book_id + '.fb2', encoding='utf-8').read()
+                book = open('/Users/kseniya/Documents/WORK/bookmate/code/resources/in/' + book_id + '.fb2').read()
             except Exception as e:
                 print(e)
                 continue
@@ -349,8 +354,9 @@ def main(is_calculate_size, is_process_book):
 
     if is_process_book:
         for book_id in book_ids:
+            print('Process book [%s]' % book_id)
             try:
-                book = codecs.open(args.folder + '/' + book_id + '.fb2', 'r', encoding='utf-8').read()
+                book = codecs.open('/Users/kseniya/Documents/WORK/bookmate/code/resources/in/' + book_id + '.fb2', 'r').read()
             except Exception as e:
                 print(e)
                 continue
@@ -361,7 +367,7 @@ def main(is_calculate_size, is_process_book):
             count_percents_for_pages(book_id)
             elapsed = timeit.default_timer() - start_time
             print('Book with id %s was processed in %s seconds \n' % (book_id, str(elapsed)))
-            plot_book_stats(book_id)
+
 
 if __name__ == "__main__":
     is_calculate_size = False
