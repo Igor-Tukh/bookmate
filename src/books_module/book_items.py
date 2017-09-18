@@ -21,6 +21,7 @@ def define_sections(book_id, book_file):
     root = ET.ElementTree(book_file).getroot()
     _id = 1
     symbol_from = 0
+
     for item in root.iter():
         if get_tag(item.tag) == 'section':
             section = dict()
@@ -37,6 +38,17 @@ def define_sections(book_id, book_file):
             _id += 1
             symbol_from = symbol_from + section['size'] + 1
 
+    book_size = get_book_size(book_id)
+    sections = db['%s_sections' % book_id].find().sort('symbol_from')
+    for section in sections:
+        percent_from = section['symbol_from'] / book_size * 100
+        percent_to = section['symbol_to'] / book_size * 100
+        db['%s_sections' % book_id].update({'_id': section['_id']},
+                                           {'$set': {
+                                               'percent_from': percent_from,
+                                               'percent_to': percent_to
+                                           }})
+
 
 def get_book_size(book_id):
     db = connect_to_database_books_collection(BOOKMATE_DB)
@@ -44,13 +56,44 @@ def get_book_size(book_id):
     size = 0
     for section in sections:
         size += section['size']
-    print('[%s] size is %d symbols' % (book_id, size))
+    print (size)
+    return size
 
 
 def process_documents(book_id):
     db = connect_to_database_books_collection(BOOKMATE_DB)
     documents = db['%s_items' % book_id].find().distinct('document_id')
 
+    for document_id in documents:
+        document_items = db['%s_items' % book_id].find({'document_id': document_id}).sort('position')
+        document_json = {}
+        document_json['_id'] = str(document_id)
+        document_file_size = 0
+        for item in document_items:
+            document_file_size += item['media_file_size']
+            del item['_id']
+            document_json[str(item['position'])] = item
+
+        document_items = db['%s_items' % book_id].find({'document_id': document_id}).sort('position')
+        summary_size = 0
+        for item in document_items:
+            document_json[str(item['position'])]['percent_from'] = summary_size / document_file_size * 100
+            summary_size += item['media_file_size']
+            document_json[str(item['position'])]['percent_to'] = summary_size / document_file_size * 100
+
+        db['%s_documents' % book_id].insert(document_json)
+
+
+def find_popular_documents(book_id):
+    db = connect_to_database_books_collection(BOOKMATE_DB)
+    documents = db[book_id].find().distinct('document_id')
+
+    docs_num = {}
+    for document_id in documents:
+        docs_num[str(document_id)] = db[book_id].find({'document_id': document_id}).count()
+
+    sorted_dict = [(k, docs_num[k]) for k in sorted(docs_num, key=docs_num.get, reverse=True)]
+    print (sorted_dict[:10])
 
 
 def process_book(book_id):
@@ -58,9 +101,12 @@ def process_book(book_id):
     book_file = '%s/%s.fb2' % (books_folder, book_id)
     book_xml = ET.XML(open(book_file, 'r').read())
 
-    define_sections(book_id, book_xml)
+    # define_sections(book_id, book_xml)
+    process_documents(book_id)
+    # find_popular_documents(book_id)
 
-book_id = '2289'
+
+book_id = '2206'
 process_book(book_id)
 get_book_size(book_id)
 
