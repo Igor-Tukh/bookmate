@@ -96,6 +96,23 @@ def find_popular_documents(book_id):
     print (sorted_dict[:10])
 
 
+def find_active_readers(book_id):
+    db = connect_to_database_books_collection(BOOKMATE_DB)
+    users = db[book_id].find().distinct('user_id')
+
+    readings_num = {}
+    for user_id in readings_num:
+        readings_num[user_id] = db[book_id].find({'user_id': user_id}).count()
+
+    sorted_dict = [(k, readings_num[k]) for k in sorted(readings_num, key=readings_num, reverse=True)]
+    readers = []
+    for reader in sorted_dict:
+        readers.append(reader[0])
+    if len(readers) > 100:
+        return readers[:100]
+    else:
+        return readers
+
 def process_book(book_id):
     books_folder = '/Users/kseniya/Documents/WORK/bookmate/code/resources/in'
     book_file = '%s/%s.fb2' % (books_folder, book_id)
@@ -106,8 +123,8 @@ def process_book(book_id):
     # find_popular_documents(book_id)
 
 
-book_id = '2206'
-process_book(book_id)
+book_id = '2289'
+# process_book(book_id)
 get_book_size(book_id)
 
 

@@ -6,6 +6,7 @@ import bisect
 import math
 
 BOOKS_DB = 'bookmate'
+USERS_DB = 'bookmate_users'
 log_step = 100000
 
 
@@ -622,7 +623,7 @@ def get_unsusual_sessions_for_borders(sessions_collection, borders_num):
     sessions = db[sessions_collection].find()
 
     for session in sessions:
-        if session['type'] == 'unsusual':
+        if session['type'] == 'unusual':
             for border_id in range(session['begin_border'], session['end_border'] + 1):
                 borders[border_id] += 1
 
@@ -633,7 +634,7 @@ def get_unsusual_sessions_for_borders(sessions_collection, borders_num):
                                               }})
 
 
-def define_normal_speed(book_id, sessions_collection, skip_percent=0.3):
+def define_normal_speed(book_id, sessions_collection, skip_percent=0.6):
     # define normal/skip speed for book
     # delete sessions without speed field
     print('Begin to define book speeds (normal/skip)')
@@ -643,7 +644,7 @@ def define_normal_speed(book_id, sessions_collection, skip_percent=0.3):
     total_symbols, total_time, sessions_number = 0, 0, 0
     for session in sessions:
         if 'speed' in session:
-            if session['speed'] <= 5000 and session['speed'] > 0:
+            if 5000 >= session['speed'] > 0:
                 total_symbols += session['size']
                 total_time += session['size'] / session['speed']
                 sessions_number += 1
@@ -793,15 +794,18 @@ def count_speed_stats_per_border(book_id):
         prev_border = border
 
 
-def count_unusual_sessions(book_id, top_N = 8):
+def count_unusual_sessions(book_id):
     print ('Begin to find unusual sessions')
     db = connect_to_mongo_database(BOOKS_DB)
+    users_db = connect_to_mongo_database(USERS_DB)
 
     users = db[book_id].find().distinct('user_id')
     db[book_id].create_index([('user_id', pymongo.ASCENDING)])
+    processed_users, all_users = 0, len(users)
 
     for user_id in users:
-        sessions = db[book_id].find({'user_id': user_id})
+        sessions = users_db[str(user_id)].find()
+        sessions_count = sessions.count()
         daytime = []
         for i in range(0, 24):
             daytime.append(0)
@@ -809,11 +813,19 @@ def count_unusual_sessions(book_id, top_N = 8):
         for session in sessions:
             daytime[session['read_at'].hour] += 1
 
-        sorted_daytime = sorted(range(len(daytime)), key=lambda k: daytime[k])[0:top_N]
+        sorted_daytime_indexes = sorted(range(len(daytime)), key=lambda k: daytime[k])
+        daytime = daytime.sort(reverse=True)
+        usual_sessions_times = []
+        counter = 0
+        for (hour, session_num) in zip(sorted_daytime_indexes, daytime):
+            if counter + session_num < int(0.8 * sessions_count):
+                usual_sessions_times.append(hour)
+            else:
+                break
 
         sessions = db[book_id].find({'user_id': user_id})
         for session in sessions:
-            if session['read_at'].hour in sorted_daytime:
+            if session['read_at'].hour in usual_sessions_times:
                 db[book_id].update({'_id': session['_id']},
                                    {'$set': {
                                        'type': 'usual'
@@ -823,10 +835,13 @@ def count_unusual_sessions(book_id, top_N = 8):
                                    {'$set': {
                                        'type': 'unusual'
                                    }})
+        processed_users += 1
+        if processed_users % 100 == 0:
+            print ('Process %d/%d users' % (processed_users, all_users))
 
 
 def select_top_document_ids(book_id, top_n = 3):
-    '''Select top N most popular documents and delete other sessions'''
+    """Select top N most popular documents and delete other sessions"""
     db = connect_to_mongo_database(BOOKS_DB)
     db[book_id].create_index([('document_id', pymongo.ASCENDING)])
     document_ids = db[book_id].find().distinct('document_id')
@@ -848,7 +863,7 @@ def select_top_document_ids(book_id, top_n = 3):
 
 def full_book_process(book_id):
     print('Book [%s] process begin' % str(book_id))
-    remove_duplicate_sessions(book_id)
+    # remove_duplicate_sessions(book_id)
     select_top_document_ids(book_id, 3)
     define_borders_for_items(book_id=book_id)
     process_sessions_to_book_percent_scale(book_id, update_old=True)
@@ -876,12 +891,13 @@ def full_book_process(book_id):
     get_absolute_speeds_for_borders(target_users, target_sessions_collection,
                                     borders_abs_speeds=[0 for i in range(len(all_borders))],
                                     borders_sessions_num=[0 for i in range(len(all_borders))])
+    get_unsusual_sessions_for_borders(str(book_id), len(all_borders))
 
 
 book_id = '2289'
-# full_book_process(book_id)
-count_unusual_sessions(book_id)
-# aggregate_borders(book_id, symbols_num=1000)
+full_book_process(book_id)
+# count_unusual_sessions(book_id)
+aggregate_borders(book_id, symbols_num=1000)
 # plot_book_abs_speed(book_id)
 # count_number_of_stops_per_border(book_id)
 # count_speed_stats_per_border(book_id)
