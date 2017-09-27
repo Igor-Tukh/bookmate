@@ -1,5 +1,6 @@
 class PageStats(object):
     def __init__(self):
+        # textual features
         self._id = -1
         self.person_verbs_num = 0
         self.person_verbs_part = 0.0
@@ -15,14 +16,20 @@ class PageStats(object):
         self.end_of_section = False
         self.begin_of_section = False
         self.new_words_count = 0
-        self.labeled_word_part = 0.0
-        self.labeled_word_num = 0
-        self.begin_symbol_pos = 0
+        # self.labeled_word_part = 0.0
+        # self.labeled_word_num = 0
+        # self.begin_symbol_pos = 0
         self.p_num = 0
-        self._to = 0
-        self._from = 0
+        self.symbol_to = 0
+        self.symbol_from = 0
         self.clear_text = ''
-        self.section_num = 0
+
+        # behaviour features
+        self.abs_speed = 0
+        self.page_sessions = 0
+        self.page_skip_percent = 0
+        self.page_unusual_percent = 0
+
 
     def to_dict(self):
         return self.__dict__

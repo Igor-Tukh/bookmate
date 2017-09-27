@@ -2,8 +2,7 @@ from pymongo import MongoClient
 import xml.etree.ElementTree as ET
 import re
 
-
-BOOKMATE_DB = 'bookmate_1'
+BOOKMATE_DB = 'bookmate'
 
 
 def connect_to_database_books_collection(db):
@@ -56,7 +55,14 @@ def get_book_size(book_id):
     size = 0
     for section in sections:
         size += section['size']
-    print (size)
+
+    if db['books'].find({'_id': book_id}).count() > 0:
+        db['books'].update({'_id': book_id},
+                           {'$set': {'symbols_num': size}})
+    else:
+        db['books'].insert({'_id': book_id,
+                            'symbols_num': size})
+    print('Book %s size is %d symbols' % (str(book_id), size))
     return size
 
 
@@ -113,18 +119,19 @@ def find_active_readers(book_id):
     else:
         return readers
 
-def process_book(book_id):
-    books_folder = '/Users/kseniya/Documents/WORK/bookmate/code/resources/in'
-    book_file = '%s/%s.fb2' % (books_folder, book_id)
-    book_xml = ET.XML(open(book_file, 'r').read())
 
-    # define_sections(book_id, book_xml)
+def process_book(book_id):
+    books_folder = '../../resources/in'
+    book_file = '%s/%s.fb2' % (books_folder, book_id)
+    book_xml = ET.XML(open(book_file, 'r', encoding='utf-8').read())
+
+    define_sections(book_id, book_xml)
     process_documents(book_id)
     # find_popular_documents(book_id)
 
 
 book_id = '2289'
-# process_book(book_id)
+process_book(book_id)
 get_book_size(book_id)
 
 

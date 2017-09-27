@@ -1,6 +1,6 @@
 from xml.etree import cElementTree as ET
 from pymongo import MongoClient
-import argparse
+import os
 import re
 import nltk
 import string
@@ -26,6 +26,8 @@ person_pronouns_list = ['я', 'ты', 'он', 'она', 'оно', 'мы', 'вы'
 ru_stopwords = get_stop_words('russian')
 mystem = Mystem()
 # GLOBAL VARIABLES SECTION END
+
+
 def smooth_points(Y, N=10):
     new_Y = []
     for i in range(0, len(Y)):
@@ -75,36 +77,12 @@ def number_of_sentences(text):
         return 0
 
 
-def get_book_size_in_symbols(book, book_id):
-    print ('\nCalculate book size now')
-    db = connect_to_database_books_collection()
-    root = ET.ElementTree(book).getroot()
-    book_stats = BookStats()
-    book_stats._id = str(book_id)
-
-    full_book_text = ''
-    for item in root.iter():
-        if get_tag(item.tag) == 'p':
-            if item.text is None:
-                continue
-            full_book_text += item.text + ' '
-    book_stats.symbols_num = len(full_book_text)
-    book_stats.text = full_book_text
-    try:
-        db['books'].insert({'_id': book_id,
-                            'symbols_num': book_stats.symbols_num})
-    except Exception as e:
-        print (e)
-        db.books.update({'_id': book_id},
-                        {'$set': {'symbols_num': book_stats.symbols_num}})
-
-
 def process_book(book, book_id):
     print ('Process book text now')
     db = connect_to_database_books_collection()
     book_table = db['%s_pages' % str(book_id)]
     root = ET.ElementTree(book).getroot()
-    borders = db['%s_borders' % book_id].find({'avr_abs_speed': {'$exists': True}}).sort('symbol_from')
+    borders = db['%s_borders' % book_id].find({'page_speed': {'$exists': True}}).sort('symbol_from')
 
     position = Int64(0)
     page_stats = PageStats()
@@ -130,12 +108,17 @@ def process_book(book, book_id):
                 if len(full_text) >= current_border['symbol_to']:
                     page_stats._id = current_border['page']
                     update_page_stats(page_stats, page_stats.text)
-                    page_stats._from = position
-                    page_stats._to = page_stats._from + page_stats.symbols_num
+                    page_stats.symbol_from = position
+                    page_stats.symbol_to = page_stats.symbol_from + page_stats.symbols_num
                     page_stats.clear_text += '\n'
                     get_full_page_stats(page_stats)
+
+                    page_stats.abs_speed = current_border['abs_speed']
+                    page_stats.page_skip_percent = current_border['page_skip_percent']
+                    page_stats.page_unusual_sessions = current_border['page_unusual_percent']
+
                     book_table.insert(page_stats.to_dict())
-                    position = page_stats._to + 1
+                    position = page_stats.symbol_to + 1
 
                     page_stats = PageStats()
                     page_stats.text += current_text_pull
@@ -289,88 +272,35 @@ def count_labels_portion(book_id):
                                      'labeled_words_num': words_with_labels}})
 
 
-def count_percents_for_pages(book_id):
-    print ('Percentage calculation begins...')
+def export_book_pages(book_id):
     db = connect_to_database_books_collection()
     pages = db['%s_pages' % book_id].find()
-    book = db['books'].find_one({'_id': book_id})
-    _from, _to = 0.0, 0.0
+
+    pages_dir = '../../resources/pages/%s' % book_id
+    if not os.path.exists(pages_dir):
+        os.makedirs(pages_dir)
     for page in pages:
-        _from = _to
-        _to = _from + page['symbols_num'] / book['symbols_num']
-        db['%s_pages' % book_id].update({'_id': page['_id']},
-                                        {'$set': {'percent_from': _from * 100.0,
-                                                  'percent_to': _to * 100.0}})
+        with open('%s/%d.txt' % (pages_dir, page['_id']), 'w', encoding='utf-8') as page_file:
+            page_file.write(page['text'])
 
 
-def plot_book_stats(book_id):
-    db = connect_to_database_books_collection()
-    pages = db['%s_pages' % book_id].find().sort('_id')
-    symbols, avr_word_len, person_pronouns, person_verbs, sentiment, sentiment_words, new_words = list(), list(), list(), \
-                                                                                       list(), list(), list(), list()
-
-    page_begin = 0
-    for page in pages:
-        symbols_point = int((page_begin * 2 + page['symbols_num']) / 2)
-        symbols.append(symbols_point)
-        avr_word_len.append(page['avr_word_len'])
-        person_pronouns.append(page['person_pronouns_part'])
-        person_verbs.append(page['person_verbs_part'])
-        sentiment.append(page['sentiment'])
-        sentiment_words.append(page['sentiment_words_portion'])
-        new_words.append(page['new_words_count'] / page['words_num'])
-        page_begin += page['symbols_num'] + 1
-
-    plt.clf()
-    # plt.plot(symbols, avr_word_len, label='avr_word_len')
-    plt.plot(symbols, smooth_points(person_pronouns, 10), label='Person Pronouns')
-    plt.plot(symbols, smooth_points(person_verbs, 10), label='Person Verbs')
-    # plt.plot(symbols, sentiment, label='sentiment')
-    plt.plot(symbols, smooth_points(sentiment_words, 10), label='Sentiment Words')
-    plt.plot(symbols, smooth_points(new_words, 10), label='New Words')
-
-    plt.legend(prop={'size': 16})
-    plt.title('Textual Features for Fifty Shadows of Gray')
-    plt.savefig('%s_stats.png' % book_id)
-
-
-def main(is_calculate_size, is_process_book):
-    parser = argparse.ArgumentParser(description='Book(s) processing script')
-    parser.add_argument("-folder", type=str, help="Path to folder with fb2 books sources")
-    args = parser.parse_args()
+def main():
     connect_to_database_books_collection()
     start_time = timeit.default_timer()
-    # book_ids = ['2207', '2289', '2543', '11833', '210901', '259222', '266700', '275066']
-    book_ids = ['259222']
-    if is_calculate_size:
-        for book_id in book_ids:
-            try:
-                book = open('/Users/kseniya/Documents/WORK/bookmate/code/resources/in/' + book_id + '.fb2').read()
-            except Exception as e:
-                print(e)
-                continue
-            book_xml = ET.XML(book)
-            get_book_size_in_symbols(book_xml, book_id)
+    book_ids = ['2289']
 
-    if is_process_book:
-        for book_id in book_ids:
-            print('Process book [%s]' % book_id)
-            try:
-                book = codecs.open('/Users/kseniya/Documents/WORK/bookmate/code/resources/in/' + book_id + '.fb2', 'r').read()
-            except Exception as e:
-                print(e)
-                continue
-            book_xml = ET.XML(book)
-            process_book(book_xml, book_id)
-            count_new_vocabulary(book_id)
-            count_sentiment(book_id)
-            count_percents_for_pages(book_id)
-            elapsed = timeit.default_timer() - start_time
-            print('Book with id %s was processed in %s seconds \n' % (book_id, str(elapsed)))
+    for book_id in book_ids:
+        print('Process book [%s]' % book_id)
+        book = codecs.open('../../resources/in/' + book_id + '.fb2', 'r', encoding='utf-8').read()
+        book_xml = ET.XML(book)
+        process_book(book_xml, book_id)
+        count_new_vocabulary(book_id)
+        count_sentiment(book_id)
+        elapsed = timeit.default_timer() - start_time
+        print('Book with id %s was processed in %s seconds \n' % (book_id, str(elapsed)))
 
 
 if __name__ == "__main__":
-    is_calculate_size = False
-    is_process_book = True
-    main(is_calculate_size, is_process_book)
+    main()
+    export_book_pages('2289')
 
