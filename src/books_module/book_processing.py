@@ -77,11 +77,22 @@ def number_of_sentences(text):
         return 0
 
 
-def process_book(book, book_id):
+def get_book_text_from_sections(book_id):
+    db = connect_to_database_books_collection()
+    text = ''
+    sections = db['%s_sections' % book_id].find()
+
+    for section in sections:
+        text += section['text']
+        text = text[:-1] + ' '
+    text = text[:-1]
+    return text
+
+
+def process_book(book_id):
     print ('Process book text now')
     db = connect_to_database_books_collection()
     book_table = db['%s_pages' % str(book_id)]
-    root = ET.ElementTree(book).getroot()
     borders = db['%s_borders' % book_id].find({'page_speed': {'$exists': True}}).sort('symbol_from')
 
     position = Int64(0)
@@ -91,48 +102,39 @@ def process_book(book, book_id):
     current_text_pull = ''
     full_text = ''
 
-    for item in root.iter():
-        # if len(current_text) <= current_border['symbol_to']:
-        if get_tag(item.tag) == 'p':
-            if item.text is None:
-                continue
-            else:
-                page_stats.p_num += 1
-                item_text = nltk.word_tokenize(item.text)
-                for word in item_text:
-                    if len(full_text) <= current_border['symbol_to']:
-                        page_stats.text += word + ' '
-                        full_text += word + ' '
-                    else:
-                        current_text_pull += word + ' '
-                if len(full_text) >= current_border['symbol_to']:
-                    page_stats._id = current_border['page']
-                    update_page_stats(page_stats, page_stats.text)
-                    page_stats.symbol_from = position
-                    page_stats.symbol_to = page_stats.symbol_from + page_stats.symbols_num
-                    page_stats.clear_text += '\n'
-                    get_full_page_stats(page_stats)
+    text = nltk.word_tokenize(get_book_text_from_sections(book_id))
 
-                    page_stats.abs_speed = current_border['abs_speed']
-                    page_stats.page_skip_percent = current_border['page_skip_percent']
-                    page_stats.page_unusual_sessions = current_border['page_unusual_percent']
+    for word in text:
+        if len(full_text) <= current_border['symbol_to']:
+            page_stats.text += word + ' '
+            full_text += word + ' '
+        else:
+            current_text_pull += word + ' '
+        if len(full_text) >= current_border['symbol_to']:
+            page_stats._id = current_border['page']
+            update_page_stats(page_stats, page_stats.text)
+            page_stats.symbol_from = position
+            page_stats.symbol_to = page_stats.symbol_from + page_stats.symbols_num
+            page_stats.clear_text += '\n'
+            get_full_page_stats(page_stats)
 
-                    book_table.insert(page_stats.to_dict())
-                    position = page_stats.symbol_to + 1
+            page_stats.page_speed = current_border['page_speed']
+            page_stats.page_sessions = current_border['page_sessions']
+            page_stats.page_skip_percent = current_border['page_skip_percent']
+            page_stats.page_unusual_percent = current_border['page_unusual_percent']
 
-                    page_stats = PageStats()
-                    page_stats.text += current_text_pull
-                    full_text += current_text_pull
-                    current_text_pull = ''
-                    try:
-                        current_border = borders.next()
-                    except Exception:
-                        print ('Last page calculated')
-                        return
+            book_table.insert(page_stats.to_dict())
+            position = page_stats.symbol_to + 1
 
-                else:
-                    if item.text[0] == '-':
-                        page_stats.dialogs_num += 1
+            page_stats = PageStats()
+            page_stats.text += current_text_pull
+            full_text += current_text_pull
+            current_text_pull = ''
+            try:
+                current_border = borders.next()
+            except Exception:
+                print('Last page calculated')
+                return
 
 
 def update_page_stats(page_stats, text):
@@ -156,7 +158,7 @@ def get_full_book_stats(book_stats):
 def get_full_page_stats(page_stats):
     try:
         page_stats.person_verbs_part = page_stats.person_verbs_num / page_stats.words_num
-        page_stats.dialogs_part = page_stats.dialogs_num / page_stats.p_num
+        # page_stats.dialogs_part = page_stats.dialogs_num / page_stats.p_num
         page_stats.person_pronouns_part = page_stats.person_pronouns_num / page_stats.words_num
         page_stats.avr_word_len = page_stats.symbols_num / page_stats.words_num
     except Exception as e:
@@ -291,9 +293,7 @@ def main():
 
     for book_id in book_ids:
         print('Process book [%s]' % book_id)
-        book = codecs.open('../../resources/in/' + book_id + '.fb2', 'r', encoding='utf-8').read()
-        book_xml = ET.XML(book)
-        process_book(book_xml, book_id)
+        process_book(book_id)
         count_new_vocabulary(book_id)
         count_sentiment(book_id)
         elapsed = timeit.default_timer() - start_time

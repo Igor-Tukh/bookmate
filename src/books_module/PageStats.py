@@ -13,8 +13,7 @@ class PageStats(object):
         self.text = ''
         self.sentences_num = 0
         self.symbols_num = 0
-        self.end_of_section = False
-        self.begin_of_section = False
+
         self.new_words_count = 0
         # self.labeled_word_part = 0.0
         # self.labeled_word_num = 0
@@ -25,7 +24,7 @@ class PageStats(object):
         self.clear_text = ''
 
         # behaviour features
-        self.abs_speed = 0
+        self.page_speed = 0
         self.page_sessions = 0
         self.page_skip_percent = 0
         self.page_unusual_percent = 0

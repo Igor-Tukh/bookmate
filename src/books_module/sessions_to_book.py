@@ -225,6 +225,39 @@ def calculate_session_speed(book_id, user_id):
                            {'$set': {'speed': avr_speed}})
 
 
+def calculate_relative_speed(book_id, user_id):
+    # Calculate relative speed for user and define sessions categories
+    db = connect_to_mongo_database(BOOKS_DB)
+    sessions = db[book_id].find({'user_id': user_id})
+
+    read_symbols = 0
+    total_time = 0
+    speeds = list()
+    for session in sessions:
+        if 'speed' in session:
+            read_symbols += session['size']
+            total_time += session['size'] / session['speed']
+            speeds.append(session['speed'])
+        else:
+            db[book_id].remove({'_id': session['_id']})
+
+    avr_user_speed = read_symbols / total_time
+    speeds = sorted(speeds)
+    skip_speed = speeds[int(0.8 * len(speeds)) + 1]
+
+    sessions = db[book_id].find({'user_id': user_id})
+    for session in sessions:
+        category = 'normal'
+        if session['speed'] > skip_speed:
+            category = 'skip'
+
+        abs_speed = session['speed'] / avr_user_speed
+
+        db[book_id].update({'_id': session['_id']},
+                           {'$set': {'category': category,
+                                     'abs_speed': abs_speed}})
+
+
 def define_borders_for_items(book_id):
     # define the percentage for every item inside the book
     db_books = connect_to_mongo_database(BOOKS_DB)
@@ -503,29 +536,13 @@ def get_absolute_speeds_for_borders(target_users, sessions_collection, borders_n
 
     borders_abs_speeds = [0 for i in range(borders_num)]
     borders_sessions_num = [0 for i in range(borders_num)]
-    db[sessions_collection].create_index([('user_id', pymongo.ASCENDING), ('category', pymongo.ASCENDING)])
+    db[sessions_collection].create_index([('category', pymongo.ASCENDING)])
 
-    for user_id in target_users:
-        sessions = db[sessions_collection].find({'user_id': int(user_id),
-                                                 'category': 'normal'})
-        symbols = 0
-        total_time = 0
-        for session in sessions:
-            symbols += session['size']
-            total_time += session['size'] / session['speed']
-
-        if symbols > 0:
-            avr_book_speed = symbols / total_time
-            sessions = db[sessions_collection].find({'user_id': int(user_id),
-                                                     'category': 'normal'})
-            for session in sessions:
-                abs_speed = session['speed'] / avr_book_speed
-                db[sessions_collection].update({'_id': session['_id']},
-                                               {'$set': {'abs_speed': abs_speed}})
-
-                for border_id in range(session['begin_border'], session['end_border'] + 1):
-                    borders_abs_speeds[border_id] += abs_speed
-                    borders_sessions_num[border_id] += 1
+    sessions = db[sessions_collection].find({'category': 'normal'})
+    for session in sessions:
+        for border_id in range(session['begin_border'], session['end_border'] + 1):
+            borders_abs_speeds[border_id] += session['abs_speed']
+            borders_sessions_num[border_id] += 1
 
         user_count += 1
         if user_count % 500 == 0:
@@ -563,54 +580,6 @@ def get_unususual_sessions_for_borders(book_id, sessions_collection, borders_num
                                               }})
 
 
-def define_normal_speed(book_id, sessions_collection, skip_percent=0.6):
-    # define normal/skip speed for book
-    # delete sessions without speed field
-    print('Begin to define book speeds (normal/skip)')
-    db = connect_to_mongo_database(BOOKS_DB)
-    sessions = db[sessions_collection].find()
-
-    total_symbols, total_time, sessions_number = 0, 0, 0
-    for session in sessions:
-        if 'speed' in session:
-            if 5000 >= session['speed'] > 0:
-                total_symbols += session['size']
-                total_time += session['size'] / session['speed']
-                sessions_number += 1
-        else:
-            db[sessions_collection].remove({'_id': session['_id']})
-
-        if sessions_number % log_step == 0:
-            print('%d sessions processed' % sessions_number)
-
-    avr_book_speed = total_symbols / total_time
-    skip_speed = avr_book_speed + avr_book_speed * skip_percent
-
-    db['books'].update({'_id': str(book_id)},
-                       {'$set': {
-                           'normal_speed': avr_book_speed,
-                           'skip_speed': skip_speed
-                       }})
-
-    print ('Begin to set categories for sessions')
-    sessions = db[sessions_collection].find()
-    counter = 0
-    for session in sessions:
-        if 'speed' not in session:
-            db[sessions_collection].remove({'_id': session['_id']})
-        elif session['speed'] >= skip_speed:
-            category = 'skip'
-        else:
-            category = 'normal'
-        db[sessions_collection].update({'_id': session['_id']},
-                                       {'$set': {
-                                           'category': category
-                                       }})
-        counter += 1
-        if counter % log_step == 0:
-            print('Process %d/%d sessions' % (counter, sessions_number))
-
-
 def aggregate_borders(book_id, symbols_num=1000):
     # Aggregate borders to the size of 1000 symbols. Update those borders, where every ~1000 symbols achieved
     print('Begin to aggregate borders')
@@ -624,6 +593,7 @@ def aggregate_borders(book_id, symbols_num=1000):
         sections_borders.append(section['symbol_to'])
 
     page_symbols = 0
+    # page_time = 0
     begin_page_id, end_page_id = 0, 0
     page = 1
     break_flag = False
@@ -637,14 +607,15 @@ def aggregate_borders(book_id, symbols_num=1000):
 
         if not break_flag:
             page_symbols += border['symbol_to'] - border['symbol_from']
+            # page_time += (border['symbol_to'] - border['symbol_from']) / border['abs_speed']
         if page_symbols >= symbols_num:
             break_flag = True
 
         if break_flag:
             end_page_id = border['_id']
 
-            page_borders = db['%s_borders' % book_id].find({ '_id': {'$gte': begin_page_id },
-                                                             '$and': [{'_id': {'$lte': end_page_id }}]})
+            page_borders = db['%s_borders' % book_id].find({'_id': {'$gte': begin_page_id},
+                                                            '$and': [{'_id': {'$lte': end_page_id }}]})
             page_speed = 0
             page_unusual_sessions = 0
             page_sessions = 0
@@ -664,6 +635,7 @@ def aggregate_borders(book_id, symbols_num=1000):
                                                         'page_skip_percent': page_skip_sessions / page_sessions,
                                                         'page': page}})
             page_symbols = 0
+            # page_time = 0
             page += 1
             begin_page_id = end_page_id + 1
             break_flag = False
@@ -778,6 +750,21 @@ def select_top_document_ids(book_id, top_n = 3):
             db[book_id].remove({'_id': session['_id']})
 
 
+def check_book_speed(book_id):
+    db = connect_to_mongo_database(BOOKS_DB)
+    pages = db['%s_borders' % book_id].find({'page_speed': {'$exists': True}})
+
+    total_speed = 0
+    total_pages = pages.count()
+
+    for page in pages:
+        total_speed += page['page_speed']
+    avr_speed = total_speed / total_pages
+
+    print ('Average book page is %.3f' % avr_speed)
+
+
+
 def full_book_process(book_id):
     # print('Book [%s] process begin' % str(book_id))
     # remove_duplicate_sessions(book_id)
@@ -795,22 +782,23 @@ def full_book_process(book_id):
     target_users = get_target_users(book_id)
     processed_users = 0
 
-    # print('Begin to calculate users sessions speed')
-    # for user_id in target_users:
-    #     calculate_session_speed(book_id=book_id, user_id=user_id)
-    #     processed_users += 1
-    #     if processed_users % 500 == 0:
-    #         print('Processed %d/%d users' % (processed_users, len(target_users)))
-    #
-    # define_target_sessions(book_id, target_users)
+    print('Begin to calculate users sessions speed')
+    for user_id in target_users:
+        calculate_session_speed(book_id, user_id)
+        calculate_relative_speed(book_id, user_id)
+        processed_users += 1
+        if processed_users % 500 == 0:
+            print('Processed %d/%d users' % (processed_users, len(target_users)))
+
+    define_target_sessions(book_id, target_users)
     target_sessions_collection = str(book_id) + '_target'
-    # define_normal_speed(book_id, target_sessions_collection)
     count_unusual_sessions(target_sessions_collection)
     count_sessions_category_per_border(book_id, target_sessions_collection)
-    # get_absolute_speeds_for_borders(target_users, target_sessions_collection, len(all_borders))
+    get_absolute_speeds_for_borders(target_users, target_sessions_collection, len(all_borders))
     get_unususual_sessions_for_borders(book_id, target_sessions_collection, len(all_borders))
 
 
 book_id = '2289'
 # full_book_process(book_id)
 aggregate_borders(book_id, symbols_num=1000)
+check_book_speed(book_id)
