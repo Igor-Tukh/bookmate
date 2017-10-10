@@ -11,9 +11,7 @@ from bson.int64 import Int64
 import json
 from pymystem3 import Mystem
 from PageStats import PageStats
-from BookStats import BookStats
-import codecs
-import matplotlib.pyplot as plt
+
 print ('>book_processing.py')
 
 
@@ -25,6 +23,7 @@ morph = pymorphy2.MorphAnalyzer()
 person_pronouns_list = ['я', 'ты', 'он', 'она', 'оно', 'мы', 'вы', 'они']
 ru_stopwords = get_stop_words('russian')
 mystem = Mystem()
+DB = 'bookmate_paid'
 # GLOBAL VARIABLES SECTION END
 
 
@@ -57,7 +56,7 @@ def get_tag(item):
 
 def connect_to_database_books_collection():
     client = MongoClient('localhost', 27017)
-    return client.bookmate
+    return client[DB]
 
 
 def number_of_words(text):
@@ -103,9 +102,12 @@ def process_book(book_id):
     full_text = ''
 
     text = nltk.word_tokenize(get_book_text_from_sections(book_id))
-
+    prev_word = ''
     for word in text:
         if len(full_text) <= current_border['symbol_to']:
+            if word in punctuation:
+                page_stats.text = page_stats.text[:-1]
+                full_text = full_text[:-1]
             page_stats.text += word + ' '
             full_text += word + ' '
         else:
@@ -168,7 +170,6 @@ def get_full_page_stats(page_stats):
 def count_simple_text_features(page_stats, text):
     if text is None or len(text) == 0:
         return
-    page_stats.text += text
     if text[0] == '—' or text[0] == '–':
         page_stats.dialogs_num += 1
     page_stats.words_num += number_of_words(text)
@@ -278,7 +279,7 @@ def export_book_pages(book_id):
     db = connect_to_database_books_collection()
     pages = db['%s_pages' % book_id].find()
 
-    pages_dir = '../../resources/pages/%s' % book_id
+    pages_dir = '../../resources/pages/%s/%s' % (DB, book_id)
     if not os.path.exists(pages_dir):
         os.makedirs(pages_dir)
     for page in pages:
@@ -286,21 +287,21 @@ def export_book_pages(book_id):
             page_file.write(page['text'])
 
 
-def main():
+def main(book_id):
     connect_to_database_books_collection()
     start_time = timeit.default_timer()
-    book_ids = ['2289']
 
-    for book_id in book_ids:
-        print('Process book [%s]' % book_id)
-        process_book(book_id)
-        count_new_vocabulary(book_id)
-        count_sentiment(book_id)
-        elapsed = timeit.default_timer() - start_time
-        print('Book with id %s was processed in %s seconds \n' % (book_id, str(elapsed)))
+    print('Process book [%s]' % book_id)
+    process_book(book_id)
+    # count_new_vocabulary(book_id)
+    # count_sentiment(book_id)
+    elapsed = timeit.default_timer() - start_time
+    print('Book with id %s was processed in %s seconds \n' % (book_id, str(elapsed)))
 
 
 if __name__ == "__main__":
-    main()
-    export_book_pages('2289')
+    book_ids = ['2206', '2207', '2289', '2543', '135089']
+    for book_id in book_ids:
+        main(book_id)
+        export_book_pages(book_id)
 

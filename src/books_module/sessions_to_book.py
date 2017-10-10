@@ -4,7 +4,7 @@ import pymongo
 import bisect
 import math
 
-BOOKS_DB = 'bookmate'
+BOOKS_DB = 'bookmate_paid'
 USERS_DB = 'bookmate_users'
 log_step = 100000
 
@@ -45,8 +45,7 @@ def remove_duplicate_sessions(book_id):
     # Because logs have some duplicate sessions, we need to remove them
     print ('Begin to remove duplicates')
     db_sessions = connect_to_mongo_database(BOOKS_DB)
-    book_sessions = db_sessions[book_id].find()
-    dump_collection = db_sessions['%s_clear' % book_id]
+    book_sessions = db_sessions[book_id].find(no_cursor_timeout=True)
     processed_sessions, removed_sessions = 0, 0
     try:
         db_sessions[book_id].create_index(
@@ -71,10 +70,6 @@ def remove_duplicate_sessions(book_id):
         processed_sessions = processed_sessions + 1
         if processed_sessions % log_step == 0:
             print('Process {%d} sessions' % processed_sessions)
-
-    sessions = db_sessions[book_id].find()
-    for session in sessions:
-        dump_collection.insert(session)
 
 
 def process_sessions_to_book_percent_scale(book_id, update_old=False):
@@ -181,12 +176,14 @@ def calculate_session_speed(book_id, user_id):
             else:
                 try:
                     stats['speed'] = stats['symbols'] / stats['session_time']
-                    if stats['speed'] <= 1500:
+                    if stats['speed'] <= 5000:
                         # we don't need big speeds for average speed processing
                         total_symbols += stats['symbols']
                         total_time += stats['session_time']
+                    else:
+                        db[book_id].remove({'_id': session['_id']})
                 except ZeroDivisionError:
-                    pass
+                    db[book_id].remove({'_id': session['_id']})
         previous_session = session
         db[book_id].update({'_id': session['_id']},
                            {'$set': stats})
@@ -232,30 +229,27 @@ def calculate_relative_speed(book_id, user_id):
 
     read_symbols = 0
     total_time = 0
-    speeds = list()
+
     for session in sessions:
-        if 'speed' in session:
-            read_symbols += session['size']
-            total_time += session['size'] / session['speed']
-            speeds.append(session['speed'])
+        if 'speed' in session and 'symbols' in session and session['speed'] > 0:
+            read_symbols += session['symbols']
+            total_time += session['symbols'] / session['speed']
         else:
             db[book_id].remove({'_id': session['_id']})
 
-    avr_user_speed = read_symbols / total_time
-    speeds = sorted(speeds)
-    skip_speed = speeds[int(0.8 * len(speeds)) + 1]
+    if total_time > 0:
+        avr_user_speed = read_symbols / total_time
 
-    sessions = db[book_id].find({'user_id': user_id})
-    for session in sessions:
-        category = 'normal'
-        if session['speed'] > skip_speed:
-            category = 'skip'
+        sessions = db[book_id].find({'user_id': user_id})
+        for session in sessions:
+            category = 'normal'
+            abs_speed = session['speed'] / avr_user_speed
+            if abs_speed >= 1.6:
+                category = 'skip'
 
-        abs_speed = session['speed'] / avr_user_speed
-
-        db[book_id].update({'_id': session['_id']},
-                           {'$set': {'category': category,
-                                     'abs_speed': abs_speed}})
+            db[book_id].update({'_id': session['_id']},
+                               {'$set': {'category': category,
+                                         'abs_speed': abs_speed}})
 
 
 def define_borders_for_items(book_id):
@@ -452,7 +446,6 @@ def get_all_items_borders(book_id):
                 item_borders.append(session['symbol_to'])
             elif session['symbol_from'] not in item_borders:
                 item_borders.append(session['symbol_from'])
-
         db['%s_items' % book_id].update({'id': item_id},
                                         {'$set':
                                              {'item_borders': item_borders,
@@ -469,14 +462,20 @@ def set_sessions_borders(book_id, session_collection, drop_old=False, define_ses
                                             )
 
     all_borders = list()
-    if 'all_borders' in db['books'].find_one({'_id': book_id}):
+    if not drop_old:
         all_borders = db['books'].find_one({'_id': book_id})['all_borders']
     else:
+        print ('Get all items borders')
         items = db['%s_items' % book_id].find()
         for item in items:
             if 'item_borders' not in item:
                 continue
             all_borders.extend(item['item_borders'])
+        print ('Get all section borders')
+        sections = db['%s_sections' % book_id].find({})
+        for section in sections:
+            if section['symbol_to'] not in all_borders:
+                all_borders.append(section['symbol_to'])
         all_borders = list(set(all_borders))
         all_borders.sort()
         db['books'].update({'_id': book_id},
@@ -485,12 +484,18 @@ def set_sessions_borders(book_id, session_collection, drop_old=False, define_ses
                             })
 
     all_borders.sort()
+    section_borders = db['%s_sections' % book_id].find().distinct('symbol_to')
     if drop_old:
         db['%s_borders' % book_id].drop()
         for i in range(0, len(all_borders) - 1):
+            if all_borders[i + 1] not in section_borders:
+                section_flag = False
+            else:
+                section_flag = True
             db['%s_borders' % book_id].insert_one({'_id': i,
-                                                   'symbol_from': all_borders[i],
-                                                   'symbol_to': all_borders[i + 1]})
+                                                    'symbol_from': all_borders[i],
+                                                    'symbol_to': all_borders[i + 1],
+                                                    'section': section_flag})
 
     if define_sessions_borders:
         print('begin to define sessions borders')
@@ -543,10 +548,6 @@ def get_absolute_speeds_for_borders(target_users, sessions_collection, borders_n
         for border_id in range(session['begin_border'], session['end_border'] + 1):
             borders_abs_speeds[border_id] += session['abs_speed']
             borders_sessions_num[border_id] += 1
-
-        user_count += 1
-        if user_count % 500 == 0:
-            print('%d/%d users processed' % (user_count, len(target_users)))
 
     print('Begin to update borders with absolute speed')
     abs_speeds = list()
@@ -601,14 +602,8 @@ def aggregate_borders(book_id, symbols_num=1000):
         if border['abs_speed'] == 0:
             print('problem with border (id == %d), absolute speed is zero, skip' % border['_id'])
             continue
-        for section_border in sections_borders:
-            if border['symbol_from'] <= section_border <= border['symbol_to']:
-                break_flag = True
-
-        if not break_flag:
-            page_symbols += border['symbol_to'] - border['symbol_from']
-            # page_time += (border['symbol_to'] - border['symbol_from']) / border['abs_speed']
-        if page_symbols >= symbols_num:
+        page_symbols += border['symbol_to'] - border['symbol_from']
+        if border['section'] or page_symbols >= symbols_num:
             break_flag = True
 
         if break_flag:
@@ -670,7 +665,9 @@ def count_sessions_category_per_border(book_id, sessions_collection):
     skips_per_border = [0 for i in range(borders.count())]
 
     for session in sessions:
-        if session['category'] == 'skip':
+        if 'category' not in session:
+            db[sessions_collection].remove({'_id': session['_id']})
+        elif session['category'] == 'skip':
             for border_id in range(session['begin_border'], session['end_border'] + 1):
                 skips_per_border[border_id] += 1
         for border_id in range(session['begin_border'], session['end_border'] + 1):
@@ -725,7 +722,7 @@ def count_unusual_sessions(sessions_collection):
                                        'type': 'unusual'
                                    }})
         processed_users += 1
-        if processed_users % 100 == 0:
+        if processed_users % 500 == 0:
             print ('Process %d/%d users' % (processed_users, all_users))
 
 
@@ -764,20 +761,17 @@ def check_book_speed(book_id):
     print ('Average book page is %.3f' % avr_speed)
 
 
-
 def full_book_process(book_id):
-    # print('Book [%s] process begin' % str(book_id))
+    print('Book [%s] process begin' % str(book_id))
     # remove_duplicate_sessions(book_id)
     # select_top_document_ids(book_id, 3)
-    # define_borders_for_items(book_id=book_id)
-    # process_sessions_to_book_percent_scale(book_id, update_old=True)
-    #
-    # filter_book_core_users(book_id)
-    #
-    # get_all_items_borders(book_id)
+    define_borders_for_items(book_id=book_id)
+    process_sessions_to_book_percent_scale(book_id, update_old=True)
+    filter_book_core_users(book_id)
+    get_all_items_borders(book_id)
 
     all_borders = set_sessions_borders(book_id, session_collection=book_id,
-                                       drop_old=False, define_sessions_borders=False)
+                                       drop_old=True, define_sessions_borders=True)
 
     target_users = get_target_users(book_id)
     processed_users = 0
@@ -798,7 +792,9 @@ def full_book_process(book_id):
     get_unususual_sessions_for_borders(book_id, target_sessions_collection, len(all_borders))
 
 
-book_id = '2289'
-# full_book_process(book_id)
-aggregate_borders(book_id, symbols_num=1000)
-check_book_speed(book_id)
+book_ids = ['2206', '2207', '2543', '2289', '135089']
+for book_id in book_ids:
+    print ('Process for DB [%s]' % BOOKS_DB)
+    full_book_process(book_id)
+    aggregate_borders(book_id, symbols_num=1000)
+    check_book_speed(book_id)

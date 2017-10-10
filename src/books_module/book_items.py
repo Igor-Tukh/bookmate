@@ -1,9 +1,13 @@
 from pymongo import MongoClient
 import xml.etree.ElementTree as ET
 import re
+import nltk
+import string
 
 BOOKMATE_DB = 'bookmate'
-
+punctuation = string.punctuation
+punctuation += '—'
+punctuation += '…'
 
 def connect_to_database_books_collection(db):
     client = MongoClient('localhost', 27017)
@@ -28,9 +32,13 @@ def define_sections(book_id, book_file):
             section['text'] = ''
             section['symbol_from'] = symbol_from
             for section_item in item.iter():
-                if type(section_item.text) is str and len(section_item.text.strip(' \t\n\r')) > 0 :
-                    section['text'] += section_item.text.strip(' \t\n\r') + '\n'
-                    # section['text'] += section_item.text + '\n'
+                if type(section_item.text) is str:
+                    section_text = section_item.text.strip(' \t\n\r')
+                    words = nltk.word_tokenize(section_text)
+                    for word in words:
+                        if word in punctuation:
+                            section['text'] = section['text'][:-1]
+                        section['text'] += word + ' '
             section['symbol_to'] = symbol_from + len(section['text'])
             section['size'] = len(section['text'])
             db['%s_sections' % book_id].insert(section)
@@ -130,7 +138,7 @@ def process_book(book_id):
     # find_popular_documents(book_id)
 
 
-book_id = '2289'
+book_id = '2543'
 process_book(book_id)
 get_book_size(book_id)
 
