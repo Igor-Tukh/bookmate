@@ -5,6 +5,12 @@ import bisect
 import math
 import logging
 import timeit
+import sys
+import operator
+from tqdm import tqdm
+from collections import Counter
+sys.setrecursionlimit(2000)
+from SegmentTree import SegmentTree
 
 # logs
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -31,6 +37,7 @@ SESSIONS_PER_FRAGMENT = 3
 USER_DEVICES = 2
 BOOKS_IN_PERIOD = 1
 BOOKS_PER_USER = 20
+SESSIONS_PAUSE = 5
 
 
 def connect_to_mongo_database(db):
@@ -79,7 +86,7 @@ def remove_duplicate_sessions(book_id):
         rootLogger.info('Exception in index creating for duplicated sessions')
         rootLogger.info(e)
 
-    for session in book_sessions:
+    for session, index in zip(book_sessions, tqdm(range(book_sessions.count()))):
         duplicate_sessions = db_sessions[book_id].find({'_from': session['_from'],
                                                         '_to': session['_to'],
                                                         'item_id': session['item_id'],
@@ -89,15 +96,12 @@ def remove_duplicate_sessions(book_id):
                 if abs(float((session['read_at'] - duplicate_session['read_at']).total_seconds())) <= 5:
                     db_sessions[book_id].remove({'_id': duplicate_session['_id']})
                     removed_sessions = removed_sessions + 1
-                    if removed_sessions % log_step == 0:
-                        rootLogger.info('Remove {%d} duplicates' % removed_sessions)
         processed_sessions = processed_sessions + 1
-        if processed_sessions % log_step == 0:
-            rootLogger.info('Process {%d} sessions' % processed_sessions)
+    rootLogger.info('Remove {%d} duplicates' % removed_sessions)
 
 
 def process_sessions_to_book_percent_scale(book_id, update_old=False):
-    # process percents of sessions in item into percent of sessions in book
+    rootLogger.info('Process sessions to book procent/symbols scales')
     db = connect_to_mongo_database(BOOKS_DB)
 
     if not update_old:
@@ -110,7 +114,7 @@ def process_sessions_to_book_percent_scale(book_id, update_old=False):
 
     book_symbols_num = db['books'].find_one({'_id': book_id})['symbols_num']
 
-    for session in sessions:
+    for session, index in zip(sessions, tqdm(range(sessions.count()))):
         session_item = items.find_one({'id': session['item_id']})
         if session_item is None:
             rootLogger.info('Find None item with id {%s}' % session['item_id'])
@@ -150,37 +154,39 @@ def process_sessions_to_book_percent_scale(book_id, update_old=False):
             rootLogger.info('{%d} sessions processed' % num_sessions)
 
 
-def remove_by_begin(book_id):
+def remove_by_begin(book_id, user_ids, remove=True):
     rootLogger.info('Begin to remove by begin')
     db = connect_to_mongo_database(BOOKS_DB)
-    users = db[book_id].distinct('user_id')
+    db[book_id].create_index([('user_id', pymongo.ASCENDING)])
+    # users = db[book_id].distinct('user_id')
     remove_counter = 0
-    for user_id in users:
+    for user_id in user_ids:
         # clear users who begin to read at > 10% of the book
         min_position = 100.0
-        sessions = db[book_id].find({'user_id': user_id}).sort("read_at", pymongo.ASCENDING)
+        sessions = db[book_id].find({'user_id': user_id})
         for session in sessions:
             if 'book_from' not in session:
                 db[book_id].remove({'_id': session['_id']})
             elif float(session['book_from']) < min_position:
                 min_position = session['book_from']
-        if min_position > 10.0:
-            for session in sessions:
-                db[book_id].remove({'_id': session['_id']})
+        if remove and min_position > 10.0:
             remove_counter += 1
-            continue
-    rootLogger.info('Removed by beginners after 10 percent of the book: [%d]' % remove_counter)
-    return remove_counter
+            user_sessions = db[book_id].find({'user_id': user_id})
+            for session in user_sessions:
+                db[book_id].remove({'_id': session['_id']})
+        db['%s_users' % book_id].update({'_id': user_id},
+                                        {'$set': {'min_position': min_position}})
+    if remove:
+        rootLogger.info('Removed by reading after begin: [%d]' % remove_counter)
 
 
-def remove_by_session_per_fragment(book_id):
-    rootLogger.info('Begin to remove by number of sessions/fragment')
+def process_session_per_fragment(book_id):
+    rootLogger.info('Begin to define the number of sessions/fragment')
     db = connect_to_mongo_database(BOOKS_DB)
     users = db[book_id].distinct('user_id')
-    fragments = dict()
-    remove = False
-    remove_counter = 0
-    for user_id in users:
+
+    for user_id, index in zip(users, tqdm(range(len(users)))):
+        fragments = dict()
         sessions = db[book_id].find({'user_id': user_id})
         for session in sessions:
             if '%d_%d' % (session['symbol_from'], session['symbol_to']) not in fragments:
@@ -191,92 +197,96 @@ def remove_by_session_per_fragment(book_id):
                 fragments['%d_%d' % (session['symbol_from'], session['symbol_to'])] += 1
                 db[book_id].update({'_id': session['_id']},
                                    {'$set': {'status': 'returning'}})
-            if fragments['%d_%d' % (session['symbol_from'], session['symbol_to'])] > SESSIONS_PER_FRAGMENT:
-                remove = True
-                break
-        if remove:
-            for session in sessions:
-                db[book_id].remove({'_id': session['_id']})
-            remove_counter += 1
-            continue
-    rootLogger.info('Removed by more then %d sessions per fragment: [%d]' % (SESSIONS_PER_FRAGMENT, remove_counter))
-    return remove_counter
+        max_per_fragment = 0
+        for fragment in fragments:
+            max_per_fragment = max(max_per_fragment, fragments[fragment])
+        if db['%s_users' % book_id].find({'_id': user_id}).count() != 0:
+            db['%s_users' % book_id].update_one({'_id': user_id},
+                                                {'$set': {'max_per_fragment': max_per_fragment}})
+        else:
+            db['%s_users' % book_id].insert_one({'_id': user_id,
+                                                 'max_per_fragment': max_per_fragment})
 
 
-def remove_by_devices(book_id):
+def remove_by_devices(book_id, user_ids, remove=True):
     rootLogger.info ('Begin to remove by devices')
     db = connect_to_mongo_database(BOOKS_DB)
     full_sessions = connect_to_mongo_database(FULL_SESSIONS_DB)
-    users = db[book_id].distinct('user_id')
+    # users = db[book_id].distinct('user_id')
     remove_counter = 0
 
-    for user_id in users:
-        if len(full_sessions['sessions'].find({'user_id': user_id}).distinct('app_user_agent')) > USER_DEVICES:
-            sessions = db[book_id].find({'user_id': user_id})
-            for session in sessions:
-                db[book_id].remove({'_id': session['_id']})
+    for user_id in user_ids:
+        if db['%s_users' % book_id].find({'_id': user_id}).count != 0:
+            user = db['%s_users' % book_id].find_one({'_id': user_id})
+            if 'user_devices' in user:
+                user_devices = user['user_devices']
+        else:
+            user_devices = len(full_sessions['sessions'].find({'user_id': user_id}).distinct('app_user_agent'))
+            db['%s_users' % book_id].update_one({'_id': user_id},
+                                                {'$set': {'user_devices': user_devices}})
+        if remove and user_devices > USER_DEVICES:
             remove_counter += 1
-    rootLogger.info('Removed by more then %d devices per user: [%d]' % (USER_DEVICES, remove_counter))
-    return remove_counter
+            user_sessions = db[book_id].find({'user_id': user_id})
+            for session in user_sessions:
+                db[book_id].remove({'_id': session['_id']})
+
+    if remove:
+        rootLogger.info('Remove users with multiple devices: [%d]' % remove_counter)
 
 
-def remove_by_parallel_reading(book_id):
+def remove_by_parallel_reading(book_id, user_ids, remove=True):
     rootLogger.info('Begin to remove by parallel reading')
     db = connect_to_mongo_database(BOOKS_DB)
     full_sessions = connect_to_mongo_database(FULL_SESSIONS_DB)
-    users = db[book_id].distinct('user_id')
+    # users = db[book_id].distinct('user_id')
     remove_counter = 0
 
-    for user_id in users:
-        min_date = db[book_id].find({'user_id': user_id}).sort('read_at', pymongo.ASCENDING).distinct('read_at')[0]
-        max_date = db[book_id].find({'user_id': user_id}).sort('read_at', pymongo.DESCENDING).distinct('read_at')[0]
-        books_in_period = full_sessions['sessions'].find({'read_at': {'$gte': min_date, '$lte': max_date},
-                                                           'user_id': user_id}).distinct('book_id')
-        if len(books_in_period) > BOOKS_IN_PERIOD:
-            sessions = db[book_id].find({'user_id': user_id})
-            for session in sessions:
-                db[book_id].remove({'_id': session['_id']})
+    for user_id in user_ids:
+        book_sessions = db[book_id].find({'user_id': user_id}).sort('read_at', pymongo.ASCENDING).distinct('read_at')
+        min_date = book_sessions[0]
+        max_date = book_sessions[len(book_sessions) - 1]
+        books_in_period = len(full_sessions['sessions'].find({'read_at': {'$gte': datetime.datetime.timestamp(min_date) * 1000,
+                                                                          '$lte': datetime.datetime.timestamp(max_date) * 1000},
+                                                              'user_id': user_id}).distinct('book_id'))
+        db['%s_users' % book_id].update_one({'_id': user_id},
+                                            {'$set': {'books_in_period': books_in_period}})
+        if remove and books_in_period > BOOKS_IN_PERIOD:
             remove_counter += 1
-            continue
-    rootLogger.info('Removed by parallel reading of more then %d books: [%d]' % (BOOKS_IN_PERIOD, remove_counter))
-    return remove_counter
+            user_sessions = db[book_id].find({'user_id': user_id})
+            for session in user_sessions:
+                db[book_id].remove({'_id': session['_id']})
+
+    if remove:
+        rootLogger.info('Remove users with parallel books: [%d]' % remove_counter)
 
 
-def remove_by_absolute_num_of_books(book_id):
+def remove_by_absolute_num_of_books(book_id, user_ids, remove=True):
     rootLogger.info('Remove users with big number of books per whole period')
     db = connect_to_mongo_database(BOOKS_DB)
     full_sessions = connect_to_mongo_database(FULL_SESSIONS_DB)
-    users = db[book_id].distinct('user_id')
+    # users = db[book_id].distinct('user_id')
     remove_counter = 0
 
-    for user_id in users:
-        user_books = full_sessions['sessions'].find({'user_id': user_id}).distinct('book_id')
-        if len(user_books) > BOOKS_PER_USER:
-            sessions = db[book_id].find({'user_id': user_id})
-            for session in sessions:
-                db[book_id].remove({'_id': session['_id']})
+    for user_id in user_ids:
+        user_books = len(full_sessions['sessions'].find({'user_id': user_id}).distinct('book_id'))
+        db['%s_users' % book_id].update_one({'_id': user_id},
+                                            {'$set': {'user_books': user_books}})
+        if remove and user_books > BOOKS_PER_USER:
+            user_sessions = db[book_id].find({'user_id': user_id})
             remove_counter += 1
-            continue
-    rootLogger.info("Removed after clearing readers with more then %d books in dataset: [%d]" % (BOOKS_PER_USER, remove_counter))
-    return remove_counter
+            for session in user_sessions:
+                db[book_id].remove({'_id': session['_id']})
+
+    if remove:
+        rootLogger.info('Remove by absolute number of the books: [%d]' % remove_counter)
 
 
-def clear_book_users(book_id):
+def clear_book_users(book_id, user_ids):
     rootLogger.info ('Begin to clear book users')
-    db = connect_to_mongo_database(BOOKS_DB)
-    users = db[book_id].find().distinct('user_id')
-    rootLogger.info('Total number of users before clearing: [%d]' % len(users))
-
-    remove_counter_1 = remove_by_begin(book_id)
-    remove_counter_2 = remove_by_session_per_fragment(book_id)
-    remove_counter_3 = remove_by_devices(book_id)
-    remove_counter_4 = remove_by_parallel_reading(book_id)
-    remove_counter_5 = remove_by_absolute_num_of_books(book_id)
-
-    # total_removed = remove_counter_1 + remove_counter_2 + remove_counter_3 + remove_counter_4 + remove_counter_5
-    # rootLogger.info('Removed %d/%d users' % (total_removed, len(users)))
-    users = db[book_id].find().distinct('user_id')
-    rootLogger.info('Total number of users after removing: [%d]' % len(users))
+    remove_by_begin(book_id, user_ids)
+    # remove_by_devices(book_id) # TODO
+    # remove_by_parallel_reading(book_id) # TODO
+    # remove_by_absolute_num_of_books(book_id, user_ids)
 
 
 def convert_sessions_time(book_id):
@@ -292,7 +302,7 @@ def convert_sessions_time(book_id):
             rootLogger.info('Processed {%d} sessions.' % processed)
 
 
-def calculate_session_speed(book_id, user_id, max_speed):
+def calculate_session_speed(book_id, user_id, max_speed=1200):
     # Calculation of speed for every micro-session
     # rootLogger.info ('Calculate session speed')
     db = connect_to_mongo_database(BOOKS_DB)
@@ -303,7 +313,7 @@ def calculate_session_speed(book_id, user_id, max_speed):
     session_break = 5  # in minutes
 
     user_sessions_number = sessions.count()
-    if user_sessions_number == 0:
+    if user_id is not None and user_sessions_number == 0:
         rootLogger.info ('There are no session for user [%d]' % user_id)
         return
 
@@ -313,7 +323,8 @@ def calculate_session_speed(book_id, user_id, max_speed):
         if previous_session == -1:
             previous_session = session
             db[book_id].update({'_id': previous_session['_id']},
-                               {'$set': {'speed': -1}})
+                               {'$set': {'speed': -1,
+                                         'category': 'normal'}})
             continue
 
         stats = dict()
@@ -321,18 +332,20 @@ def calculate_session_speed(book_id, user_id, max_speed):
         if int(session['size']) > 0:
             stats['symbols'] = session['symbol_to'] - session['symbol_from']
             stats['session_time'] = float((session['read_at'] - previous_session['read_at']).total_seconds() / 60)
-            if stats['session_time'] > session_break:
+            if stats['session_time'] >= session_break:
                 stats['speed'] = -1
                 unknown_sessions_number += 1
+            elif stats['session_time'] != 0:
+                stats['speed'] = stats['symbols'] / stats['session_time']
+                if stats['speed'] <= max_speed:
+                    # we don't need big (skip) speeds for average speed processing
+                    total_symbols += stats['symbols']
+                    total_time += stats['session_time']
+                    stats['category'] = 'normal'
+                else:
+                    stats['category'] = 'skip'
             else:
-                try:
-                    stats['speed'] = stats['symbols'] / stats['session_time']
-                    if stats['speed'] <= max_speed:
-                        # we don't need big (skip) speeds for average speed processing
-                        total_symbols += stats['symbols']
-                        total_time += stats['session_time']
-                except ZeroDivisionError:
-                    db[book_id].remove({'_id': session['_id']})
+                db[book_id].remove({'_id': session['_id']})
         previous_session = session
         db[book_id].update({'_id': session['_id']},
                            {'$set': stats})
@@ -342,62 +355,41 @@ def calculate_session_speed(book_id, user_id, max_speed):
         sessions = db[book_id].find({'user_id': user_id})
         for session in sessions:
             db[book_id].remove({'_id': session['_id']})
+        rootLogger.info('Remove user [%d], too much unknown sessions' % user_id)
         return
     if total_time == 0:
-        # rootLogger.info('User [%d] has only sessions with speed >= 1500 symbols/min, deleted' % user_id)
+        # rootLogger.info('User [%d] has only sessions with speed >= 1200 symbols/min, deleted' % user_id)
         sessions = db[book_id].find({'user_id': user_id})
         for session in sessions:
             db[book_id].remove({'_id': session['_id']})
+        rootLogger.info('Remove user [%d], total sessions time is zero')
         return
 
-    try:
-        avr_speed = total_symbols / total_time
-    except:
-        rootLogger.info('User [%d] has unexpected exception, deleted' % user_id)
-        sessions = db[book_id].find({'user_id': user_id})
-        for session in sessions:
-            db[book_id].remove({'_id': session['_id']})
-        return
+    avr_speed = total_symbols / total_time
     unknown_sessions = db[book_id].find({'speed': -1,
                                          'user_id': int(user_id)})
     for session in unknown_sessions:
         db[book_id].update({'_id': session['_id']},
-                           {'$set': {'speed': avr_speed}})
+                           {'$set': {'speed': avr_speed,
+                                     'category': 'normal'}})
 
-    unknown_sessions = db[book_id].find({'session_time': -1,
-                                         'user_id': int(user_id)})
-    for session in unknown_sessions:
-        db[book_id].update({'_id': session['_id']},
-                           {'$set': {'speed': avr_speed}})
+    db['%s_users' % book_id].update({'_id': user_id},
+                                    {'$set': {'avr_speed': avr_speed}})
 
 
-def calculate_relative_speed(book_id, user_id, skip_speed=1200):
+def calculate_relative_speed(book_id, user_id):
     # Calculate relative speed for user and define sessions categories
     db = connect_to_mongo_database(BOOKS_DB)
-    sessions = db[book_id].find({'user_id': user_id})
-    read_symbols = 0
-    total_time = 0
-
-    for session in sessions:
-        if 'speed' in session and 'symbols' in session and session['speed'] > 0:
-            read_symbols += session['symbols']
-            total_time += session['symbols'] / session['speed']
-        else:
-            db[book_id].remove({'_id': session['_id']})
-
-    if total_time > 0:
-        avr_user_speed = read_symbols / total_time
-
+    user_avr_speed = db['%s_users' % book_id].find_one({'_id': user_id})['avr_speed']
+    if user_avr_speed > 0:
         sessions = db[book_id].find({'user_id': user_id})
         for session in sessions:
-            if session['speed'] >= skip_speed:
-                category = 'skip'
+            if 'speed' in session:
+                abs_speed = session['speed'] / user_avr_speed
+                db[book_id].update({'_id': session['_id']},
+                                   {'$set': {'abs_speed': abs_speed}})
             else:
-                category = 'normal'
-            abs_speed = session['speed'] / avr_user_speed
-            db[book_id].update({'_id': session['_id']},
-                               {'$set': {'category': category,
-                                         'abs_speed': abs_speed}})
+                db[book_id].remove({'_id': session['_id']})
 
 
 def define_borders_for_items(book_id):
@@ -417,7 +409,7 @@ def define_borders_for_items(book_id):
     book = db_books['books'].find_one({'_id': book_id})
     symbols_num = book['symbols_num']
     documents = db_books['%s_items' % book_id].distinct('document_id')
-    for document_id in documents:
+    for document_id, index in zip(documents, range(len(documents))):
         document_items = db_books['%s_items' % book_id].find({'document_id': document_id})
         document_size = 0
         for item in document_items:
@@ -495,21 +487,76 @@ def process_users_book_percent_coverage(book_id):
     db = connect_to_mongo_database(BOOKS_DB)
     users_id = db[book_id].distinct('user_id')
 
-    for user_id in users_id:
-        if db['%s_users' % book_id].find({'_id': user_id}).count() != 0:
-            continue
+    for user_id, index in zip(users_id, tqdm(range(len(users_id)))):
         read_symbols, read_percents = 0, 0.0
-        user_sessions = db[book_id].find({'user_id': user_id}).sort('read_at')
+        user_sessions = db[book_id].find({'user_id': user_id,
+                                          'status': 'reading'})
         for session in user_sessions:
-            if 'book_to' in session and 'symbol_to' in session and\
-                            'status' in session and session['status'] == 'reading':
-                read_percents += (session['book_to'] - session['book_from'])
-                read_symbols += (session['symbol_to'] - session['symbol_from'])
+            read_percents += (session['book_to'] - session['book_from'])
+            read_symbols += (session['symbol_to'] - session['symbol_from'])
 
         if db['%s_users' % book_id].find({'_id': user_id}).count() == 0:
             db['%s_users' % book_id].insert({'_id': user_id,
                                              'read_symbols': read_symbols,
                                              'read_percents': read_percents})
+        else:
+            db['%s_users' % book_id].update({'_id': user_id},
+                                            {'$set':
+                                            {'read_symbols': read_symbols,
+                                             'read_percents': read_percents}})
+
+
+def verify_users_book_procent_coverage(book_id, users_id):
+    rootLogger.info('Begin to verify users percent coverage for the book')
+    db = connect_to_mongo_database(BOOKS_DB)
+    db[book_id].create_index([('read_at', pymongo.ASCENDING)])
+    book_symbols = connect_to_mongo_database(BOOKS_DB)['books'].find_one({'_id': book_id})['symbols_num']
+    target_users = []
+
+    for user_id, index in zip(users_id, tqdm(range(len(users_id)))):
+        user_profile = db['%s_users' % book_id].find_one({'_id': user_id})
+        if 'reading' in user_profile and 'returning' in user_profile and 'sessions' in user_profile:
+            if user_profile['returning'] / user_profile['sessions'] < 0.2:
+                target_users.append(user_id)
+            continue
+
+        sessions = db[book_id].find({'user_id': user_id}).sort('read_at')
+        sessions_num = sessions.count()
+        if sessions_num == 0:
+            rootLogger.info('User [%d] has zero sessions, skip' % user_id)
+            continue
+        segment_tree = SegmentTree(0, book_symbols)
+        returning_percent = 0
+        for session in sessions:
+            if session['symbol_from'] >= session['symbol_to']:
+                db[book_id].remove({'_id': session['_id']})
+                continue
+            sum = segment_tree.query_sum(session['symbol_from'] + 1, session['symbol_to'])
+            if sum != 0 and sum <= session['symbol_to'] - session['symbol_from']:
+                db[book_id].update({'_id': session['_id']},
+                                   {'$set': {'status': 'returning'}})
+                returning_percent += session['book_to'] - session['book_from']
+            else:
+                db[book_id].update({'_id': session['_id']},
+                                   {'$set': {'status': 'reading'}})
+                # for symbol in (session['symbol_from'], session['symbol_to']):
+                #     segment_tree.update(1, 0, book_symbols - 1, symbol, 1)
+                segment_tree.add(session['symbol_from'] + 1, session['symbol_to'], 1)
+
+        reading_num = db[book_id].find({'user_id': user_id, 'status': 'reading'}).count()
+        returning_num = db[book_id].find({'user_id': user_id, 'status': 'returning'}).count()
+        db['%s_users' % book_id].update({'_id': user_id},
+                                        {'$set': {'reading': reading_num,
+                                                  'sessions': sessions_num,
+                                                  'returning': returning_num}})
+
+        if returning_num / sessions_num < 0.2:
+            target_users.append(user_id)
+        else:
+            rootLogger.info('User [%d] have many returning sessions: [%d] normal, [%d] returning' %
+                            (user_id, sessions_num, returning_num))
+    rootLogger.info('Target users number after verification of coverage: [%d]', len(target_users))
+    return target_users
 
 
 def get_target_users_by_percent_coverage(book_id, min_percent_coverage, max_percent_coverage):
@@ -558,7 +605,7 @@ def get_all_items_borders(book_id):
     items = db[book_id].find().distinct('item_id')
 
     counter = 1
-    for item_id in items:
+    for item_id, index in zip(items, tqdm(range(len(items)))):
         if counter % 1000 == 0:
             rootLogger.info('Processing %d/%d items' % (counter, len(items)))
         item_borders = list()
@@ -579,7 +626,8 @@ def get_all_items_borders(book_id):
         counter += 1
 
 
-def set_sessions_borders(book_id, session_collection, drop_old=False, define_sessions_borders=False):
+def set_sessions_borders(book_id, session_collection, drop_old=False, define_sessions_borders=False,
+                         create_borders_collection=False):
     rootLogger.info('Begin to set sessions borders')
     db = connect_to_mongo_database(BOOKS_DB)
     db['%s_borders' % book_id].create_index([('symbol_from', pymongo.ASCENDING),
@@ -610,7 +658,8 @@ def set_sessions_borders(book_id, session_collection, drop_old=False, define_ses
 
     all_borders.sort()
     section_borders = db['%s_sections' % book_id].find().distinct('symbol_to')
-    if drop_old:
+    if create_borders_collection:
+        rootLogger.info('Create borders collection')
         db['%s_borders' % book_id].drop()
         for i in range(0, len(all_borders) - 1):
             if all_borders[i + 1] not in section_borders:
@@ -625,9 +674,7 @@ def set_sessions_borders(book_id, session_collection, drop_old=False, define_ses
     if define_sessions_borders:
         rootLogger.info('begin to define sessions borders')
         sessions = db[session_collection].find()
-        counter = 0
-        sessions_num = sessions.count()
-        for session in sessions:
+        for session, index in zip(sessions, tqdm(range(sessions.count()))):
             begin_border = bisect.bisect_left(all_borders, session['symbol_from'])
             end_border = bisect.bisect_left(all_borders, session['symbol_to']) - 1
             db[session_collection].update({'_id': session['_id']},
@@ -635,33 +682,23 @@ def set_sessions_borders(book_id, session_collection, drop_old=False, define_ses
                                           'begin_border': begin_border,
                                           'end_border': end_border
                                       }})
-            counter += 1
-            if counter % log_step == 0:
-                rootLogger.info('Process %d/%d sessions' % (counter, sessions_num))
-        db['%s_clear' % book_id].drop()
-        sessions = db[session_collection].find()
-        for session in sessions:
-            db['%s_clear' % book_id].insert(session)
-
-    return all_borders
 
 
 def define_target_sessions(book_id, target_users):
     rootLogger.info('Select target users sessions...')
     db = connect_to_mongo_database(BOOKS_DB)
     sessions = db[book_id].find()
-
     db['%s_target' % book_id].drop()
     for session in sessions:
         if 'user_id' in session and session['user_id'] in target_users:
             db['%s_target' % book_id].insert(session)
+    rootLogger.info('Insert %d target users sessions' % db['%s_target' % book_id].find().count())
 
-    rootLogger.info('Found %d target users sessions' % db['%s_target' % book_id].find().count())
 
-
-def get_absolute_speeds_for_borders(sessions_collection, borders_num):
-    rootLogger.info('Begin to calculate absolute speed for sessions')
+def get_absolute_speeds_for_borders(book_id, sessions_collection):
+    rootLogger.info('Begin to calculate absolute speed for sessions with normal category and reading status')
     db = connect_to_mongo_database(BOOKS_DB)
+    borders_num = db['%s_borders' % book_id].find().count()
 
     borders_abs_speeds = [0 for i in range(borders_num)]
     borders_sessions_num = [0 for i in range(borders_num)]
@@ -676,7 +713,6 @@ def get_absolute_speeds_for_borders(sessions_collection, borders_num):
     rootLogger.info('Begin to update borders with absolute speed')
     abs_speeds = list()
     for border_id in range(0, len(borders_abs_speeds)):
-
         if borders_sessions_num[border_id] != 0:
             abs_speed = borders_abs_speeds[border_id] / borders_sessions_num[border_id]
         else:
@@ -688,13 +724,15 @@ def get_absolute_speeds_for_borders(sessions_collection, borders_num):
                                           }})
 
 
-def get_unusual_sessions_for_borders(book_id, sessions_collection, borders_num):
-    borders = [0 for i in range(borders_num)]
+def get_unusual_sessions_for_borders_by_length(book_id, sessions_collection):
+
     db = connect_to_mongo_database(BOOKS_DB)
     sessions = db[sessions_collection].find()
+    borders_num = db['%s_borders' % book_id].find().count()
+    borders = [0 for i in range(borders_num)]
 
     for session in sessions:
-        if session['type'] == 'unusual':
+        if 'long' in session and session['long']:
             for border_id in range(session['begin_border'], session['end_border'] + 1):
                 borders[border_id] += 1
 
@@ -739,19 +777,24 @@ def aggregate_borders(book_id, symbols_num=1000):
             page_unusual_sessions = 0
             page_sessions = 0
             page_skip_sessions = 0
+            page_return_sessions = 0
             for page_border in page_borders:
-                page_speed += ((page_border['symbol_to'] - page_border['symbol_from']) / page_symbols) * page_border['abs_speed']
-                page_unusual_sessions += ((page_border['symbol_to'] - page_border['symbol_from']) / page_symbols) * page_border['unusual_sessions']
-                page_skip_sessions += ((page_border['symbol_to'] - page_border['symbol_from']) / page_symbols) * page_border['skip_sessions']
-                page_sessions += ((page_border['symbol_to'] - page_border['symbol_from']) / page_symbols) * page_border['sessions']
+                symbols_part = ((page_border['symbol_to'] - page_border['symbol_from']) / page_symbols)
+                page_speed += symbols_part * page_border['abs_speed']
+                page_unusual_sessions += symbols_part * page_border['unusual_sessions']
+                page_skip_sessions += symbols_part * page_border['skip_sessions']
+                page_return_sessions += symbols_part * page_border['return_sessions']
+                page_sessions += symbols_part * page_border['sessions']
 
             db['%s_borders' % book_id].update({'_id': border['_id']},
                                               {'$set': {'page_speed': page_speed,
                                                         'page_unusual_sessions': page_unusual_sessions,
                                                         'page_sessions': page_sessions,
                                                         'page_skip_sessions': page_skip_sessions,
+                                                        'page_return_sessions': page_return_sessions,
                                                         'page_unusual_percent': page_unusual_sessions / page_sessions,
                                                         'page_skip_percent': page_skip_sessions / page_sessions,
+                                                        'page_return_percent': page_return_sessions / page_sessions,
                                                         'page': page}})
             page_symbols = 0
             # page_time = 0
@@ -774,105 +817,55 @@ def count_number_of_users(book_id):
 
 
 def count_sessions_category_per_border(book_id, sessions_collection):
+    rootLogger.info('Begin to count sessions categories per border')
     db = connect_to_mongo_database(BOOKS_DB)
 
     borders = db['%s_borders' % book_id].find()
 
-    db['%s_target' % book_id].create_index([('symbol_from', pymongo.ASCENDING),
+    db[sessions_collection].create_index([('symbol_from', pymongo.ASCENDING),
                                             ('symbol_to', pymongo.ASCENDING),
                                             ('category', pymongo.ASCENDING)])
-    db['%s_target' % book_id].create_index([('symbol_from', pymongo.ASCENDING),
+    db[sessions_collection].create_index([('symbol_from', pymongo.ASCENDING),
                                             ('symbol_to', pymongo.ASCENDING)])
 
     skips_per_border = [0 for i in range(borders.count())]
     returns_per_border = [0 for i in range(borders.count())]
-    users = db[sessions_collection].find()
+    sessions_per_border = [0 for i in range(borders.count())]
+    users = db[sessions_collection].find().distinct('user_id')
 
     for user_id in users:
-        sessions = db[sessions_collection].find({'user_id': user_id})
+        sessions = db[sessions_collection].find({'user_id': user_id}).sort('read_at', pymongo.ASCENDING)
         begin_border = sorted(sessions.distinct('begin_border'))[0]
+        end_border = sorted(sessions.distinct('begin_border'))[len(sessions.distinct('begin_border')) - 1]
         seen_borders = list()
         # user sessions
         for session in sessions:
             # make fragments as seen
             for border_id in range(session['begin_border'], session['end_border'] + 1):
                 seen_borders.append(border_id)
+                sessions_per_border[border_id] += 1
             # skips
             if 'category' in session and session['category'] == 'skip':
                 for border_id in range(session['begin_border'], session['end_border'] + 1):
                     skips_per_border[border_id] += 1
             # returns
-            elif 'status' in sessions_collection and session['status'] == 'returning' \
-                    and 'category' in session and session['category'] == 'normal':
+            elif session['status'] == 'returning' and session['category'] == 'normal':
                 for border_id in range(session['begin_border'], session['end_border'] + 1):
                     returns_per_border[border_id] += 1
 
         # find fragments that user didn't see and mark them as skip
-        for border_id in range(begin_border, len(skips_per_border)):
-            if border_id not in seen_borders:
-                skips_per_border[border_id] += 1
+        # unseen_borders = list(set(range(begin_border, end_border)) - set(seen_borders))
+        # for border_id in unseen_borders:
+        #     # мы добавляем скип-сессию и просто сессию, иначе количество скипов будет >100%
+        #     sessions_per_border[border_id] += 1
+        #     skips_per_border[border_id] += 1
 
+    rootLogger.info('Begin to update borders collection')
     for border_id in range(0, len(skips_per_border)):
             db['%s_borders' % book_id].update({'_id': border_id},
-                                    {'$set': {'skip_sessions': skips_per_border[border_id]}})
-
-
-def count_unusual_sessions(sessions_collection, books_min=3):
-    rootLogger.info ('Begin to find unusual sessions')
-    db = connect_to_mongo_database(BOOKS_DB)
-    users_db = connect_to_mongo_database(USERS_DB)
-
-    users = db[sessions_collection].find().distinct('user_id')
-    rootLogger.info ('Target users number: [%d]' % len(users))
-    db[sessions_collection].create_index([('user_id', pymongo.ASCENDING)])
-    good_users = 0
-
-    # clear type field in sessions collection
-    sessions = db[sessions_collection].find()
-    for session in sessions:
-        db[sessions_collection].update({'_id': session['_id']},
-                                               {'$set': {
-                                                   'type': 'undefined'
-                                               }})
-
-    for user_id in users:
-        sessions = users_db[str(user_id)].find()
-        user_books_count = len(users_db[str(user_id)].find().distinct('book_id'))
-        usual_sessions_times = []
-        if user_books_count >= books_min:
-            good_users += 1
-            daytimes = list()
-            for i in range(0, 24):
-                daytimes.append(0)
-
-            for session in sessions:
-                daytimes[session['read_at'].hour] += 1
-            sessions_count = sum(daytimes)
-            sorted_daytime_indexes = sorted(range(len(daytimes)), key=lambda k: daytimes[k], reverse=True)
-            daytimes = sorted(daytimes, reverse=True)
-
-            counter = 0
-            for (hour, session_num) in zip(sorted_daytime_indexes, daytimes):
-                if counter + session_num <= int(0.8 * sessions_count):
-                    usual_sessions_times.append(hour)
-                    counter += session_num
-                else:
-                    break
-
-        sessions = db[sessions_collection].find({'user_id': user_id})
-        if len(usual_sessions_times) != 0:
-            for session in sessions:
-                if session['read_at'].hour in usual_sessions_times:
-                    db[sessions_collection].update({'_id': session['_id']},
-                                       {'$set': {
-                                           'type': 'usual'
-                                       }})
-                else:
-                    db[sessions_collection].update({'_id': session['_id']},
-                                       {'$set': {
-                                           'type': 'unusual'
-                                       }})
-    rootLogger.info ('Good users number: [%d]' % good_users)
+                                    {'$set': {'skip_sessions': skips_per_border[border_id],
+                                              'return_sessions': returns_per_border[border_id],
+                                              'sessions': sessions_per_border[border_id]}})
 
 
 def select_top_document_ids(book_id, top_n = 3):
@@ -892,23 +885,9 @@ def select_top_document_ids(book_id, top_n = 3):
         popular_ids.append(doc_id[0])
 
     sessions = db[book_id].find()
-    for session in sessions:
+    for session, index in zip(sessions, tqdm(range(sessions.count()))):
         if session['document_id'] not in popular_ids:
             db[book_id].remove({'_id': session['_id']})
-
-
-def check_book_speed(book_id):
-    db = connect_to_mongo_database(BOOKS_DB)
-    pages = db['%s_borders' % book_id].find({'page_speed': {'$exists': True}})
-
-    total_speed = 0
-    total_pages = pages.count()
-
-    for page in pages:
-        total_speed += page['page_speed']
-    avr_speed = total_speed / total_pages
-
-    rootLogger.info ('Average book page is %.3f' % avr_speed)
 
 
 def import_all_book_sessions(book_id):
@@ -921,11 +900,13 @@ def import_all_book_sessions(book_id):
 
     if '%s_save' % book_id in books_db.collection_names():
         book_sessions = books_db['%s_save' % book_id].find()
-        for session in book_sessions:
+        for session, index in zip(book_sessions, tqdm(range(book_sessions.count()))):
             books_db[book_id].insert(session)
     else:
         book_sessions = full_sessions_db['sessions'].find({'book_id': int(book_id)})
-        for session in book_sessions:
+        for session, index in zip(book_sessions, tqdm(range(book_sessions.count()))):
+            if session['user_id'] is None:
+                continue
             session['book_id'] = str(session['book_id'])
             session['read_at'] = datetime.datetime.fromtimestamp(session['read_at']/1000)
             books_db[book_id].insert(session)
@@ -939,12 +920,105 @@ def save_sessions(book_id):
     db = connect_to_mongo_database(BOOKS_DB)
     sessions = db[book_id].find()
 
+    db['%s_save' % book_id].drop()
     for session in sessions:
-        db['%s_save'].insert(session)
+        db['%s_save' % book_id].insert(session)
 
 
-def full_book_process(book_id):
-    rootLogger.info('Book [%s] process begin' % str(book_id))
+def collect_long_sessions(book_id):
+    db = connect_to_mongo_database(BOOKS_DB)
+    users = db[book_id].find().distinct('user_id')
+
+    rootLogger.info('Aggregate sessions to long sessions')
+    db['%s_long_sessions' % book_id].drop()
+    for user_id, index in zip(users, tqdm(range(len(users)))):
+        sessions = db[book_id].find({'user_id': user_id}).sort('read_at', pymongo.ASCENDING)
+        prev_session = None
+        long_session = {}
+        for session in sessions:
+            if prev_session is not None:
+                long_session['end_border'] = session['end_border']
+                long_session['symbol_to'] = session['symbol_to']
+                long_session['book_to'] = session['book_to']
+                long_session['small'].append(session['_id'])
+                if abs(float((session['read_at'] - prev_session['read_at']).total_seconds())) <= SESSIONS_PAUSE * 60:
+                    long_session['time'] += abs(float((session['read_at'] - prev_session['read_at']).total_seconds()))
+                    prev_session = session
+                else:
+                    long_session['size'] = long_session['symbol_to'] - long_session['symbol_from']
+
+                    db['%s_long_sessions' % book_id].insert(long_session)
+                    long_session = session
+                    long_session['small'] = []
+                    long_session['time'] = 0
+                    prev_session = session
+            else:
+                prev_session = session
+                long_session = session
+                long_session['time'] = 0.0
+                long_session['small'] = []
+
+    rootLogger.info('Detect session type short/long')
+    users = db[book_id].find().distinct('user_id')
+    for user_id, index in zip(users, tqdm(range(len(users)))):
+        long_sessions = db['%s_long_sessions' % book_id].find({'user_id': user_id})
+        long_sizes = []
+        for long_session in long_sessions:
+            long_sizes.append(long_session['time'])
+        long_sizes = Counter(long_sizes)
+        count = list(reversed(sorted(long_sizes.values())))
+        size = list(reversed(sorted(long_sizes, key=long_sizes.get)))
+
+        counter = 0
+        usual_sizes = []
+        for i in range(0, len(count)):
+            if counter + count[i] <= 0.6 * sum(count):
+                usual_sizes.append(size[i])
+                counter += count[i]
+
+        long_sessions = db['%s_long_sessions' % book_id].find({'user_id': user_id})
+        for long_session in long_sessions:
+            if long_session['time'] in usual_sizes:
+                is_long = False
+            else:
+                is_long = True
+            for session_id in long_session['small']:
+                db[book_id].update({'_id': session_id},
+                                    {'$set': {'long': is_long}})
+
+
+def calculate_categories_stats(book_id, user_id):
+    db = connect_to_mongo_database(BOOKS_DB)
+    sessions = db[book_id].find({'user_id': user_id})
+    normal, skip = 0, 0
+    for session in sessions:
+        if session['category'] == 'normal':
+            normal += 1
+        else:
+            skip += 1
+    db['%s_users' % book_id].update({'_id': user_id},
+                                    {'$set': {'normal': normal,
+                                              'skip': skip}})
+
+
+def verify_users_by_skips(book_id,  target_users, skip_percent=0.5):
+    rootLogger.info('Verify users on skip percent [%.3f] in all sessions' % skip_percent)
+    db = connect_to_mongo_database(BOOKS_DB)
+    approved_users = []
+
+    for user_id, index in zip(target_users, tqdm(range(len(target_users)))):
+        user = db['%s_users' % book_id].find_one({'_id': user_id,
+                                                  'status': 'reading'})
+        if user is None:
+            continue
+        if user['skip'] / (user['skip'] + user['normal']) <= skip_percent:
+            approved_users.append(user_id)
+    rootLogger.info('Approved [%d] users with normal number of skips' % len(approved_users))
+    return approved_users
+
+
+def sessions_processing(book_id):
+    rootLogger.info('Sessions for book [%s] process begin' % str(book_id))
     # sessions processing
     import_all_book_sessions(book_id)
     remove_duplicate_sessions(book_id)
@@ -953,38 +1027,56 @@ def full_book_process(book_id):
     process_sessions_to_book_percent_scale(book_id,
                                            update_old=True)
     get_all_items_borders(book_id)
-    all_borders = set_sessions_borders(book_id,
-                                       session_collection=book_id,
-                                       drop_old=True,
-                                       define_sessions_borders=True)
+    set_sessions_borders(book_id,
+                        session_collection=book_id,
+                        drop_old=True,
+                        define_sessions_borders=True,
+                        create_borders_collection=True)
+    process_session_per_fragment(book_id)
+    collect_long_sessions(book_id)
     save_sessions(book_id)
-    # users processing
-    clear_book_users(book_id)
+
+
+def users_processing(book_id):
+    rootLogger.info('Users for book [%s] process begin' % str(book_id))
     process_users_book_percent_coverage(book_id)
     target_users = get_target_users_by_percent_coverage(book_id,
-                                                        min_percent_coverage=70.0,
+                                                        min_percent_coverage=80.0,
                                                         max_percent_coverage=120.0)
 
+    clear_book_users(book_id, target_users)
+    target_users = verify_users_book_procent_coverage(book_id, target_users)
     rootLogger.info('Begin to calculate users sessions speed')
-    for user_id in target_users:
+    for user_id, index in zip(target_users, tqdm(range(len(target_users)))):
         calculate_session_speed(book_id, user_id, max_speed=1200)
         calculate_relative_speed(book_id, user_id)
+        calculate_categories_stats(book_id, user_id)
 
+    target_users = verify_users_by_skips(book_id, target_users, skip_percent=0.2)
     define_target_sessions(book_id, target_users)
     target_sessions_collection = str(book_id) + '_target'
 
     # sessions stats
-    count_unusual_sessions(target_sessions_collection)
     count_sessions_category_per_border(book_id, target_sessions_collection)
-    get_absolute_speeds_for_borders(target_sessions_collection, len(all_borders))
-    get_unusual_sessions_for_borders(book_id, target_sessions_collection, len(all_borders))
+    get_absolute_speeds_for_borders(book_id, target_sessions_collection)
+    get_unusual_sessions_for_borders_by_length(book_id, target_sessions_collection)
 
 
-book_ids = ['210901']
-for book_id in book_ids:
-    rootLogger.info('Process for DB [%s]' % BOOKS_DB)
-    full_book_process(book_id)
-    # aggregate_borders(book_id, symbols_num=1000)
-    # check_book_speed(book_id)
+def full_book_process(book_id):
+    sessions_processing(book_id)
+    # users_processing(book_id)
+
+
+def main():
+    book_ids = ['2206', '2207', '2543', '11833', '135089', '259222', '266700', '275066']
+    for book_id in book_ids:
+        rootLogger.info('Process for DB [%s]' % BOOKS_DB)
+        full_book_process(book_id)
+        # aggregate_borders(book_id, symbols_num=1000)
+
+
+if __name__ == "__main__":
+    main()
+
 
 

@@ -28,6 +28,7 @@ class PageStats(object):
         self.page_sessions = 0
         self.page_skip_percent = 0
         self.page_unusual_percent = 0
+        self.page_return_percent = 0
 
 
     def to_dict(self):

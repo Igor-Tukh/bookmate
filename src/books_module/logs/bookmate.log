@@ -1,77 +1,34 @@
-2017-11-07 22:38:37,147 [MainThread  ] [INFO ]  Process for DB [bookmate]
-2017-11-07 22:38:37,147 [MainThread  ] [INFO ]  Book [210901] process begin
-2017-11-07 22:38:37,147 [MainThread  ] [INFO ]  Begin to import sessions
-2017-11-07 22:49:34,490 [MainThread  ] [INFO ]  Inserted [1985312] book sessions in 656.626332273368 seconds
-2017-11-07 22:49:34,491 [MainThread  ] [INFO ]  Begin to remove duplicates
-2017-11-07 23:19:29,673 [MainThread  ] [INFO ]  Process {100000} sessions
-2017-11-07 23:48:11,379 [MainThread  ] [INFO ]  Process {200000} sessions
-2017-11-08 00:08:56,518 [MainThread  ] [INFO ]  Process {300000} sessions
-2017-11-08 00:28:51,747 [MainThread  ] [INFO ]  Process {400000} sessions
-2017-11-08 00:46:58,423 [MainThread  ] [INFO ]  Process {500000} sessions
-2017-11-08 01:05:46,448 [MainThread  ] [INFO ]  Process {600000} sessions
-2017-11-08 01:22:39,646 [MainThread  ] [INFO ]  Process {700000} sessions
-2017-11-08 01:44:34,695 [MainThread  ] [INFO ]  Process {800000} sessions
-2017-11-08 02:06:24,793 [MainThread  ] [INFO ]  Process {900000} sessions
-2017-11-08 02:26:29,367 [MainThread  ] [INFO ]  Process {1000000} sessions
-2017-11-08 02:45:36,598 [MainThread  ] [INFO ]  Process {1100000} sessions
-2017-11-08 02:54:19,973 [MainThread  ] [INFO ]  Process {1200000} sessions
-2017-11-08 02:56:04,449 [MainThread  ] [INFO ]  Process {1300000} sessions
-2017-11-08 02:58:59,217 [MainThread  ] [INFO ]  Process {1400000} sessions
-2017-11-08 03:02:07,981 [MainThread  ] [INFO ]  Process {1500000} sessions
-2017-11-08 03:05:14,463 [MainThread  ] [INFO ]  Remove {100000} duplicates
-2017-11-08 03:06:24,330 [MainThread  ] [INFO ]  Process {1600000} sessions
-2017-11-08 03:11:31,069 [MainThread  ] [INFO ]  Process {1700000} sessions
-2017-11-08 03:15:43,107 [MainThread  ] [INFO ]  Process {1800000} sessions
-2017-11-08 03:19:11,601 [MainThread  ] [INFO ]  Process {1900000} sessions
-2017-11-08 03:21:56,708 [MainThread  ] [INFO ]  Select top 3 documents and delete other sessions
-2017-11-08 03:23:22,247 [MainThread  ] [INFO ]  Define items percents/symbols
-2017-11-08 03:23:26,699 [MainThread  ] [INFO ]  Book {210901} done
-2017-11-08 03:23:26,700 [MainThread  ] [INFO ]  Inserted 7060 items
-2017-11-08 03:23:26,714 [MainThread  ] [INFO ]  Found {1609018} sessions
-2017-11-08 03:28:13,265 [MainThread  ] [INFO ]  {100000} sessions processed
-2017-11-08 03:32:59,319 [MainThread  ] [INFO ]  {200000} sessions processed
-2017-11-08 03:37:55,396 [MainThread  ] [INFO ]  {300000} sessions processed
-2017-11-08 03:40:56,819 [MainThread  ] [INFO ]  {1000} sessions removed
-2017-11-08 03:42:45,179 [MainThread  ] [INFO ]  {400000} sessions processed
-2017-11-08 03:43:47,344 [MainThread  ] [INFO ]  {2000} sessions removed
-2017-11-08 03:46:24,819 [MainThread  ] [INFO ]  {3000} sessions removed
-2017-11-08 03:47:30,288 [MainThread  ] [INFO ]  {500000} sessions processed
-2017-11-08 03:49:26,537 [MainThread  ] [INFO ]  {4000} sessions removed
-2017-11-08 03:51:52,333 [MainThread  ] [INFO ]  {5000} sessions removed
-2017-11-08 03:52:15,391 [MainThread  ] [INFO ]  {600000} sessions processed
-2017-11-08 03:56:26,741 [MainThread  ] [INFO ]  {6000} sessions removed
-2017-11-08 03:57:02,122 [MainThread  ] [INFO ]  {700000} sessions processed
-2017-11-08 04:01:50,132 [MainThread  ] [INFO ]  {800000} sessions processed
-2017-11-08 04:06:46,545 [MainThread  ] [INFO ]  {900000} sessions processed
-2017-11-08 04:11:39,971 [MainThread  ] [INFO ]  {1000000} sessions processed
-2017-11-08 04:16:46,428 [MainThread  ] [INFO ]  {1100000} sessions processed
-2017-11-08 04:22:02,701 [MainThread  ] [INFO ]  {1200000} sessions processed
-2017-11-08 04:27:18,158 [MainThread  ] [INFO ]  {1300000} sessions processed
-2017-11-08 04:32:33,265 [MainThread  ] [INFO ]  {1400000} sessions processed
-2017-11-08 04:37:29,632 [MainThread  ] [INFO ]  {1500000} sessions processed
-2017-11-08 04:42:19,143 [MainThread  ] [INFO ]  {1600000} sessions processed
-2017-11-08 04:42:45,381 [MainThread  ] [INFO ]  Begin to get all items borders
-2017-11-08 04:43:38,172 [MainThread  ] [INFO ]  Begin to set sessions borders
-2017-11-08 04:43:38,557 [MainThread  ] [INFO ]  Get all items borders
-2017-11-08 04:43:38,617 [MainThread  ] [INFO ]  Get all section borders
-2017-11-08 04:44:11,594 [MainThread  ] [INFO ]  begin to define sessions borders
-2017-11-08 04:44:38,273 [MainThread  ] [INFO ]  Process 100000/1602340 sessions
-2017-11-08 04:45:05,021 [MainThread  ] [INFO ]  Process 200000/1602340 sessions
-2017-11-08 04:45:31,104 [MainThread  ] [INFO ]  Process 300000/1602340 sessions
-2017-11-08 04:45:57,992 [MainThread  ] [INFO ]  Process 400000/1602340 sessions
-2017-11-08 04:46:26,073 [MainThread  ] [INFO ]  Process 500000/1602340 sessions
-2017-11-08 04:46:52,815 [MainThread  ] [INFO ]  Process 600000/1602340 sessions
-2017-11-08 04:47:19,834 [MainThread  ] [INFO ]  Process 700000/1602340 sessions
-2017-11-08 04:47:47,591 [MainThread  ] [INFO ]  Process 800000/1602340 sessions
-2017-11-08 04:48:14,188 [MainThread  ] [INFO ]  Process 900000/1602340 sessions
-2017-11-08 04:48:41,645 [MainThread  ] [INFO ]  Process 1000000/1602340 sessions
-2017-11-08 04:49:08,366 [MainThread  ] [INFO ]  Process 1100000/1602340 sessions
-2017-11-08 04:49:35,521 [MainThread  ] [INFO ]  Process 1200000/1602340 sessions
-2017-11-08 04:50:03,504 [MainThread  ] [INFO ]  Process 1300000/1602340 sessions
-2017-11-08 04:50:31,285 [MainThread  ] [INFO ]  Process 1400000/1602340 sessions
-2017-11-08 04:50:58,596 [MainThread  ] [INFO ]  Process 1500000/1602340 sessions
-2017-11-08 04:51:26,003 [MainThread  ] [INFO ]  Process 1600000/1602340 sessions
-2017-11-08 04:57:24,849 [MainThread  ] [INFO ]  Save book sessions without duplicates and with top-3 popular documents
-2017-11-08 05:04:11,242 [MainThread  ] [INFO ]  Begin to clear book users
-2017-11-08 05:04:13,856 [MainThread  ] [INFO ]  Total number of users before clearing: [19124]
-2017-11-08 05:04:13,856 [MainThread  ] [INFO ]  Begin to remove by begin
+2017-11-20 11:45:10,523 [MainThread  ] [INFO ]  Process for DB [bookmate]
+2017-11-20 11:45:10,524 [MainThread  ] [INFO ]  Sessions for book [2206] process begin
+2017-11-20 11:45:10,524 [MainThread  ] [INFO ]  Begin to import sessions
+2017-11-20 12:00:15,708 [MainThread  ] [INFO ]  Inserted [1386785] book sessions in 904.6626031095873 seconds
+2017-11-20 12:00:15,710 [MainThread  ] [INFO ]  Begin to remove duplicates
+2017-11-20 12:10:19,425 [MainThread  ] [INFO ]  Remove {85714} duplicates
+2017-11-20 12:10:19,426 [MainThread  ] [INFO ]  Select top 3 documents and delete other sessions
+2017-11-20 12:10:54,428 [MainThread  ] [INFO ]  Define items percents/symbols
+2017-11-20 12:11:03,984 [MainThread  ] [INFO ]  Book {2206} done
+2017-11-20 12:11:03,984 [MainThread  ] [INFO ]  Inserted 12167 items
+2017-11-20 12:11:03,987 [MainThread  ] [INFO ]  Process sessions to book procent/symbols scales
+2017-11-20 12:11:04,005 [MainThread  ] [INFO ]  Found {1258547} sessions
+2017-11-20 12:17:00,453 [MainThread  ] [INFO ]  {100000} sessions processed
+2017-11-20 12:23:28,102 [MainThread  ] [INFO ]  {200000} sessions processed
+2017-11-20 12:29:41,541 [MainThread  ] [INFO ]  {300000} sessions processed
+2017-11-20 12:36:06,209 [MainThread  ] [INFO ]  {400000} sessions processed
+2017-11-20 12:42:34,804 [MainThread  ] [INFO ]  {500000} sessions processed
+2017-11-20 12:48:59,594 [MainThread  ] [INFO ]  {600000} sessions processed
+2017-11-20 12:55:20,617 [MainThread  ] [INFO ]  {700000} sessions processed
+2017-11-20 13:02:02,615 [MainThread  ] [INFO ]  {800000} sessions processed
+2017-11-20 13:08:26,087 [MainThread  ] [INFO ]  {900000} sessions processed
+2017-11-20 13:15:06,009 [MainThread  ] [INFO ]  {1000000} sessions processed
+2017-11-20 13:21:48,154 [MainThread  ] [INFO ]  {1100000} sessions processed
+2017-11-20 13:28:20,812 [MainThread  ] [INFO ]  {1200000} sessions processed
+2017-11-20 13:32:15,158 [MainThread  ] [INFO ]  Begin to get all items borders
+2017-11-20 13:33:08,558 [MainThread  ] [INFO ]  Begin to set sessions borders
+2017-11-20 13:33:08,614 [MainThread  ] [INFO ]  Get all items borders
+2017-11-20 13:33:08,699 [MainThread  ] [INFO ]  Get all section borders
+2017-11-20 13:33:09,119 [MainThread  ] [INFO ]  Create borders collection
+2017-11-20 13:33:56,971 [MainThread  ] [INFO ]  begin to define sessions borders
+2017-11-20 13:41:18,320 [MainThread  ] [INFO ]  Begin to define the number of sessions/fragment
+2017-11-20 14:56:50,619 [MainThread  ] [INFO ]  Aggregate sessions to long sessions
+2017-11-20 16:13:25,095 [MainThread  ] [INFO ]  Detect session type short/long
+2017-11-20 16:27:17,427 [MainThread  ] [INFO ]  Save book sessions without duplicates and with top-3 popular documents

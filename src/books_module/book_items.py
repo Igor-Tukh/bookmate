@@ -41,7 +41,10 @@ def define_sections(book_id, book_file):
                         section['text'] += word + ' '
             section['symbol_to'] = symbol_from + len(section['text'])
             section['size'] = len(section['text'])
-            db['%s_sections' % book_id].insert(section)
+            try:
+                db['%s_sections' % book_id].insert(section)
+            except:
+                pass
             _id += 1
             symbol_from = symbol_from + section['size'] + 1
 
@@ -135,12 +138,12 @@ def process_book(book_id):
 
     define_sections(book_id, book_xml)
     process_documents(book_id)
-    # find_popular_documents(book_id)
+    find_popular_documents(book_id)
 
 
-book_id = '210901'
-process_book(book_id)
-get_book_size(book_id)
+book_ids = ['2206', '2207', '2543', '11833', '135089', '259222', '266700', '275066']
+for book_id in book_ids:
+    process_book(book_id)
 
 
 

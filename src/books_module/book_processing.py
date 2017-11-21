@@ -23,7 +23,7 @@ morph = pymorphy2.MorphAnalyzer()
 person_pronouns_list = ['я', 'ты', 'он', 'она', 'оно', 'мы', 'вы', 'они']
 ru_stopwords = get_stop_words('russian')
 mystem = Mystem()
-DB = 'bookmate_paid'
+DB = 'bookmate'
 # GLOBAL VARIABLES SECTION END
 
 
@@ -102,7 +102,7 @@ def process_book(book_id):
     full_text = ''
 
     text = nltk.word_tokenize(get_book_text_from_sections(book_id))
-    prev_word = ''
+
     for word in text:
         if len(full_text) <= current_border['symbol_to']:
             if word in punctuation:
@@ -124,6 +124,7 @@ def process_book(book_id):
             page_stats.page_sessions = current_border['page_sessions']
             page_stats.page_skip_percent = current_border['page_skip_percent']
             page_stats.page_unusual_percent = current_border['page_unusual_percent']
+            page_stats.page_return_percent = current_border['page_return_percent']
 
             book_table.insert(page_stats.to_dict())
             position = page_stats.symbol_to + 1
@@ -293,14 +294,14 @@ def main(book_id):
 
     print('Process book [%s]' % book_id)
     process_book(book_id)
-    # count_new_vocabulary(book_id)
-    # count_sentiment(book_id)
+    count_new_vocabulary(book_id)
+    count_sentiment(book_id)
     elapsed = timeit.default_timer() - start_time
     print('Book with id %s was processed in %s seconds \n' % (book_id, str(elapsed)))
 
 
 if __name__ == "__main__":
-    book_ids = ['2206', '2207', '2289', '2543', '135089']
+    book_ids = ['210901']
     for book_id in book_ids:
         main(book_id)
         export_book_pages(book_id)
