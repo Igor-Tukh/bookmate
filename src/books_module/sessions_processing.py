@@ -6,7 +6,6 @@ import math
 import logging
 import timeit
 import sys
-import operator
 from tqdm import tqdm
 from collections import Counter
 sys.setrecursionlimit(2000)
@@ -78,13 +77,9 @@ def remove_duplicate_sessions(book_id):
     db_sessions = connect_to_mongo_database(BOOKS_DB)
     book_sessions = db_sessions[book_id].find(no_cursor_timeout=True)
     processed_sessions, removed_sessions = 0, 0
-    try:
-        db_sessions[book_id].create_index(
+    db_sessions[book_id].create_index(
             [('_from', pymongo.ASCENDING), ('_to', pymongo.ASCENDING), ('item_id', pymongo.ASCENDING),
              ('user_id', pymongo.ASCENDING)])
-    except Exception as e:
-        rootLogger.info('Exception in index creating for duplicated sessions')
-        rootLogger.info(e)
 
     for session, index in zip(book_sessions, tqdm(range(book_sessions.count()))):
         duplicate_sessions = db_sessions[book_id].find({'_from': session['_from'],
@@ -110,7 +105,6 @@ def process_sessions_to_book_percent_scale(book_id, update_old=False):
         sessions = db[book_id].find(no_cursor_timeout=True)
     items = db['%s_items' % book_id]
     rootLogger.info('Found {%s} sessions' % sessions.count())
-    num_sessions, deleted_sessions = 0, 0
 
     book_symbols_num = db['books'].find_one({'_id': book_id})['symbols_num']
 
@@ -142,16 +136,7 @@ def process_sessions_to_book_percent_scale(book_id, update_old=False):
                                                 'symbol_to': symbol_to
                                                 }})
         except Exception as e:
-            # rootLogger.info(e)
-            # rootLogger.info('skip and remove this session...')
             db[book_id].remove({'_id': session['_id']})
-            deleted_sessions += 1
-            if deleted_sessions % 1000 == 0:
-                rootLogger.info ("{%d} sessions removed" % deleted_sessions)
-
-        num_sessions = num_sessions + 1
-        if num_sessions % log_step == 0:
-            rootLogger.info('{%d} sessions processed' % num_sessions)
 
 
 def remove_by_begin(book_id, user_ids, remove=True):
@@ -552,9 +537,7 @@ def verify_users_book_procent_coverage(book_id, users_id):
 
         if returning_num / sessions_num < 0.2:
             target_users.append(user_id)
-        else:
-            rootLogger.info('User [%d] have many returning sessions: [%d] normal, [%d] returning' %
-                            (user_id, sessions_num, returning_num))
+
     rootLogger.info('Target users number after verification of coverage: [%d]', len(target_users))
     return target_users
 
@@ -1020,10 +1003,10 @@ def verify_users_by_skips(book_id,  target_users, skip_percent=0.5):
 def sessions_processing(book_id):
     rootLogger.info('Sessions for book [%s] process begin' % str(book_id))
     # sessions processing
-    import_all_book_sessions(book_id)
-    remove_duplicate_sessions(book_id)
-    select_top_document_ids(book_id, 3)
-    define_borders_for_items(book_id)
+    # import_all_book_sessions(book_id)
+    # remove_duplicate_sessions(book_id)
+    # select_top_document_ids(book_id, 3)
+    # define_borders_for_items(book_id)
     process_sessions_to_book_percent_scale(book_id,
                                            update_old=True)
     get_all_items_borders(book_id)
@@ -1063,16 +1046,16 @@ def users_processing(book_id):
 
 
 def full_book_process(book_id):
-    sessions_processing(book_id)
-    # users_processing(book_id)
+    # sessions_processing(book_id)
+    users_processing(book_id)
 
 
 def main():
-    book_ids = ['2206', '2207', '2543', '11833', '135089', '259222', '266700', '275066']
+    book_ids = ['2206', '259222', '266700', '9297', '2543']
     for book_id in book_ids:
         rootLogger.info('Process for DB [%s]' % BOOKS_DB)
         full_book_process(book_id)
-        # aggregate_borders(book_id, symbols_num=1000)
+        aggregate_borders(book_id, symbols_num=1000)
 
 
 if __name__ == "__main__":

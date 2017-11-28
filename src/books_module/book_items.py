@@ -9,6 +9,7 @@ punctuation = string.punctuation
 punctuation += '—'
 punctuation += '…'
 
+
 def connect_to_database_books_collection(db):
     client = MongoClient('localhost', 27017)
     return client[db]
@@ -21,6 +22,7 @@ def get_tag(item):
 
 def define_sections(book_id, book_file):
     db = connect_to_database_books_collection(BOOKMATE_DB)
+    db['%s_sections' % book_id].drop()
     root = ET.ElementTree(book_file).getroot()
     _id = 1
     symbol_from = 0
@@ -80,7 +82,7 @@ def get_book_size(book_id):
 def process_documents(book_id):
     db = connect_to_database_books_collection(BOOKMATE_DB)
     documents = db['%s_items' % book_id].find().distinct('document_id')
-
+    db['%s_documents' % book_id].drop()
     for document_id in documents:
         document_items = db['%s_items' % book_id].find({'document_id': document_id}).sort('position')
         document_json = {}
@@ -141,9 +143,12 @@ def process_book(book_id):
     find_popular_documents(book_id)
 
 
-book_ids = ['2206', '2207', '2543', '11833', '135089', '259222', '266700', '275066']
+# book_ids = ['11833', '135089', '259222', '266700', '275066']
+book_ids = ['9297']
 for book_id in book_ids:
+    print ('Book [%s]' % book_id)
     process_book(book_id)
+    get_book_size(book_id)
 
 
 

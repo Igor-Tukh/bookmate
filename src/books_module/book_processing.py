@@ -6,11 +6,13 @@ import nltk
 import string
 import pymorphy2
 import timeit
+import pandas as pd
 from stop_words import get_stop_words
 from bson.int64 import Int64
 import json
 from pymystem3 import Mystem
 from PageStats import PageStats
+from sklearn.preprocessing import MinMaxScaler
 
 print ('>book_processing.py')
 
@@ -143,6 +145,7 @@ def process_book(book_id):
 def update_page_stats(page_stats, text):
     count_simple_text_features(page_stats, text)
     count_morphological_features(page_stats, text)
+    count_dialogs_num(page_stats, text)
 
 
 def update_book_stats(book_stats, page_stats):
@@ -154,14 +157,14 @@ def update_book_stats(book_stats, page_stats):
 
 def get_full_book_stats(book_stats):
     book_stats.avr_sentence_len = book_stats.symbols_num / book_stats.sentences_num
-    # book_stats.avr_dialogs_part = book_stats.dialogs_num / book_stats.p_num
+    book_stats.avr_dialogs_part = book_stats.dialogs_num / book_stats.sentences_num
     book_stats.avr_word_len = book_stats.symbols_num / book_stats.words_num
 
 
 def get_full_page_stats(page_stats):
     try:
         page_stats.person_verbs_part = page_stats.person_verbs_num / page_stats.words_num
-        # page_stats.dialogs_part = page_stats.dialogs_num / page_stats.p_num
+        page_stats.dialogs_part = page_stats.dialogs_num / page_stats.sentences_num
         page_stats.person_pronouns_part = page_stats.person_pronouns_num / page_stats.words_num
         page_stats.avr_word_len = page_stats.symbols_num / page_stats.words_num
     except Exception as e:
@@ -171,11 +174,15 @@ def get_full_page_stats(page_stats):
 def count_simple_text_features(page_stats, text):
     if text is None or len(text) == 0:
         return
-    if text[0] == '—' or text[0] == '–':
-        page_stats.dialogs_num += 1
     page_stats.words_num += number_of_words(text)
     page_stats.sentences_num += number_of_sentences(text)
     page_stats.symbols_num += len(text)
+
+
+def count_dialogs_num(page_stats, text):
+    if text is None or len(text) == 0:
+        return
+    page_stats.dialogs_num = text.count('—')
 
 
 def count_morphological_features(page_stats, text):
@@ -222,7 +229,7 @@ def count_sentiment(book_id):
     print("Process sentiment now.")
     db = connect_to_database_books_collection()
     items = db['%s_pages' % book_id].find()
-    with open('../../resources/sentiment_dictionary.json', 'r') as f:
+    with open('../../resources/sentiment_dictionary_1.json', 'r', encoding='utf-8') as f:
         sentiment_dict = json.load(f)
 
     for item in items:
@@ -236,7 +243,7 @@ def count_sentiment(book_id):
             tokens = morph.parse(word)
             for token in tokens:
                 try:
-                    sentiment += float(sentiment_dict[token.normal_form])
+                    sentiment += sentiment_dict[token.normal_form]
                     sentiment_words_proportion += 1
                     break
                 except:
@@ -288,6 +295,22 @@ def export_book_pages(book_id):
             page_file.write(page['text'])
 
 
+def normalize(book_id):
+    db = connect_to_database_books_collection()
+    features = ['person_verbs_num', 'person_pronouns_num', 'words_num',
+                'avr_word_len', 'sentences_num', 'new_words_count',
+                'sentiment', 'dialogs_num']
+
+    for feature in features:
+        values = [x[feature] for x in db['%s_pages' % book_id].find({}, {feature: 1})]
+        v_max = max(values)
+        v_min = min(values)
+        values = [(x - v_min) / (v_max - v_min) for x in values]
+        for i in range(0, len(values)):
+            db['%s_pages' % book_id].update({'_id': i + 1},
+                                            {'$set': {feature: values[i]}})
+
+
 def main(book_id):
     connect_to_database_books_collection()
     start_time = timeit.default_timer()
@@ -296,6 +319,7 @@ def main(book_id):
     process_book(book_id)
     count_new_vocabulary(book_id)
     count_sentiment(book_id)
+    normalize(book_id)
     elapsed = timeit.default_timer() - start_time
     print('Book with id %s was processed in %s seconds \n' % (book_id, str(elapsed)))
 
