@@ -101,6 +101,8 @@ def get_item(session, book_id, document_id):
         process_items(book_id, document_id)
     document_json = db['{book_id}_documents'.format(book_id=book_id)].find_one({'_id': int(document_id)})
     for pos, item in document_json.items():
+        if pos == '_id':
+            continue
         if item['id'] == session['item_id']:
             return int(pos), item
     return -1, None
@@ -122,11 +124,11 @@ def get_text_by_session(session, book_id, document_id):
     skip = 0
     current_word_index = 0
 
-    while skip < from_len:
+    while current_word_index < len(words) and skip < from_len:
         skip += len(words[current_word_index]) + 1
         current_word_index += 1
 
-    while skip + len(session_text) < to_len:
+    while current_word_index < len(words) and skip + len(session_text) < to_len:
         word = words[current_word_index]
         if word in punctuation:
             session_text = session_text[:-1]
@@ -134,6 +136,22 @@ def get_text_by_session(session, book_id, document_id):
         current_word_index += 1
 
     return session_text
+
+
+def get_text_by_session_using_percents(session, book_id, book_text=None):
+    text = get_epub_book_text_with_ebook_convert(book_id) if book_text is None else book_text
+    first = int(len(text) * session['book_from'] / 100)
+    last = int(len(text) * session['book_to'] / 100)
+
+    if not is_not_letter(text[first]):
+        while first > 0 and not is_not_letter(text[first - 1]):
+            first -= 1
+
+    if not is_not_letter(text[last]):
+        while last < len(text) - 1 and not is_not_letter(text[last + 1]):
+            last += 1
+
+    return text[first:last+1]
 
 
 def get_epub_book_text_with_ebook_convert(book_id):
@@ -180,6 +198,10 @@ def print_document_stats(book_id, document_id):
     print('Text len: {len}, items summary len: {items_len}, ratio: {ratio}'.format(len = book_len,
                                                                                    items_len=items_len,
                                                                                    ratio=items_len / book_len))
+
+
+def is_not_letter(character):
+    return character in punctuation or character == '\n' or character == ' '
 
 
 if __name__ == '__main__':
