@@ -13,10 +13,12 @@ PUNCTUATION = string.punctuation
 
 
 class FeaturesBuilder(object):
-    def __init__(self, sessions):
+    def __init__(self, sessions, book_id):
         self.sessions = sessions
+        self.book_id = book_id
         self.generalized_features = {}
         self.features = []
+
         self.text_features_builders = \
             {'words_number': FeaturesBuilder.calculate_words_number,
              'sentences_number': FeaturesBuilder.calculate_sentences_number,
@@ -28,12 +30,17 @@ class FeaturesBuilder(object):
         self.context_features_builders = \
             {'hour': FeaturesBuilder.get_session_hour}
 
+        self.book_features_builders = \
+            {'distance_from_the_beginning' : FeaturesBuilder.get_distance_from_the_beginning}
+
         self.text_features_list = [name for name, _ in self.text_features_builders.items()]
         self.context_features_list = [name for name, _ in self.context_features_builders.items()]
+        self.book_features_list = [name for name, _ in self.book_features_builders.items()]
 
     def build_features(self,
                        certain_text_features=None,
                        certain_context_features=None,
+                       certain_book_features=None,
                        save_features=True,
                        filename='features.csv',
                        clear_features=True,
@@ -43,9 +50,18 @@ class FeaturesBuilder(object):
 
         text_features = self.text_features_list if certain_text_features is None else certain_text_features
         context_features = self.context_features_list if certain_context_features is None else certain_context_features
+        book_features = self.book_features_list if certain_book_features is None else \
+            certain_book_features
+
         for session in self.sessions:
-            session_features = self.build_text_features_for_session(session, book_text=text)
-            session_features.update(self.build_context_features_for_session(session))
+            session_features = self.build_text_features_for_session(session, book_text=text,
+                                                                    certain_features_list=text_features)
+            session_features.update(self.build_context_features_for_session(session,
+                                                                            certain_context_features=context_features))
+            session_features.update(self.build_book_features_for_session(session,
+                                                                         book_text=text,
+                                                                         certain_book_features=book_features))
+
             session_features['session_id'] = session['_id']
             session_features['speed'] = get_session_speed(session,
                                                           fix_old=True,
@@ -55,7 +71,7 @@ class FeaturesBuilder(object):
 
         if save_features:
             with open(filename, 'w') as csv_file:
-                fields = text_features + context_features
+                fields = text_features + context_features + book_features
                 fields.append('session_id')
                 fields.append('speed')
                 writer = csv.DictWriter(csv_file, fieldnames=fields)
@@ -93,11 +109,13 @@ class FeaturesBuilder(object):
             text = get_text_by_session_using_percents(session, session['book_id'])
         else:
             text = get_text_by_session_using_percents(session, session['book_id'], book_text)
+
         words = nltk.word_tokenize(text)
         running_features = self.text_features_list if certain_features_list is None else certain_features_list
         current_features = {}
         for feature in running_features:
             current_features[feature] = self.text_features_builders[feature](text, words)
+
         return current_features
 
     def build_context_features_for_session(self, session, certain_context_features=None):
@@ -105,6 +123,20 @@ class FeaturesBuilder(object):
         current_features = {}
         for feature in feature_list:
             current_features[feature] = self.context_features_builders[feature](session)
+
+        return current_features
+
+    def build_book_features_for_session(self, session, book_text=None, certain_book_features=None):
+        if book_text is None:
+            text = get_text_by_session_using_percents(session, session['book_id'])
+        else:
+            text = get_text_by_session_using_percents(session, session['book_id'], book_text)
+
+        feature_list = self.context_features_list if certain_book_features is None else certain_book_features
+        current_features = {}
+        for feature in feature_list:
+            current_features[feature] = self.book_features_builders[feature](session, self.book_id, text)
+
         return current_features
 
     @staticmethod
@@ -149,6 +181,10 @@ class FeaturesBuilder(object):
     def get_session_hour(session):
         return session['read_at'].hour
 
+    @staticmethod
+    def get_distance_from_the_beginning(session, book_id, text):
+        return session['book_from'] / 100
+
 
 def get_user_sessions(book_id, user_id):
     db = connect_to_mongo_database('bookmate')
@@ -165,5 +201,5 @@ if __name__ == '__main__':
     for book_id, document_id in BOOK_IDS:
         text = get_epub_book_text_with_ebook_convert(book_id)
         for user_id in USER_IDS[document_id]:
-            builder = FeaturesBuilder(get_user_sessions(book_id, user_id))
+            builder = FeaturesBuilder(get_user_sessions(book_id, user_id), book_id)
             builder.build_features(filename='../features/{user_id}.csv'.format(user_id=user_id), text=text)
