@@ -4,6 +4,7 @@ from src.doc2vec_module.src.process_epub import get_text_by_session, connect_to_
 import nltk
 import string
 import csv
+import os
 
 BOOK_IDS = [('135089', '1222472')]
 USER_IDS = {'1222472': ['42607', '374866', '1433804', '1540818', '1855471', '1970134', '1997078', '2067903', '2309986',
@@ -12,7 +13,15 @@ USER_IDS = {'1222472': ['42607', '374866', '1433804', '1540818', '1855471', '197
 PUNCTUATION = string.punctuation
 
 
-class FeaturesBuilder(object):
+def is_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
+class FeaturesHandler(object):
     def __init__(self, sessions, book_id):
         self.sessions = sessions
         self.book_id = book_id
@@ -20,22 +29,33 @@ class FeaturesBuilder(object):
         self.features = []
 
         self.text_features_builders = \
-            {'words_number': FeaturesBuilder.calculate_words_number,
-             'sentences_number': FeaturesBuilder.calculate_sentences_number,
-             'words_number_normalized': FeaturesBuilder.calculate_words_number_normalized,
-             'sentences_number_normalized': FeaturesBuilder.calculate_sentences_number_normalized,
-             'average_word_len': FeaturesBuilder.calculate_average_word_len,
-             'average_sentence_len': FeaturesBuilder.calculate_average_sentence_len}
+            {'words_number': FeaturesHandler.calculate_words_number,
+             'sentences_number': FeaturesHandler.calculate_sentences_number,
+             'words_number_normalized': FeaturesHandler.calculate_words_number_normalized,
+             'sentences_number_normalized': FeaturesHandler.calculate_sentences_number_normalized,
+             'average_word_len': FeaturesHandler.calculate_average_word_len,
+             'average_sentence_len': FeaturesHandler.calculate_average_sentence_len,
+             'rare_words_count': self.calculate_rare_words_number}
 
         self.context_features_builders = \
-            {'hour': FeaturesBuilder.get_session_hour}
+            {'hour': FeaturesHandler.get_session_hour}
 
         self.book_features_builders = \
-            {'distance_from_the_beginning' : FeaturesBuilder.get_distance_from_the_beginning}
+            {'distance_from_the_beginning': FeaturesHandler.get_distance_from_the_beginning}
 
         self.text_features_list = [name for name, _ in self.text_features_builders.items()]
         self.context_features_list = [name for name, _ in self.context_features_builders.items()]
         self.book_features_list = [name for name, _ in self.book_features_builders.items()]
+        self.all_features_list = self.text_features_list + self.context_features_list + self.book_features_list \
+                                 + ['session_id', 'speed', 'read_at']
+        self.rare_words = set()
+        with open(os.path.join('..', 'resources', '1grams-3.txt'), 'r') as freq_file:
+            for line in freq_file.readlines():
+                elements = line.replace('\t', ' ').split(' ')
+                count = int(elements[0])
+                word = elements[1].replace('\n', '')
+                if count <= 100:
+                    self.rare_words.add(word)
 
     def build_features(self,
                        certain_text_features=None,
@@ -54,6 +74,10 @@ class FeaturesBuilder(object):
             certain_book_features
 
         for session in self.sessions:
+            current_session_speed = int(session['speed'])
+            if current_session_speed < 200 or current_session_speed > 10000:
+                continue
+
             session_features = self.build_text_features_for_session(session, book_text=text,
                                                                     certain_features_list=text_features)
             session_features.update(self.build_context_features_for_session(session,
@@ -67,6 +91,8 @@ class FeaturesBuilder(object):
                                                           fix_old=True,
                                                           old_symbols_number=3568733,
                                                           current_symbols_number=len(text))
+            session_features['read_at'] = session['read_at']
+
             self.features.append(session_features)
 
         if save_features:
@@ -74,6 +100,7 @@ class FeaturesBuilder(object):
                 fields = text_features + context_features + book_features
                 fields.append('session_id')
                 fields.append('speed')
+                fields.append('read_at')
                 writer = csv.DictWriter(csv_file, fieldnames=fields)
                 writer.writeheader()
 
@@ -91,10 +118,16 @@ class FeaturesBuilder(object):
             for row in reader:
                 current_features = {}
                 for field in reader.fieldnames:
-                    current_features[field] = row[field]
+                    current_features[field] = float(row[field]) if is_float(row[field]) else row[field]
                 self.features.append(current_features)
 
-    def get_features_by_names(self, feature_names):
+    def get_features(self):
+        return self.features
+
+    def get_features_by_names(self, feature_names=None):
+        if feature_names is None:
+            feature_names = self.all_features_list
+
         results = []
         for session_features in self.features:
             features = []
@@ -157,11 +190,11 @@ class FeaturesBuilder(object):
 
     @staticmethod
     def calculate_words_number_normalized(text, words):
-        return FeaturesBuilder.calculate_words_number(text, words) / len(text)
+        return FeaturesHandler.calculate_words_number(text, words) / len(text)
 
     @staticmethod
     def calculate_sentences_number_normalized(text, words):
-        return FeaturesBuilder.calculate_sentences_number(text, words) / len(words)
+        return FeaturesHandler.calculate_sentences_number(text, words) / len(words)
 
     @staticmethod
     def calculate_average_word_len(text, words):
@@ -171,11 +204,18 @@ class FeaturesBuilder(object):
 
     @staticmethod
     def calculate_average_sentence_len(text, words):
-        total_len = int(FeaturesBuilder.calculate_average_word_len(text, words) * len(words))
-        sentensece_number = FeaturesBuilder.calculate_sentences_number(text, words)
+        total_len = int(FeaturesHandler.calculate_average_word_len(text, words) * len(words))
+        sentensece_number = FeaturesHandler.calculate_sentences_number(text, words)
         if sentensece_number == 1:
             return 0
-        return total_len / FeaturesBuilder.calculate_sentences_number(text, words)
+        return total_len / FeaturesHandler.calculate_sentences_number(text, words)
+
+    def calculate_rare_words_number(self, text, words):
+        count = 0
+        for word in words:
+            if word in self.rare_words:
+                count += 1
+        return count
 
     @staticmethod
     def get_session_hour(session):
@@ -201,5 +241,5 @@ if __name__ == '__main__':
     for book_id, document_id in BOOK_IDS:
         text = get_epub_book_text_with_ebook_convert(book_id)
         for user_id in USER_IDS[document_id]:
-            builder = FeaturesBuilder(get_user_sessions(book_id, user_id), book_id)
+            builder = FeaturesHandler(get_user_sessions(book_id, user_id), book_id)
             builder.build_features(filename='../features/{user_id}.csv'.format(user_id=user_id), text=text)
