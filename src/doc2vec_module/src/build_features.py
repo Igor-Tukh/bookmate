@@ -1,6 +1,7 @@
 from src.doc2vec_module.src.process_epub import get_text_by_session, connect_to_mongo_database, \
     get_text_by_session_using_percents, get_epub_book_text_with_ebook_convert
 from utils import *
+from pymystem3 import Mystem
 
 import nltk
 import string
@@ -20,6 +21,7 @@ class FeaturesHandler(object):
         self.book_id = book_id
         self.generalized_features = {}
         self.features = []
+        self.m = Mystem()
 
         self.text_features_builders = \
             {'words_number': FeaturesHandler.calculate_words_number,
@@ -28,7 +30,9 @@ class FeaturesHandler(object):
              'sentences_number_normalized': FeaturesHandler.calculate_sentences_number_normalized,
              'average_word_len': FeaturesHandler.calculate_average_word_len,
              'average_sentence_len': FeaturesHandler.calculate_average_sentence_len,
-             'rare_words_count': self.calculate_rare_words_number}
+             'rare_words_count': self.calculate_rare_words_number,
+             'verbs_count': lambda t, ws: self.calculate_verbs_and_nouns_number(t, ws)[0],
+             'noun_count': lambda t, ws: self.calculate_verbs_and_nouns_number(t, ws)[1]}
 
         self.context_features_builders = \
             {'hour': FeaturesHandler.get_session_hour,
@@ -212,6 +216,21 @@ class FeaturesHandler(object):
             if word in self.rare_words:
                 count += 1
         return count
+
+    def calculate_verbs_and_nouns_number(self, text, words):
+        nouns = 0
+        verbs = 0
+        res = self.m.analyze(text)
+        for element in res:
+            if 'analysis' in element and len(element['analysis']) > 0:
+                if 'gr' not in element['analysis'][0]:
+                    continue
+                res = element['analysis'][0]['gr'].split(',')
+                if res[0] == 'S':
+                    nouns += 1
+                elif res[0] == 'V':
+                    verbs += 1
+        return verbs, nouns
 
     @staticmethod
     def get_session_hour(session):
