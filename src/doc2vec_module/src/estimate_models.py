@@ -27,9 +27,10 @@ def upload_features(book_id, user_id):
     return features, handler
 
 
-def split_features(features, split_type):
-    total_features_cnt = len(features)
-    split_len = int(total_features_cnt * 0.8)
+def split_features(features, split_type, total_proportion=1.0, split_proportion=0.8):
+    total_features_cnt = int(len(features) * total_proportion)
+    split_len = int(total_features_cnt * split_proportion)
+    features = features[:total_features_cnt]
 
     if split_type is Split.ORDER:
         return features[:split_len], features[split_len:]
@@ -49,14 +50,17 @@ def split_features(features, split_type):
     return [], []
 
 
-def preapare_features(split_type, book_id, user_id, features_names, result_name):
+def preapare_features(split_type, book_id, user_id, features_names, result_name,
+                      features_proportion=1.0, split_proportion=0.8):
     features, handler = upload_features(book_id, user_id)
-    train, test = split_features(features, split_type)
+    train, test = split_features(features, split_type, features_proportion, split_proportion)
 
-    train_X = np.array([[value for key, value in features_dict.items() if key in features_names]
-                        for features_dict in train])
-    test_X = np.array([[value for key, value in features_dict.items() if key in features_names]
-                       for features_dict in test])
+    train_X = np.array([[features_dict[key]
+                         for key in features_names] for features_dict in train])
+
+    test_X = np.array([[features_dict[key]
+                         for key in features_names] for features_dict in test])
+
     train_y = np.array([features_dict[result_name] for features_dict in train])
     test_y = np.array([features_dict[result_name] for features_dict in test])
 
@@ -78,11 +82,12 @@ if __name__ == '__main__':
                                                                       'average_word_len', 'average_sentence_len',
                                                                       'hour', 'distance_from_the_beginning',
                                                                       'rare_words_count'},
-                                                                     'speed')
-                p
+                                                                     'speed',
+                                                                     0.1)
                 reg = regression_type
                 reg.fit(train_X, train_y)
                 pred_y = reg.predict(test_X)
+                qulity_y = reg.predict(train_X)
 
                 current_results['book_id'] = book_id
                 current_results['user_id'] = user_id

@@ -1,5 +1,6 @@
 from src.doc2vec_module.src.process_epub import get_text_by_session, connect_to_mongo_database, \
     get_text_by_session_using_percents, get_epub_book_text_with_ebook_convert
+from utils import *
 
 import nltk
 import string
@@ -11,14 +12,6 @@ USER_IDS = {'1222472': ['42607', '374866', '1433804', '1540818', '1855471', '197
                         '2488778', '2497291', '2504830', '2558482', '2694654', '2738651', '2750150', '2810724']}
 
 PUNCTUATION = string.punctuation
-
-
-def is_float(value):
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False
 
 
 class FeaturesHandler(object):
@@ -38,7 +31,8 @@ class FeaturesHandler(object):
              'rare_words_count': self.calculate_rare_words_number}
 
         self.context_features_builders = \
-            {'hour': FeaturesHandler.get_session_hour}
+            {'hour': FeaturesHandler.get_session_hour,
+             'is_weekend': FeaturesHandler.get_is_weekend}
 
         self.book_features_builders = \
             {'distance_from_the_beginning': FeaturesHandler.get_distance_from_the_beginning}
@@ -75,7 +69,7 @@ class FeaturesHandler(object):
 
         for session in self.sessions:
             current_session_speed = int(session['speed'])
-            if current_session_speed < 200 or current_session_speed > 10000:
+            if current_session_speed < 200 or current_session_speed > 8000:
                 continue
 
             session_features = self.build_text_features_for_session(session, book_text=text,
@@ -118,7 +112,9 @@ class FeaturesHandler(object):
             for row in reader:
                 current_features = {}
                 for field in reader.fieldnames:
-                    current_features[field] = float(row[field]) if is_float(row[field]) else row[field]
+                    val = row[field].replace('\n', '')
+                    current_features[field] = str_to_bool(val) if is_str_of_bool(val) \
+                        else float(val) if is_float(val) else val
                 self.features.append(current_features)
 
     def get_features(self):
@@ -184,7 +180,7 @@ class FeaturesHandler(object):
     def calculate_sentences_number(text, words):
         count = 1
         for word in words:
-            if word == '.':
+            if word == '.' or word == '?' or word == '!' or word == '...':
                 count += 1
         return count
 
@@ -220,6 +216,10 @@ class FeaturesHandler(object):
     @staticmethod
     def get_session_hour(session):
         return session['read_at'].hour
+
+    @staticmethod
+    def get_is_weekend(session):
+        return session['read_at'].weekday() > 4
 
     @staticmethod
     def get_distance_from_the_beginning(session, book_id, text):
