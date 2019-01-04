@@ -1,6 +1,6 @@
 from src.doc2vec_module.src.build_features import *
 from enum import Enum
-from sklearn.linear_model import Ridge, LinearRegression, Lasso
+from sklearn.linear_model import Ridge, LinearRegression, Lasso, SGDRegressor
 from sklearn.metrics import explained_variance_score, mean_absolute_error, mean_squared_error, mean_squared_log_error, \
     median_absolute_error, r2_score
 
@@ -60,8 +60,8 @@ def preapare_features(split_type, book_id, user_id, features_names, result_name,
     test_X = np.array([[features_dict[key]
                         for key in features_names] for features_dict in test])
 
-    train_y = np.array([features_dict[result_name] for features_dict in train])
-    test_y = np.array([features_dict[result_name] for features_dict in test])
+    train_y = np.array([np.log(features_dict[result_name]) for features_dict in train])
+    test_y = np.array([np.log(features_dict[result_name]) for features_dict in test])
 
     return train_X, test_X, train_y, test_y
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     book_id, document_id = BOOK_IDS[0]
     results = []
 
-    for regression_type in [LinearRegression()]:  # , Ridge(alpha=0.5), Lasso(alpha=0.1)]:
+    for regression_type in [Ridge(alpha=0.5), Lasso(alpha=0.1), LinearRegression(), SGDRegressor(max_iter=1000)]:
         for user_id in USER_IDS[document_id]:
             for split_type in [Split.RANDOM, Split.ORDER]:
                 current_results = {}
@@ -82,11 +82,9 @@ if __name__ == '__main__':
                                                                       'hour', 'distance_from_the_beginning',
                                                                       'rare_words_count', 'is_weekend',
                                                                       'verbs_count', 'noun_count'},
-                                                                     'speed',
-                                                                     0.1)
+                                                                     'speed')
                 reg = regression_type
                 reg.fit(train_X, train_y)
-                print(reg.coef_)
                 pred_y = reg.predict(test_X)
                 qulity_y = reg.predict(train_X)
 
