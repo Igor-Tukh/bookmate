@@ -13,6 +13,7 @@ USER_IDS = {'1222472': ['42607', '374866', '1433804', '1540818', '1855471', '197
                         '2488778', '2497291', '2504830', '2558482', '2694654', '2738651', '2750150', '2810724']}
 
 PUNCTUATION = string.punctuation
+EPS = 1e-9
 
 
 class FeaturesHandler(object):
@@ -47,11 +48,13 @@ class FeaturesHandler(object):
         self.all_features_list = self.text_features_list + self.context_features_list + self.book_features_list \
                                  + ['session_id', 'speed', 'read_at']
         self.rare_words = set()
+        self.all_words = set()
         with open(os.path.join('..', 'resources', '1grams-3.txt'), 'r') as freq_file:
             for line in freq_file.readlines():
                 elements = line.replace('\t', ' ').split(' ')
                 count = int(elements[0])
                 word = elements[1].replace('\n', '')
+                self.all_words.add(word)
                 if count <= 100:
                     self.rare_words.add(word)
 
@@ -62,7 +65,8 @@ class FeaturesHandler(object):
                        save_features=True,
                        filename='features.csv',
                        clear_features=True,
-                       text=None):
+                       text=None,
+                       mean_sessions_number=3):
         if clear_features:
             self.features = []
 
@@ -71,9 +75,14 @@ class FeaturesHandler(object):
         book_features = self.book_features_list if certain_book_features is None else \
             certain_book_features
 
-        for session in self.sessions:
-            current_session_speed = int(session['speed'])
-            if current_session_speed < 200 or current_session_speed > 8000:
+        sessions_list = list(self.sessions)
+        sessions_list.sort(key=lambda s: s['read_at'])
+        speed_sum = 0
+        speed_buffer_sum = 0
+        speed_buffer = []
+        for ind, session in enumerate(sessions_list):
+            current_session_speed = float(session['speed'])
+            if current_session_speed + EPS < 200.0 or current_session_speed > 8000.0 + EPS:
                 continue
 
             session_features = self.build_text_features_for_session(session, book_text=text,
@@ -83,13 +92,31 @@ class FeaturesHandler(object):
             session_features.update(self.build_book_features_for_session(session,
                                                                          book_text=text,
                                                                          certain_book_features=book_features))
-
             session_features['session_id'] = session['_id']
             session_features['speed'] = get_session_speed(session,
                                                           fix_old=True,
                                                           old_symbols_number=3568733,
                                                           current_symbols_number=len(text))
             session_features['read_at'] = session['read_at']
+            session_features['avg_prev_speed'] = 1.0 * speed_sum / max(min(mean_sessions_number, ind), 1)
+
+            speed_sum += session_features['speed']
+            previous_number = len(self.features)
+            if previous_number >= mean_sessions_number:
+                speed_sum -= self.features[previous_number - mean_sessions_number]['speed']
+
+            session_features['avg_prev_speed_in_session'] = 1.0 * speed_buffer_sum / max(len(speed_buffer), 1)
+
+            if len(speed_buffer) > 0 and (session_features['read_at'] - speed_buffer[-1][1]).total_seconds() > 1800:
+                speed_buffer.clear()
+                speed_buffer_sum = 0
+
+            speed_buffer.append((session_features['speed'], session_features['read_at']))
+            speed_buffer_sum += session_features['speed']
+
+            if len(speed_buffer) > mean_sessions_number:
+                speed_buffer_sum -= speed_buffer[0][0]
+                speed_buffer.pop(0)
 
             self.features.append(session_features)
 
@@ -99,6 +126,8 @@ class FeaturesHandler(object):
                 fields.append('session_id')
                 fields.append('speed')
                 fields.append('read_at')
+                fields.append('avg_prev_speed')
+                fields.append('avg_prev_speed_in_session')
                 writer = csv.DictWriter(csv_file, fieldnames=fields)
                 writer.writeheader()
 
@@ -117,8 +146,12 @@ class FeaturesHandler(object):
                 current_features = {}
                 for field in reader.fieldnames:
                     val = row[field].replace('\n', '')
-                    current_features[field] = str_to_bool(val) if is_str_of_bool(val) \
-                        else float(val) if is_float(val) else val
+                    date_time = str_to_timestamp(val)
+                    if date_time is not None:
+                        current_features[field] = date_time
+                    else:
+                        current_features[field] = str_to_bool(val) if is_str_of_bool(val) \
+                            else float(val) if is_float(val) else val
                 self.features.append(current_features)
 
     def get_features(self):
@@ -213,7 +246,7 @@ class FeaturesHandler(object):
     def calculate_rare_words_number(self, text, words):
         count = 0
         for word in words:
-            if word in self.rare_words:
+            if word in self.rare_words or word not in self.all_words:
                 count += 1
         return count
 
@@ -261,4 +294,5 @@ if __name__ == '__main__':
         text = get_epub_book_text_with_ebook_convert(book_id)
         for user_id in USER_IDS[document_id]:
             builder = FeaturesHandler(get_user_sessions(book_id, user_id), book_id)
-            builder.build_features(filename='../features/{user_id}.csv'.format(user_id=user_id), text=text)
+            builder.build_features(filename='../features/{user_id}.csv'.format(user_id=user_id),
+                                   text=text)
