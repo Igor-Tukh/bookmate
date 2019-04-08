@@ -10,8 +10,11 @@ import os
 import numpy as np
 import csv
 
-METRICS = [('explained variance', explained_variance_score), ('mean squared error', mean_squared_error),
-           ('r2', r2_score)]
+# METRICS = [('explained variance', explained_variance_score), ('mean squared error', mean_squared_error),
+#            ('r2', r2_score)]
+
+METRICS = [('mean squared error', mean_squared_error), ('mean absolute error', mean_absolute_error)]
+
 EPS = 1e-9
 
 
@@ -38,14 +41,9 @@ def split_features(features, split_type, total_proportion=1.0, split_proportion=
         return features[:split_len], features[split_len:]
     elif split_type is Split.RANDOM:
         permutation = np.random.permutation(total_features_cnt)
-        left = []
-        right = []
 
-        for ind in permutation:
-            if ind < split_len:
-                left.append(features[ind])
-            else:
-                right.append(features[ind])
+        left = [features[number] for number in permutation[:split_len]]
+        right = [features[number] for number in permutation[split_len:]]
 
         return left, right
 
@@ -64,6 +62,8 @@ def preapare_features(split_type,
                       max_speed=8000.0,
                       min_words=15):
     features, handler = upload_features(book_id, user_id)
+    word_lens = [features_dict['words_number']for features_dict in features]
+    print(len(word_lens), '+', end=' ')
     features = [features_dict for features_dict in features
                 if min_speed + EPS <= features_dict['speed'] <= max_speed - EPS and
                 features_dict['words_number'] >= min_words]
@@ -84,7 +84,10 @@ def preapare_features(split_type,
 
 def visualize_sessions(user_id, sessions):
     sessions.sort(key=lambda session: session['read_at'])
-    sessions = sessions
+    data = [(session['read_at'], session['book_from'], session['book_to']) for session in sessions[:100]]
+    for data_item in data:
+        print(data_item[0], data_item[1], data_item[2])
+    print()
 
     max_speed = -1e18
     for session in sessions:
@@ -100,69 +103,76 @@ def visualize_sessions(user_id, sessions):
 
 
 if __name__ == '__main__':
-    # for user_id in USER_IDS[BOOK_IDS[0][1]]:
-    #     preapare_features(Split.ORDER, book_id, user_id, {'words_number', 'sentences_number',
-    #                                                       'average_word_len', 'average_sentence_len',
-    #                                                       'hour', 'distance_from_the_beginning',
-    #                                                       'rare_words_count', 'is_weekend',
-    #                                                       'verbs_count', 'noun_count'}, 'speed',
-    #                       max_speed=8000,
-    #                       min_speed=200)
-    #     sessions = get_user_sessions(BOOK_IDS[0][0], user_id)
-    #     visualize_sessions(user_id, list(sessions))
-    #
-    # exit(0)
-
     book_id, document_id = BOOK_IDS[0]
     results = []
 
-    for min_speed in [100.0, 200.0, 400.0, 800.0, 1000.0, 2000.0]:
-        for max_speed in [3000.0, 4000.0, 6000.0, 8000.0]:
-            for regression_type in [(Ridge(alpha=0.5), 'ridge'), (Lasso(alpha=0.1), 'lasso'),
-                                    (LinearRegression(), 'linear regression'),
-                                    (SGDRegressor(max_iter=1000), 'sgd regressor')]:
-                for user_id in USER_IDS[document_id]:
-                    for split_type in [Split.RANDOM, Split.ORDER]:
-                        current_results = {}
-                        features_names = ['words_number', 'sentences_number',
-                                          'average_word_len', 'average_sentence_len',
-                                          'hour', 'distance_from_the_beginning',
-                                          'rare_words_count', 'is_weekend',
-                                          'verbs_count', 'noun_count']
+    for user_id in USER_IDS[document_id]:
+        features, handler = upload_features(book_id, user_id)
+        print(user_id, len([features_dict for features_dict in features if
+                            800 + EPS <= features_dict['speed'] <= 3000 - EPS]))
+    exit(0)
 
-                        train_X, test_X, train_y, test_y = preapare_features(split_type,
-                                                                             book_id,
-                                                                             user_id,
-                                                                             set(features_names),
-                                                                             'speed',
-                                                                             min_speed=min_speed,
-                                                                             max_speed=max_speed)
-                        scaler = MinMaxScaler()
-                        scaler.fit_transform(train_X)
-                        test_X = scaler.transform(test_X)
-
-                        reg, model_name = regression_type
-                        reg.fit(train_X, train_y)
-                        pred_y = reg.predict(test_X)
-                        qulity_y = reg.predict(train_X)
-
-                        current_results['book_id'] = book_id
-                        current_results['user_id'] = user_id
-                        current_results['split_type'] = split_type
-                        current_results['features'] = ', '.join(features_names)
-                        current_results['model'] = model_name
-                        current_results['min_speed'] = min_speed
-                        current_results['max_speed'] = max_speed
-
-                        for name, metric in METRICS:
-                            current_results[name] = metric(test_y, pred_y)
-                        results.append(current_results)
-
+    # for regression_type in [(Ridge(alpha=0.5), 'ridge'), (Lasso(alpha=0.1), 'lasso'),
+    #                         (LinearRegression(), 'linear regression'),
+    #                         (SGDRegressor(max_iter=1000), 'sgd regressor')]:
     with open(os.path.join('..', 'results', 'results.csv'), 'w') as results_file:
         writer = csv.DictWriter(results_file,
                                 fieldnames=['book_id', 'user_id', 'split_type', 'features', 'model',
                                             'min_speed', 'max_speed'] + [name for name, _ in METRICS])
         writer.writeheader()
 
-        for session_features in results:
-            writer.writerow(session_features)
+        text_features_names = ['words_number', 'sentences_number', 'average_word_len', 'average_sentence_len',
+                               'rare_words_count', 'verbs_count', 'noun_count']
+        context_features_names = ['hour', 'distance_from_the_beginning', 'is_weekend']
+
+        combined_features_names = text_features_names + context_features_names
+
+        for user_id in USER_IDS[document_id]:
+            train_X, test_X, train_y, test_y = preapare_features(Split.ORDER,
+                                                                 book_id,
+                                                                 user_id,
+                                                                 set(combined_features_names),
+                                                                 'speed',
+                                                                 min_speed=800,
+                                                                 max_speed=3000,
+                                                                 log=False)
+
+        exit(0)
+
+        for features_names, features_set_type in [(combined_features_names, 'combined')]:
+            for user_id in USER_IDS[document_id]:
+                for split_type in [Split.ORDER]:
+                    for min_speed in [800.0]:
+                        for max_speed in [2500.0, 3000.0, 3500.0, 4000.0, 4500.0, 5000.0, 5500.0, 6000.0]:
+                            current_results = {}
+
+                            train_X, test_X, train_y, test_y = preapare_features(split_type,
+                                                                                 book_id,
+                                                                                 user_id,
+                                                                                 set(features_names),
+                                                                                 'speed',
+                                                                                 min_speed=min_speed,
+                                                                                 max_speed=max_speed,
+                                                                                 log=False)
+                            scaler = MinMaxScaler()
+                            scaler.fit_transform(train_X)
+                            test_X = scaler.transform(test_X)
+
+                            reg, model_name = Lasso(alpha=0.1), 'lasso'
+                            reg.fit(train_X, train_y)
+                            pred_y = reg.predict(test_X)
+
+                            current_results['book_id'] = book_id
+                            current_results['user_id'] = user_id
+                            current_results['split_type'] = split_type
+                            current_results['features'] = features_set_type
+                            current_results['model'] = model_name
+                            current_results['min_speed'] = min_speed
+                            current_results['max_speed'] = max_speed
+
+                            for name, metric in METRICS:
+                                current_results[name] = metric(test_y, pred_y)
+                            results.append(current_results)
+
+                            writer.writerow(current_results)
+                            print('One done')

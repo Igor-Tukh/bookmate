@@ -29,6 +29,9 @@ def verify_user_speed(sessions_collection, user_id):
         avr_speed += session['speed']
     print ('User [%d]: avr_speed is [%.3f], avr_abs_speed is [%.3f]' % (user_id, avr_speed/sessions_num, avr_abs_speed/sessions_num))
 
+def get_users_for_book(book_id):
+    db = connect_to_mongo_database(BOOKS_DB)
+
 
 books = ['210901']
 for book_id in books:

@@ -8,8 +8,9 @@ import timeit
 import sys
 from tqdm import tqdm
 from collections import Counter
+
 sys.setrecursionlimit(2000)
-from SegmentTree import SegmentTree
+from src.books_module.SegmentTree import SegmentTree
 
 # logs
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -29,7 +30,6 @@ log_step = 100000
 BOOKS_DB = 'bookmate'
 USERS_DB = 'bookmate_users'
 FULL_SESSIONS_DB = 'sessions'
-
 
 # variables with varying values
 SESSIONS_PER_FRAGMENT = 3
@@ -73,13 +73,13 @@ def process_sessions_fields_to_int(collection):
 
 def remove_duplicate_sessions(book_id):
     # Because logs have some duplicate sessions, we need to remove them
-    rootLogger.info ('Begin to remove duplicates')
+    rootLogger.info('Begin to remove duplicates')
     db_sessions = connect_to_mongo_database(BOOKS_DB)
     book_sessions = db_sessions[book_id].find(no_cursor_timeout=True)
     processed_sessions, removed_sessions = 0, 0
     db_sessions[book_id].create_index(
-            [('_from', pymongo.ASCENDING), ('_to', pymongo.ASCENDING), ('item_id', pymongo.ASCENDING),
-             ('user_id', pymongo.ASCENDING)])
+        [('_from', pymongo.ASCENDING), ('_to', pymongo.ASCENDING), ('item_id', pymongo.ASCENDING),
+         ('user_id', pymongo.ASCENDING)])
 
     for session, index in zip(book_sessions, tqdm(range(book_sessions.count()))):
         duplicate_sessions = db_sessions[book_id].find({'_from': session['_from'],
@@ -154,7 +154,7 @@ def remove_by_begin(book_id, user_ids, remove=True):
                 db[book_id].remove({'_id': session['_id']})
             elif float(session['book_from']) < min_position:
                 min_position = session['book_from']
-        if remove and min_position > 10.0:
+        if remove and min_position > 5.0:
             remove_counter += 1
             user_sessions = db[book_id].find({'user_id': user_id})
             for session in user_sessions:
@@ -194,7 +194,7 @@ def process_session_per_fragment(book_id):
 
 
 def remove_by_devices(book_id, user_ids, remove=True):
-    rootLogger.info ('Begin to remove by devices')
+    rootLogger.info('Begin to remove by devices')
     db = connect_to_mongo_database(BOOKS_DB)
     full_sessions = connect_to_mongo_database(FULL_SESSIONS_DB)
     # users = db[book_id].distinct('user_id')
@@ -230,9 +230,10 @@ def remove_by_parallel_reading(book_id, user_ids, remove=True):
         book_sessions = db[book_id].find({'user_id': user_id}).sort('read_at', pymongo.ASCENDING).distinct('read_at')
         min_date = book_sessions[0]
         max_date = book_sessions[len(book_sessions) - 1]
-        books_in_period = len(full_sessions['sessions'].find({'read_at': {'$gte': datetime.datetime.timestamp(min_date) * 1000,
-                                                                          '$lte': datetime.datetime.timestamp(max_date) * 1000},
-                                                              'user_id': user_id}).distinct('book_id'))
+        books_in_period = len(
+            full_sessions['sessions'].find({'read_at': {'$gte': datetime.datetime.timestamp(min_date) * 1000,
+                                                        '$lte': datetime.datetime.timestamp(max_date) * 1000},
+                                            'user_id': user_id}).distinct('book_id'))
         db['%s_users' % book_id].update_one({'_id': user_id},
                                             {'$set': {'books_in_period': books_in_period}})
         if remove and books_in_period > BOOKS_IN_PERIOD:
@@ -267,7 +268,7 @@ def remove_by_absolute_num_of_books(book_id, user_ids, remove=True):
 
 
 def clear_book_users(book_id, user_ids):
-    rootLogger.info ('Begin to clear book users')
+    rootLogger.info('Begin to clear book users')
     remove_by_begin(book_id, user_ids)
     # remove_by_devices(book_id) # TODO
     # remove_by_parallel_reading(book_id) # TODO
@@ -287,6 +288,17 @@ def convert_sessions_time(book_id):
             rootLogger.info('Processed {%d} sessions.' % processed)
 
 
+def validate_by_sessions_count(book_id, users_id):
+    db = connect_to_mongo_database(BOOKS_DB)
+    validated_users = []
+    for user_id in users_id:
+        sessions = db[book_id].find({'user_id': user_id})
+        user_sessions_number = sessions.count()
+        if user_sessions_number > 0:
+            validated_users.append(user_id)
+    return validated_users
+
+
 def calculate_session_speed(book_id, user_id, max_speed=1200):
     # Calculation of speed for every micro-session
     # rootLogger.info ('Calculate session speed')
@@ -299,7 +311,7 @@ def calculate_session_speed(book_id, user_id, max_speed=1200):
 
     user_sessions_number = sessions.count()
     if user_id is not None and user_sessions_number == 0:
-        rootLogger.info ('There are no session for user [%d]' % user_id)
+        rootLogger.info('There are no session for user [%d]' % user_id)
         return
 
     unknown_sessions_number = 0
@@ -358,6 +370,7 @@ def calculate_session_speed(book_id, user_id, max_speed=1200):
                            {'$set': {'speed': avr_speed,
                                      'category': 'normal'}})
 
+    rootLogger.info('{user_id} : {avr_speed}'.format(user_id=user_id, avr_speed=avr_speed))
     db['%s_users' % book_id].update({'_id': user_id},
                                     {'$set': {'avr_speed': avr_speed}})
 
@@ -365,6 +378,9 @@ def calculate_session_speed(book_id, user_id, max_speed=1200):
 def calculate_relative_speed(book_id, user_id):
     # Calculate relative speed for user and define sessions categories
     db = connect_to_mongo_database(BOOKS_DB)
+    rootLogger.info('{user_id}'.format(user_id=user_id))
+    if db['%s_users' % book_id].find_one({'$and': [{'_id': user_id}, {'avr_speed': {'$exists': True}}]}) is None:
+        return
     user_avr_speed = db['%s_users' % book_id].find_one({'_id': user_id})['avr_speed']
     if user_avr_speed > 0:
         sessions = db[book_id].find({'user_id': user_id})
@@ -487,8 +503,8 @@ def process_users_book_percent_coverage(book_id):
         else:
             db['%s_users' % book_id].update({'_id': user_id},
                                             {'$set':
-                                            {'read_symbols': read_symbols,
-                                             'read_percents': read_percents}})
+                                                 {'read_symbols': read_symbols,
+                                                  'read_percents': read_percents}})
 
 
 def verify_users_book_procent_coverage(book_id, users_id):
@@ -621,13 +637,13 @@ def set_sessions_borders(book_id, session_collection, drop_old=False, define_ses
     if not drop_old:
         all_borders = db['books'].find_one({'_id': book_id})['all_borders']
     else:
-        rootLogger.info ('Get all items borders')
+        rootLogger.info('Get all items borders')
         items = db['%s_items' % book_id].find()
         for item in items:
             if 'item_borders' not in item:
                 continue
             all_borders.extend(item['item_borders'])
-        rootLogger.info ('Get all section borders')
+        rootLogger.info('Get all section borders')
         sections = db['%s_sections' % book_id].find({})
         for section in sections:
             if section['symbol_to'] not in all_borders:
@@ -650,9 +666,9 @@ def set_sessions_borders(book_id, session_collection, drop_old=False, define_ses
             else:
                 section_flag = True
             db['%s_borders' % book_id].insert_one({'_id': i,
-                                                    'symbol_from': all_borders[i],
-                                                    'symbol_to': all_borders[i + 1],
-                                                    'section': section_flag})
+                                                   'symbol_from': all_borders[i],
+                                                   'symbol_to': all_borders[i + 1],
+                                                   'section': section_flag})
 
     if define_sessions_borders:
         rootLogger.info('begin to define sessions borders')
@@ -661,10 +677,10 @@ def set_sessions_borders(book_id, session_collection, drop_old=False, define_ses
             begin_border = bisect.bisect_left(all_borders, session['symbol_from'])
             end_border = bisect.bisect_left(all_borders, session['symbol_to']) - 1
             db[session_collection].update({'_id': session['_id']},
-                                      {'$set': {
-                                          'begin_border': begin_border,
-                                          'end_border': end_border
-                                      }})
+                                          {'$set': {
+                                              'begin_border': begin_border,
+                                              'end_border': end_border
+                                          }})
 
 
 def define_target_sessions(book_id, target_users):
@@ -708,7 +724,6 @@ def get_absolute_speeds_for_borders(book_id, sessions_collection):
 
 
 def get_unusual_sessions_for_borders_by_length(book_id, sessions_collection):
-
     db = connect_to_mongo_database(BOOKS_DB)
     sessions = db[sessions_collection].find()
     borders_num = db['%s_borders' % book_id].find().count()
@@ -755,7 +770,7 @@ def aggregate_borders(book_id, symbols_num=1000):
             end_page_id = border['_id']
 
             page_borders = db['%s_borders' % book_id].find({'_id': {'$gte': begin_page_id},
-                                                            '$and': [{'_id': {'$lte': end_page_id }}]})
+                                                            '$and': [{'_id': {'$lte': end_page_id}}]})
             page_speed = 0
             page_unusual_sessions = 0
             page_sessions = 0
@@ -806,10 +821,10 @@ def count_sessions_category_per_border(book_id, sessions_collection):
     borders = db['%s_borders' % book_id].find()
 
     db[sessions_collection].create_index([('symbol_from', pymongo.ASCENDING),
-                                            ('symbol_to', pymongo.ASCENDING),
-                                            ('category', pymongo.ASCENDING)])
+                                          ('symbol_to', pymongo.ASCENDING),
+                                          ('category', pymongo.ASCENDING)])
     db[sessions_collection].create_index([('symbol_from', pymongo.ASCENDING),
-                                            ('symbol_to', pymongo.ASCENDING)])
+                                          ('symbol_to', pymongo.ASCENDING)])
 
     skips_per_border = [0 for i in range(borders.count())]
     returns_per_border = [0 for i in range(borders.count())]
@@ -845,15 +860,15 @@ def count_sessions_category_per_border(book_id, sessions_collection):
 
     rootLogger.info('Begin to update borders collection')
     for border_id in range(0, len(skips_per_border)):
-            db['%s_borders' % book_id].update({'_id': border_id},
-                                    {'$set': {'skip_sessions': skips_per_border[border_id],
-                                              'return_sessions': returns_per_border[border_id],
-                                              'sessions': sessions_per_border[border_id]}})
+        db['%s_borders' % book_id].update({'_id': border_id},
+                                          {'$set': {'skip_sessions': skips_per_border[border_id],
+                                                    'return_sessions': returns_per_border[border_id],
+                                                    'sessions': sessions_per_border[border_id]}})
 
 
-def select_top_document_ids(book_id, top_n = 3):
+def select_top_document_ids(book_id, top_n=3):
     """Select top N most popular documents and delete other sessions"""
-    rootLogger.info ('Select top %d documents and delete other sessions' % top_n)
+    rootLogger.info('Select top %d documents and delete other sessions' % top_n)
     db = connect_to_mongo_database(BOOKS_DB)
     db[book_id].create_index([('document_id', pymongo.ASCENDING)])
     document_ids = db[book_id].find().distinct('document_id')
@@ -891,8 +906,9 @@ def import_all_book_sessions(book_id):
             if session['user_id'] is None:
                 continue
             session['book_id'] = str(session['book_id'])
-            session['read_at'] = datetime.datetime.fromtimestamp(session['read_at']/1000)
+            session['read_at'] = datetime.datetime.fromtimestamp(session['read_at'] / 1000)
             books_db[book_id].insert(session)
+            books_db['{book_id}_copy'.format(book_id=book_id)].insert(session)
 
     elapsed = timeit.default_timer() - start_time
     rootLogger.info('Inserted [%d] book sessions in %s seconds' % (book_sessions.count(), str(elapsed)))
@@ -967,7 +983,7 @@ def collect_long_sessions(book_id):
                 is_long = True
             for session_id in long_session['small']:
                 db[book_id].update({'_id': session_id},
-                                    {'$set': {'long': is_long}})
+                                   {'$set': {'long': is_long}})
 
 
 def calculate_categories_stats(book_id, user_id):
@@ -984,7 +1000,7 @@ def calculate_categories_stats(book_id, user_id):
                                               'skip': skip}})
 
 
-def verify_users_by_skips(book_id,  target_users, skip_percent=0.5):
+def verify_users_by_skips(book_id, target_users, skip_percent=0.5):
     rootLogger.info('Verify users on skip percent [%.3f] in all sessions' % skip_percent)
     db = connect_to_mongo_database(BOOKS_DB)
     approved_users = []
@@ -1011,10 +1027,10 @@ def sessions_processing(book_id):
                                            update_old=True)
     get_all_items_borders(book_id)
     set_sessions_borders(book_id,
-                        session_collection=book_id,
-                        drop_old=True,
-                        define_sessions_borders=True,
-                        create_borders_collection=True)
+                         session_collection=book_id,
+                         drop_old=True,
+                         define_sessions_borders=True,
+                         create_borders_collection=True)
     process_session_per_fragment(book_id)
     collect_long_sessions(book_id)
     save_sessions(book_id)
@@ -1046,20 +1062,239 @@ def users_processing(book_id):
 
 
 def full_book_process(book_id):
-    # sessions_processing(book_id)
+    sessions_processing(book_id)
     users_processing(book_id)
 
 
+def custom_book_process(book_id):
+    rootLogger.info('Import for book [%s] process begin' % str(book_id))
+    # sessions processing
+    import_all_book_sessions(book_id)
+    rootLogger.info('Remove duplicate for book [%s] process begin' % str(book_id))
+    remove_duplicate_sessions(book_id)
+    rootLogger.info('Define borders for book [%s] process begin' % str(book_id))
+    # select_top_document_ids(book_id, 3)
+    define_borders_for_items(book_id)
+    rootLogger.info('Process sessions to percent scale for book [%s] process begin' % str(book_id))
+    process_sessions_to_book_percent_scale(book_id,
+                                           update_old=True)
+    rootLogger.info('Get all items for book [%s] process begin' % str(book_id))
+    get_all_items_borders(book_id)
+    rootLogger.info('Set session borders for book [%s] process begin' % str(book_id))
+    set_sessions_borders(book_id,
+                         session_collection=book_id,
+                         drop_old=True,
+                         define_sessions_borders=True,
+                         create_borders_collection=True)
+    process_session_per_fragment(book_id)
+    collect_long_sessions(book_id)
+    rootLogger.info('Saving sessions for book [%s] process begin' % str(book_id))
+    save_sessions(book_id)
+    rootLogger.info("Sessions for book [%s] process end" % str(book_id))
+
+    rootLogger.info('Users for book [%s] process begin' % str(book_id))
+    process_users_book_percent_coverage(book_id)
+    target_users = get_target_users_by_percent_coverage(book_id,
+                                                        min_percent_coverage=50.0,
+                                                        max_percent_coverage=150.0)
+
+    clear_book_users(book_id, target_users)
+    target_users = verify_users_book_procent_coverage(book_id, target_users)
+    rootLogger.info('Begin to calculate users sessions speed')
+    for user_id, index in zip(target_users, tqdm(range(len(target_users)))):
+        calculate_session_speed(book_id, user_id, max_speed=1200)
+        calculate_relative_speed(book_id, user_id)
+        calculate_categories_stats(book_id, user_id)
+
+
+def load_users(book_ids):
+    for book_id in book_ids:
+        full_sessions_db = connect_to_mongo_database(FULL_SESSIONS_DB)
+        book_sessions = full_sessions_db['several_books_{book_id}'.format(book_id=book_id)].find()
+        users = set()
+        for session in book_sessions:
+            users.add(session["user_id"])
+        for user in users:
+            full_sessions_db['users_{book_id}'.format(book_id=book_id)].insert({'user_id': str(user)})
+
+
+def load_items(book_ids):
+    for book_id in book_ids:
+        full_sessions_db = connect_to_mongo_database(FULL_SESSIONS_DB)
+        book_sessions = full_sessions_db['items'].find({'book_id': int(book_id)})
+
+        for session in book_sessions:
+            full_sessions_db['items_{book_id}'.format(book_id=book_id)].insert(session)
+
+
+def load_sessions():
+    full_sessions_db = connect_to_mongo_database(FULL_SESSIONS_DB)
+    book_sessions = full_sessions_db['several_books'].find()
+
+    for session in book_sessions:
+        full_sessions_db['several_books_{book_id}'.format(book_id=str(session["book_id"]))].insert(session)
+
+
+def clever_process_users_book_percent_coverage(book_id):
+    rootLogger.info('Calculate users percent coverage for the book...')
+    db = connect_to_mongo_database(BOOKS_DB)
+    users_id = db[book_id].distinct('user_id')
+
+    for user_id, index in zip(users_id, tqdm(range(len(users_id)))):
+        read_symbols, read_percents = 0, 0.0
+        user_sessions = db[book_id].find({'user_id': user_id,
+                                          'status': 'reading'})
+        for session in user_sessions:
+            read_percents += (session['book_to'] - session['book_from'])
+            read_symbols += (session['symbol_to'] - session['symbol_from'])
+
+        if db['%s_users' % book_id].find({'_id': user_id}).count() == 0:
+            db['%s_users' % book_id].insert({'_id': user_id,
+                                             'read_symbols': read_symbols,
+                                             'read_percents': read_percents})
+        else:
+            db['%s_users' % book_id].update({'_id': user_id},
+                                            {'$set':
+                                                 {'read_symbols': read_symbols,
+                                                  'read_percents': read_percents}})
+
+
+def documents_processiong(books):
+    for book_id, document_id in books:
+        rootLogger.info('Sessions for book [%s] process begin' % str(book_id))
+        # sessions processing
+        import_all_book_sessions(book_id)
+        rootLogger.info('All sessions for book [%s] loaded' % str(book_id))
+        remove_duplicate_sessions(book_id)
+        rootLogger.info('All duplicate sessions for book [%s] removed' % str(book_id))
+        define_borders_for_items(book_id)
+        rootLogger.info('Borders for book [%s] book_id defined' % str(book_id))
+        process_sessions_to_book_percent_scale(book_id,
+                                               update_old=True)
+        get_all_items_borders(book_id)
+        set_sessions_borders(book_id,
+                             session_collection=book_id,
+                             drop_old=True,
+                             define_sessions_borders=True,
+                             create_borders_collection=True)
+        process_session_per_fragment(book_id)
+        collect_long_sessions(book_id)
+        save_sessions(book_id)
+        clever_process_users_book_percent_coverage(book_id)
+
+        """target_users = get_target_users_by_percent_coverage(book_id,
+                                                            min_percent_coverage=60.0,
+                                                            max_percent_coverage=100.0)
+
+        clear_book_users(book_id, target_users)
+        target_users = verify_users_book_procent_coverage(book_id, target_users)
+        target_users = validate_by_sessions_count(book_id, target_users)
+        rootLogger.info('Begin to calculate users sessions speed')
+        for user_id, index in zip(target_users, tqdm(range(len(target_users)))):
+            calculate_session_speed(book_id, user_id, max_speed=1200)
+            calculate_relative_speed(book_id, user_id)
+            calculate_categories_stats(book_id, user_id)
+
+        target_users = verify_users_by_skips(book_id, target_users, skip_percent=0.2)
+        define_target_sessions(book_id, target_users)"""
+
+
+def import_all_cleared_sessions(book_id, collection_name):
+    rootLogger.info('Begin to import sessions')
+    start_time = timeit.default_timer()
+
+    full_sessions_db = connect_to_mongo_database(FULL_SESSIONS_DB)
+    books_db = connect_to_mongo_database(BOOKS_DB)
+    books_db[book_id].drop()
+
+    if '%s_save' % book_id in books_db.collection_names():
+        book_sessions = books_db['%s_save' % book_id].find()
+        for session, index in zip(book_sessions, tqdm(range(book_sessions.count()))):
+            books_db[book_id].insert(session)
+    else:
+        book_sessions = full_sessions_db[collection_name].find({'book_id': int(book_id)})
+        for session, index in zip(book_sessions, tqdm(range(book_sessions.count()))):
+            if session['user_id'] is None:
+                continue
+            session['book_id'] = str(session['book_id'])
+            session['read_at'] = datetime.datetime.fromtimestamp(session['read_at'] / 1000)
+            books_db[book_id].insert(session)
+
+    elapsed = timeit.default_timer() - start_time
+    rootLogger.info('Inserted [%d] book sessions in %s seconds' % (book_sessions.count(), str(elapsed)))
+
+
+def process_cleared_sessions(book_id='135089'):
+    # rootLogger.info('Cleared sessions process started')
+    # import_all_cleared_sessions('135089', 'clear_sessions')
+    # remove_duplicate_sessions(book_id)
+    # define_borders_for_items(book_id)
+    # process_sessions_to_book_percent_scale(book_id,
+    #                                        update_old=True)
+    # get_all_items_borders(book_id)
+    # set_sessions_borders(book_id,
+    #                      session_collection=book_id,
+    #                      drop_old=True,
+    #                      define_sessions_borders=True,
+    #                      create_borders_collection=True)
+    # process_session_per_fragment(book_id)
+    # collect_long_sessions(book_id)
+    # save_sessions(book_id)
+
+    # process_users_book_percent_coverage(book_id)
+    target_users = get_target_users_by_percent_coverage(book_id,
+                                                        min_percent_coverage=0.0,
+                                                        max_percent_coverage=4000.0)
+    # clear_book_users(book_id, target_users)
+    # target_users = verify_users_book_procent_coverage(book_id, target_users)
+    for user_id, index in zip(target_users, tqdm(range(len(target_users)))):
+        if user_id == '':
+            continue
+        calculate_session_speed(book_id, user_id, max_speed=1200)
+        calculate_relative_speed(book_id, user_id)
+        calculate_categories_stats(book_id, user_id)
+    """
+    target_users = verify_users_by_skips(book_id, target_users, skip_percent=0.2)
+    define_target_sessions(book_id, target_users)
+    target_sessions_collection = str(book_id) + '_target'
+
+    target_users = get_target_users_by_percent_coverage(book_id,
+                                                        min_percent_coverage=0.0,
+                                                        max_percent_coverage=100.0)
+
+    clear_book_users(book_id, target_users)
+    target_users = verify_users_book_procent_coverage(book_id, target_users)
+    target_users = validate_by_sessions_count(book_id, target_users)
+    rootLogger.info('Begin to calculate users sessions speed')
+    for user_id, index in zip(target_users, tqdm(range(len(target_users)))):
+        calculate_session_speed(book_id, user_id, max_speed=1200)
+        calculate_relative_speed(book_id, user_id)
+        calculate_categories_stats(book_id, user_id)
+
+    target_users = verify_users_by_skips(book_id, target_users, skip_percent=0.2)
+    define_target_sessions(book_id, target_users)
+    """
+
+
 def main():
+    """
     book_ids = ['2206', '259222', '266700', '9297', '2543']
     for book_id in book_ids:
         rootLogger.info('Process for DB [%s]' % BOOKS_DB)
         full_book_process(book_id)
         aggregate_borders(book_id, symbols_num=1000)
 
+    book_ids = ['135089']
+
+    for book_id in book_ids:
+        rootLogger.info('Process for DB [%s]' % BOOKS_DB)
+        custom_book_process(book_id)
+
+    load_items(['2207', '11833', '24304', '24305', '135089', '210901', '329267'])
+    clever_processiong(['135089'])
+     """
+    pass
+
 
 if __name__ == "__main__":
-    main()
-
-
-
+    process_cleared_sessions()

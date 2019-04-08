@@ -81,8 +81,10 @@ class FeaturesHandler(object):
         speed_buffer_sum = 0
         speed_buffer = []
         for ind, session in enumerate(sessions_list):
-            current_session_speed = float(session['speed'])
-            if current_session_speed + EPS < 200.0 or current_session_speed > 8000.0 + EPS:
+            next_session = sessions_list[ind + 1] if ind < len(sessions_list) - 1 else None
+            current_session_speed = get_session_speed_bookmate_data(session, next_session)
+            # current_session_speed = float(session['speed'])
+            if current_session_speed + EPS < 100.0 or current_session_speed > 8000.0 + EPS:
                 continue
 
             session_features = self.build_text_features_for_session(session, book_text=text,
@@ -93,10 +95,11 @@ class FeaturesHandler(object):
                                                                          book_text=text,
                                                                          certain_book_features=book_features))
             session_features['session_id'] = session['_id']
-            session_features['speed'] = get_session_speed(session,
-                                                          fix_old=True,
-                                                          old_symbols_number=3568733,
-                                                          current_symbols_number=len(text))
+            # session_features['speed'] = get_session_speed(session,
+            #                                               fix_old=True,
+            #                                               old_symbols_number=3568733,
+            #                                               current_symbols_number=len(text))
+            session_features['speed'] = current_session_speed
             session_features['read_at'] = session['read_at']
             session_features['avg_prev_speed'] = 1.0 * speed_sum / max(min(mean_sessions_number, ind), 1)
 
@@ -287,6 +290,12 @@ def get_session_speed(session, fix_old=False, old_symbols_number=0, current_symb
     if not fix_old:
         return session['speed']
     return (session['speed'] / old_symbols_number) * current_symbols_number
+
+
+def get_session_speed_bookmate_data(session, next_session=None):
+    if next_session is None:
+        return -1
+    return 60.0 * session['size'] / (next_session['read_at'] - session['read_at']).total_seconds()
 
 
 if __name__ == '__main__':
