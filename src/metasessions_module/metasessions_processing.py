@@ -1,14 +1,10 @@
-import pymongo
 import pickle
 import os
 
+from .utils import connect_to_mongo_database
+
+
 BOOKS = {'The Fault in Our Stars': 266700, 'Fifty Shades of Grey': 210901}
-
-
-def connect_to_mongo_database(db):
-    client = pymongo.MongoClient('localhost', 27017)
-    db = client[db]
-    return db
 
 
 def load_sessions(book_id):
