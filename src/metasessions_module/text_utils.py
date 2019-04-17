@@ -27,3 +27,15 @@ def load_text(book_id, document_id):
 
 def load_chapters(book_id, document_id):
     return load_text(book_id, document_id).split('---')
+
+
+def get_chapter_percents(book_id, document_id):
+    chapters = load_chapters(book_id, document_id)
+    chapters_lens = [len(chapter) for chapter in chapters]
+    total_len = sum(chapters_lens)
+    chapter_percents = []
+    current_len = 0
+    for chapter_len in chapters_lens:
+        current_len += chapter_len
+        chapter_percents.append((100.0 * current_len) / total_len)
+    return chapter_percents

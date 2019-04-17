@@ -13,8 +13,8 @@ from metasessions_module.utils import connect_to_mongo_database, date_from_times
 from metasessions_module.sessions_utils import load_sessions, save_sessions, save_book_sessions, \
     calculate_session_percents, load_user_sessions, save_user_sessions_speed
 from metasessions_module.user_utils import save_users, save_books_users_sessions, save_common_users, get_common_users, \
-    get_user_document_id, load_users
-from metasessions_module.text_utils import load_chapters, load_text
+    get_user_document_id, load_users, get_users_books_amount
+from metasessions_module.text_utils import load_chapters, load_text, get_chapter_percents
 from metasessions_module.item_utils import get_items
 from tqdm import tqdm
 from enum import Enum
@@ -84,6 +84,25 @@ def get_book_documents_stats(book_id):
     return results
 
 
+def get_metasessions_breaks(book_id, document_id, user_id, break_time_seconds=1800):
+    logging.info('Looking for metasessions break for user {} and document {} of book {}'.format(user_id,
+                                                                                                document_id,
+                                                                                                book_id))
+    user_sessions = load_user_sessions(book_id, document_id, user_id)
+    if len(user_sessions) == 0:
+        return []
+    user_sessions.sort(key=lambda session: date_from_timestamp(session['read_at']))
+    previous_session = user_sessions[0]
+    breaks = []
+    for session in user_sessions[1:]:
+        time = (date_from_timestamp(session['read_at']) - date_from_timestamp(previous_session['read_at'])) \
+            .total_seconds()
+        if time > break_time_seconds:
+            breaks.append(session)
+        previous_session = session
+    return breaks
+
+
 def save_metasessions_by_reading_style(book_id, document_id, user_id):
     logging.info('Start saving metasessions by reading style for user {} and document {} of book {}'.format(user_id,
                                                                                                             document_id,
@@ -115,7 +134,7 @@ def save_metasessions_by_reading_style(book_id, document_id, user_id):
                                                                                        metasessions_path))
 
 
-def save_metasessions_by_deviant_percent(book_id, document_id, user_id, deviant_percent=80, first_sessions_amount=3):
+def save_metasessions_by_deviant_percent(book_id, document_id, user_id, deviant_percent=50, first_sessions_amount=3):
     logging.info('Start saving metasessions by reading style for user {} and document {} of book {}'.format(user_id,
                                                                                                             document_id,
                                                                                                             book_id))
@@ -132,7 +151,9 @@ def save_metasessions_by_deviant_percent(book_id, document_id, user_id, deviant_
         else:
             base_speed = sum([metasessions[-1][i]['speed']
                               for i in range(first_sessions_amount)]) / first_sessions_amount
-            if abs(base_speed - session['speed']) / session['speed'] < deviant_percent:
+            big_skip = abs(session['book_from'] - metasessions[-1][-1]['book_from']) > 1.0
+            if not big_skip and session['speed'] > 0.00001 \
+                    and abs(base_speed - session['speed']) / session['speed'] < deviant_percent / 100:
                 metasessions[-1].append(session)
             else:
                 metasessions.append([session])
@@ -184,6 +205,9 @@ def visualize_metasessions_by_reading_style(book_id, document_id, user_id):
     plt.ylim(50.0, 6000.0)
     plt.xlim(0.0, 100.0)
     metasessions = get_metasessions_by_reading_style(book_id, document_id, user_id)
+    chapters_lens = get_chapter_percents(book_id, document_id)
+    for chapter_len in chapters_lens[:-1]:
+        plt.axvline(x=chapter_len, color='black', linestyle='--', linewidth=0.5)
     for metasession in metasessions:
         avg_speed = sum([session['speed'] for session in metasession]) / len(metasession)
         x = [session['book_from'] for session in metasession]
@@ -194,14 +218,17 @@ def visualize_metasessions_by_reading_style(book_id, document_id, user_id):
 
 
 def visualize_metasessions_by_deviant_percent(book_id, document_id, user_id):
-    plt.clf()
-    plt.xlabel('Book percent')
-    plt.ylabel('Session speed')
-    plt.title('Metasessions visualization')
-    plt.ylim(50.0, 6000.0)
-    plt.xlim(0.0, 100.0)
     metasessions = get_metasessions_by_deviant_percent(book_id, document_id, user_id)
-    # TODO
+    chapters_lens = get_chapter_percents(book_id, document_id)
+    for chapter_len in chapters_lens[:-1]:
+        plt.axvline(x=chapter_len, color='black', linestyle='--', linewidth=0.5)
+    for metasession in metasessions:
+        avg_speed = sum([session['speed'] for session in metasession]) / len(metasession)
+        x = [session['book_from'] for session in metasession]
+        y = [avg_speed for _ in metasession]
+        plt.plot(x, y)
+    plt.savefig(os.path.join('resources', 'plots', '{}_{}_{}_metasessions_by_deviant_percent.png')
+                .format(book_id, document_id, user_id))
 
 
 def save_metasessions(book_id, document_id, user_id):
@@ -253,6 +280,15 @@ def visualize_metassesions(book_id, document_id, user_id):
     plt.savefig(os.path.join('resources', 'plots', '{}_{}_{}_metasessions.png').format(book_id, document_id, user_id))
 
 
+def upload_good_users(book_id):
+    users_path = os.path.join('resources', 'users', '{}_good_users_id_amount.pkl'.format(book_id))
+    if os.path.isfile(users_path):
+        with open(users_path, 'rb') as file:
+            return pickle.load(file)
+    else:
+        logging.error('Unable to upload good users for book {}'.format(book_id))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_sessions', help='Save BOOKS sessions', action='store_true')
@@ -264,6 +300,10 @@ if __name__ == '__main__':
     parser.add_argument('--save_metasessions', help='Save BOOKS metasessions', action='store_true')
     parser.add_argument('--find_the_best_users', help='Find the best users', action='store_true')
     parser.add_argument('--visualize_metasessions_by_style', help='Visualize metasessions by reading style',
+                        action='store_true')
+    parser.add_argument('--visualize_metasessions_by_deviant_percent', help='Visualize metasessions by reading style',
+                        action='store_true')
+    parser.add_argument('--prepare_users', help='Find users which red a lot of books',
                         action='store_true')
 
     args = parser.parse_args()
@@ -307,17 +347,10 @@ if __name__ == '__main__':
     if args.visualize_metasessions_by_style:
         visualize_metasessions_by_reading_style(266700, 969292, 393331)
         visualize_metasessions_by_reading_style(210901, 1143157, 1966674)
-
+    if args.visualize_metasessions_by_deviant_percent:
+        visualize_metasessions_by_deviant_percent(266700, 969292, 393331)
+        visualize_metasessions_by_deviant_percent(210901, 1143157, 1966674)
     if args.save_metasessions:
-        # users = get_common_users(list(BOOKS.values()))[:10]
-        # logging.info('Found common users: {}'.format(str(users)))
-        # for book_id in BOOKS.values():
-        #     for user_id in users:
-        #         if user_id is '':
-        #             continue
-        #         user_document_id = get_user_document_id(book_id, user_id)
-        #         save_metasessions(book_id, user_document_id, user_id)
-        #         visualize_metassesions(book_id, user_document_id, user_id)
         save_metasessions(266700, 969292, 393331)
         visualize_metassesions(266700, 969292, 393331)
         save_metasessions(210901, 1143157, 1966674)
@@ -328,22 +361,26 @@ if __name__ == '__main__':
         visualize_metassesions(210901, 1143157, 1966770)
         save_metasessions(210901, 1143157, 1966782)
         visualize_metassesions(210901, 1143157, 1966782)
-
-        # save_sessions(BOOKS.values())
-    # for title, book_id in BOOKS.items():
-    #     res = get_book_documents_stats(book_id)
-    #     print(title, end=os.linesep+os.linesep)
-    #     total_res = []
-    #     for doc_id, stats in res.items():
-    #         total_res.append({
-    #             'document': doc_id,
-    #             'users number': stats['users_count'],
-    #             'sessions number': stats['sessions_count']})
-    #     total_res.sort(key=lambda record: record['sessions number'])
-    #     print('document id,users number,sessions number')
-    #     for result in total_res:
-    #         print(','.join([str(result['document']), str(result['users number']), str(result['sessions number'])]))
-    # for title, book_id in BOOKS.items():
-    #     res = get_book_documents_stats(book_id)
-    #     for doc_id in res.keys():
-    #         print(','.join([str(title), str(doc_id), str(len(get_items(int(doc_id))))]))
+    if args.prepare_users:
+        good_users = {}
+        for book_id in BOOKS.values():
+            book_users = load_users(book_id)
+            good_users[book_id] = []
+            iter = 0
+            for user_id in tqdm(book_users):
+                if iter % 100 == 0:
+                    output_path = os.path.join('resources', 'users', '{}_good_users_id_amount.pkl'.format(book_id))
+                    with open(output_path, 'wb') as file:
+                        pickle.dump(good_users[book_id], file)
+                sessions_amount = 0
+                for document_id in DOCUMENTS[book_id]:
+                    sessions_amount += len(load_user_sessions(book_id, document_id, user_id))
+                if sessions_amount < 100:
+                    continue
+                if user_id == '':
+                    continue
+                books_amount = get_users_books_amount(user_id)
+                if books_amount >= 10:
+                    good_users[book_id].append((user_id, books_amount))
+                    logging.info('Found good user {}, who red {} books'.format(user_id, books_amount))
+                iter += 1

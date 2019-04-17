@@ -98,3 +98,13 @@ def get_user_document_id(book_id, user_id):
     collection_name = 'sessions_{}'.format(book_id)
     session = db_work[collection_name].find_one({'user_id': user_id})
     return session['document_id']
+
+
+def get_users_books_amount(user_id):
+    logging.info('Counting books amount for user {}'.format(user_id))
+    db = connect_to_mongo_database('sessions')
+    user_sessions = list(db['sessions'].find({'user_id': user_id}))
+    logging.info('Found {} sessions for user {}'.format(len(user_sessions), user_id))
+    books = set([session['book_id'] for session in user_sessions])
+    logging.info('Found {} books for user {}'.format(len(books), user_id))
+    return len(books)
