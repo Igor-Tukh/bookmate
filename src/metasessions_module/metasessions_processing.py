@@ -11,12 +11,13 @@ sys.path.append(os.path.join(os.pardir, os.pardir))
 
 from metasessions_module.utils import connect_to_mongo_database, date_from_timestamp
 from metasessions_module.sessions_utils import load_sessions, save_sessions, save_book_sessions, \
-    calculate_session_percents, load_user_sessions
+    calculate_session_percents, load_user_sessions, save_user_sessions_speed
 from metasessions_module.user_utils import save_users, save_books_users_sessions, save_common_users, get_common_users, \
     get_user_document_id, load_users
 from metasessions_module.text_utils import load_chapters, load_text
 from metasessions_module.item_utils import get_items
 from tqdm import tqdm
+from enum import Enum
 
 
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -36,6 +37,36 @@ BOOKS = {'The Fault in Our Stars': 266700, 'Fifty Shades of Grey': 210901}
 DOCUMENTS = {210901: [1143157, 1416430, 1311858], 266700: [969292, 776328, 823395]}
 
 
+class ReadingStyle(Enum):
+    SCANNING = 1
+    SKIMMING = 2
+    NORMAL = 3
+    DETAILED = 4
+
+    def get_color(self):
+        if self == ReadingStyle.SCANNING:
+            return 'ro'
+        elif self == ReadingStyle.SKIMMING:
+            return 'go'
+        elif self == ReadingStyle.NORMAL:
+            return 'bo'
+        elif self == ReadingStyle.DETAILED:
+            return 'yo'
+
+    @staticmethod
+    def get_reading_style_by_speed(speed,
+                                   scanning_lower_thrshold=3500.0,
+                                   skimming_lower_threshold=2500,
+                                   normal_lower_threshold=1150):
+        if speed > scanning_lower_thrshold:
+            return ReadingStyle.SCANNING
+        elif speed > skimming_lower_threshold:
+            return ReadingStyle.SKIMMING
+        elif speed > normal_lower_threshold:
+            return ReadingStyle.NORMAL
+        return ReadingStyle.DETAILED
+
+
 def get_book_documents_stats(book_id):
     collection_name = 'sessions_{book_id}'.format(book_id=book_id)
     db = connect_to_mongo_database('bookmate_work')
@@ -51,6 +82,126 @@ def get_book_documents_stats(book_id):
                                      'sessions': document_sessions}
     # db['stats_{book_id}'.format(book_id=book_id)] = results  TODO:
     return results
+
+
+def save_metasessions_by_reading_style(book_id, document_id, user_id):
+    logging.info('Start saving metasessions by reading style for user {} and document {} of book {}'.format(user_id,
+                                                                                                            document_id,
+                                                                                                            book_id))
+    user_sessions = load_user_sessions(book_id, document_id, user_id)
+    if len(user_sessions) == 0:
+        return
+    if 'speed' not in user_sessions[0]:
+        save_user_sessions_speed(book_id, document_id, user_id)
+    user_sessions.sort(key=lambda session: date_from_timestamp(session['read_at']))
+    metasessions = [[user_sessions[0]]]
+    previous_reading_style = ReadingStyle.get_reading_style_by_speed(user_sessions[0]['speed'])
+    for session in user_sessions[1:]:
+        current_reading_style = ReadingStyle.get_reading_style_by_speed(session['speed'])
+        if current_reading_style == previous_reading_style:
+            metasessions[-1].append(session)
+        else:
+            previous_reading_style = current_reading_style
+            metasessions.append([session])
+
+    logging.info('Total found {} metasessions'.format(len(metasessions)))
+    metasessions_path = os.path.join('resources', 'metasessions_style', '{}_{}_{}.pkl'.format(book_id,
+                                                                                              document_id,
+                                                                                              user_id))
+    with open(metasessions_path, 'wb') as file:
+        pickle.dump(metasessions, file)
+    logging.info('Metasessions by style of document {} for user {} saved to {}'.format(document_id,
+                                                                                       user_id,
+                                                                                       metasessions_path))
+
+
+def save_metasessions_by_deviant_percent(book_id, document_id, user_id, deviant_percent=80, first_sessions_amount=3):
+    logging.info('Start saving metasessions by reading style for user {} and document {} of book {}'.format(user_id,
+                                                                                                            document_id,
+                                                                                                            book_id))
+    user_sessions = load_user_sessions(book_id, document_id, user_id)
+    if len(user_sessions) == 0:
+        return
+    if 'speed' not in user_sessions[0]:
+        save_user_sessions_speed(book_id, document_id, user_id)
+    user_sessions.sort(key=lambda session: date_from_timestamp(session['read_at']))
+    metasessions = [[user_sessions[0]]]
+    for session in user_sessions[1:]:
+        if len(metasessions[-1]) < 3:
+            metasessions[-1].append(session)
+        else:
+            base_speed = sum([metasessions[-1][i]['speed']
+                              for i in range(first_sessions_amount)]) / first_sessions_amount
+            if abs(base_speed - session['speed']) / session['speed'] < deviant_percent:
+                metasessions[-1].append(session)
+            else:
+                metasessions.append([session])
+
+    logging.info('Total found {} metasessions'.format(len(metasessions)))
+    metasessions_path = os.path.join('resources', 'metasessions_deviant_percent', '{}_{}_{}.pkl'.format(book_id,
+                                                                                                        document_id,
+                                                                                                        user_id))
+    with open(metasessions_path, 'wb') as file:
+        pickle.dump(metasessions, file)
+    logging.info('Metasessions by style of document {} for user {} saved to {}'.format(document_id,
+                                                                                       user_id,
+                                                                                       metasessions_path))
+
+
+def get_metasessions_by_reading_style(book_id, document_id, user_id):
+    metasessions_path = os.path.join('resources', 'metasessions_style', '{}_{}_{}.pkl'.format(book_id,
+                                                                                              document_id,
+                                                                                              user_id))
+    if not os.path.isfile(metasessions_path):
+        logging.error('Unable to find metasessions by reading style of document {} for user {}'.format(document_id,
+                                                                                                       user_id))
+        save_metasessions_by_reading_style(book_id, document_id, user_id)
+        return
+
+    with open(metasessions_path, 'rb') as file:
+        return pickle.load(file)
+
+
+def get_metasessions_by_deviant_percent(book_id, document_id, user_id):
+    metasessions_path = os.path.join('resources', 'metasessions_deviant_percent', '{}_{}_{}.pkl'.format(book_id,
+                                                                                                        document_id,
+                                                                                                        user_id))
+    if not os.path.isfile(metasessions_path):
+        logging.error('Unable to find metasessions by reading style of document {} for user {}'.format(document_id,
+                                                                                                       user_id))
+        save_metasessions_by_deviant_percent(book_id, document_id, user_id)
+        return
+
+    with open(metasessions_path, 'rb') as file:
+        return pickle.load(file)
+
+
+def visualize_metasessions_by_reading_style(book_id, document_id, user_id):
+    plt.clf()
+    plt.xlabel('Book percent')
+    plt.ylabel('Session speed')
+    plt.title('Metasessions visualization')
+    plt.ylim(50.0, 6000.0)
+    plt.xlim(0.0, 100.0)
+    metasessions = get_metasessions_by_reading_style(book_id, document_id, user_id)
+    for metasession in metasessions:
+        avg_speed = sum([session['speed'] for session in metasession]) / len(metasession)
+        x = [session['book_from'] for session in metasession]
+        y = [avg_speed for _ in metasession]
+        plt.plot(x, y, ReadingStyle.get_reading_style_by_speed(metasession[0]['speed']).get_color(), markersize=2)
+    plt.savefig(os.path.join('resources', 'plots', '{}_{}_{}_metasessions_by_reading_style.png')
+                .format(book_id, document_id, user_id))
+
+
+def visualize_metasessions_by_deviant_percent(book_id, document_id, user_id):
+    plt.clf()
+    plt.xlabel('Book percent')
+    plt.ylabel('Session speed')
+    plt.title('Metasessions visualization')
+    plt.ylim(50.0, 6000.0)
+    plt.xlim(0.0, 100.0)
+    metasessions = get_metasessions_by_deviant_percent(book_id, document_id, user_id)
+    # TODO
 
 
 def save_metasessions(book_id, document_id, user_id):
@@ -76,7 +227,7 @@ def save_metasessions(book_id, document_id, user_id):
     metasessions_path = os.path.join('resources', 'metasessions', '{}_{}_{}.pkl'.format(book_id, document_id, user_id))
     with open(metasessions_path, 'wb') as file:
         pickle.dump(metasessions, file)
-    logging.info('Metassesions of document {} for user {} saved to {}'.format(document_id, user_id, metasessions_path))
+    logging.info('Metasessions of document {} for user {} saved to {}'.format(document_id, user_id, metasessions_path))
 
 
 def get_metassesions(book_id, document_id, user_id):
@@ -92,7 +243,7 @@ def visualize_metassesions(book_id, document_id, user_id):
     plt.xlabel('Book percent')
     plt.ylabel('Session speed')
     plt.title('Metasessions visualization')
-    plt.ylim(50.0, 4000.0)
+    plt.ylim(50.0, 5000.0)
     plt.xlim(0.0, 100.0)
     metassesions = get_metassesions(book_id, document_id, user_id)
     for metassesion in metassesions:
@@ -112,7 +263,8 @@ if __name__ == '__main__':
     parser.add_argument('--process_items', help='process DOCUMENTS items', action='store_true')
     parser.add_argument('--save_metasessions', help='Save BOOKS metasessions', action='store_true')
     parser.add_argument('--find_the_best_users', help='Find the best users', action='store_true')
-
+    parser.add_argument('--visualize_metasessions_by_style', help='Visualize metasessions by reading style',
+                        action='store_true')
 
     args = parser.parse_args()
     if args.save_sessions:
@@ -152,6 +304,9 @@ if __name__ == '__main__':
                 print('Chapters')
                 for ind, chapter in enumerate(chapters):
                     print('{},{}'.format(ind + 1, 100.0 * len(chapter) / len(text)))
+    if args.visualize_metasessions_by_style:
+        visualize_metasessions_by_reading_style(266700, 969292, 393331)
+        visualize_metasessions_by_reading_style(210901, 1143157, 1966674)
 
     if args.save_metasessions:
         # users = get_common_users(list(BOOKS.values()))[:10]

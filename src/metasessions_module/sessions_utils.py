@@ -4,8 +4,12 @@ import logging
 
 from collections import defaultdict
 from tqdm import tqdm
-from metasessions_module.utils import connect_to_mongo_database
+from metasessions_module.utils import connect_to_mongo_database, date_from_timestamp
 from metasessions_module.item_utils import get_items
+
+
+INFINITE_SPEED = 10000000
+UNKNOWN_SPEED = -1
 
 
 def load_sessions(book_id):
@@ -54,6 +58,26 @@ def load_user_sessions(book_id, document_id, user_id):
     collection_name = 'sessions_{}'.format(book_id)
     sessions = db_work[collection_name].find({'user_id': user_id, 'document_id': document_id})
     return list(sessions)
+
+
+def save_user_sessions_speed(book_id, document_id, user_id):
+    logging.info('Calculating user {} sessions speed for document {} of book {}'.format(user_id, document_id, book_id))
+    user_sessions = load_user_sessions(book_id, document_id, user_id)
+    db_work = connect_to_mongo_database('bookmate_work')
+    collection_name = 'sessions_{}'.format(book_id)
+    user_sessions.sort(key=lambda session: date_from_timestamp(session['read_at']))
+    db_work[collection_name].update({'_id': user_sessions[0]['_id']}, {'$set': {'speed': UNKNOWN_SPEED}})
+    for ind, session in enumerate(user_sessions[1:], 1):
+        previous_session = user_sessions[ind - 1]
+        time = (date_from_timestamp(session['read_at']) - date_from_timestamp(previous_session['read_at'])) \
+            .total_seconds()
+        if time < 0.0001:
+            speed = INFINITE_SPEED
+            logging.info('Found session {} with infinite speed'.format(session['_id']))
+        else:
+            speed = previous_session['size'] * 60 / time
+        db_work[collection_name].update({'_id': session['_id']}, {'$set': {'speed': speed}})
+    logging.info('Calculating sessions speed over')
 
 
 def save_book_sessions(book_id):
