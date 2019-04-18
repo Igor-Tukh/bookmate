@@ -213,7 +213,7 @@ def visualize_metasessions_by_reading_style(book_id, document_id, user_id):
         x = [session['book_from'] for session in metasession]
         y = [avg_speed for _ in metasession]
         plt.plot(x, y, ReadingStyle.get_reading_style_by_speed(metasession[0]['speed']).get_color(), markersize=2)
-    plt.savefig(os.path.join('resources', 'plots', '{}_{}_{}_metasessions_by_reading_style.png')
+    plt.savefig(os.path.join('resources', 'plots', 'reading_style', '{}_{}_{}_metasessions_by_reading_style.png')
                 .format(book_id, document_id, user_id))
 
 
@@ -227,7 +227,7 @@ def visualize_metasessions_by_deviant_percent(book_id, document_id, user_id):
         x = [session['book_from'] for session in metasession]
         y = [avg_speed for _ in metasession]
         plt.plot(x, y)
-    plt.savefig(os.path.join('resources', 'plots', '{}_{}_{}_metasessions_by_deviant_percent.png')
+    plt.savefig(os.path.join('resources', 'plots', 'deviant_percent', '{}_{}_{}_metasessions_by_deviant_percent.png')
                 .format(book_id, document_id, user_id))
 
 
@@ -289,6 +289,15 @@ def upload_good_users(book_id):
         logging.error('Unable to upload good users for book {}'.format(book_id))
 
 
+def get_user_selection(book_id):
+    output_path = os.path.join('resources', 'users', '{}_users_selection.pkl'.format(book_id))
+    if os.path.isfile(output_path):
+        with open(output_path, 'rb') as file:
+            return pickle.load(file)
+    logging.error('Unable to load users selection for book {}'.format(book_id))
+    return []
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_sessions', help='Save BOOKS sessions', action='store_true')
@@ -304,6 +313,10 @@ if __name__ == '__main__':
     parser.add_argument('--visualize_metasessions_by_deviant_percent', help='Visualize metasessions by reading style',
                         action='store_true')
     parser.add_argument('--prepare_users', help='Find users which red a lot of books',
+                        action='store_true')
+    parser.add_argument('--select_users', help='Select users with the most amount of sessions',
+                        action='store_true')
+    parser.add_argument('--save_speed', help='Save speed for users sessions',
                         action='store_true')
 
     args = parser.parse_args()
@@ -345,22 +358,34 @@ if __name__ == '__main__':
                 for ind, chapter in enumerate(chapters):
                     print('{},{}'.format(ind + 1, 100.0 * len(chapter) / len(text)))
     if args.visualize_metasessions_by_style:
-        visualize_metasessions_by_reading_style(266700, 969292, 393331)
-        visualize_metasessions_by_reading_style(210901, 1143157, 1966674)
+        for book_id in BOOKS.values():
+            for user_id in tqdm(get_user_selection(book_id)):
+                logging.info('Visualizing metasessions by speed of user {}'.format(user_id))
+                document_id = get_user_document_id(book_id, user_id)
+                if document_id not in DOCUMENTS[book_id]:
+                    continue
+                visualize_metasessions_by_reading_style(book_id, document_id, user_id)
     if args.visualize_metasessions_by_deviant_percent:
-        visualize_metasessions_by_deviant_percent(266700, 969292, 393331)
-        visualize_metasessions_by_deviant_percent(210901, 1143157, 1966674)
+        for book_id in BOOKS.values():
+            for user_id in tqdm(get_user_selection(book_id)):
+                logging.info('Visualizing metasessions by deviant percent of user {}'.format(user_id))
+                document_id = get_user_document_id(book_id, user_id)
+                if document_id not in DOCUMENTS[book_id]:
+                    continue
+                visualize_metasessions_by_deviant_percent(book_id, document_id, user_id)
+    if args.save_speed:
+        for book_id in BOOKS.values():
+            for user_id in tqdm(get_user_selection(book_id)):
+                logging.info('Saving speed for sessions of user {}'.format(user_id))
+                document_id = get_user_document_id(book_id, user_id)
+                save_user_sessions_speed(book_id, document_id, user_id)
     if args.save_metasessions:
-        save_metasessions(266700, 969292, 393331)
-        visualize_metassesions(266700, 969292, 393331)
-        save_metasessions(210901, 1143157, 1966674)
-        visualize_metassesions(210901, 1143157, 1966674)
-        save_metasessions(210901, 1311858, 2228827)
-        visualize_metassesions(210901, 1311858, 2228827)
-        save_metasessions(210901, 1143157, 1966770)
-        visualize_metassesions(210901, 1143157, 1966770)
-        save_metasessions(210901, 1143157, 1966782)
-        visualize_metassesions(210901, 1143157, 1966782)
+        for book_id in BOOKS.values():
+            for user_id in tqdm(get_user_selection(book_id)):
+                logging.info('Saving metasessions for user {}'.format(user_id))
+                document_id = get_user_document_id(book_id, user_id)
+                save_metasessions_by_reading_style(book_id, document_id, user_id)
+                save_metasessions_by_deviant_percent(book_id, document_id, user_id)
     if args.prepare_users:
         good_users = {}
         for book_id in BOOKS.values():
@@ -384,3 +409,18 @@ if __name__ == '__main__':
                     good_users[book_id].append((user_id, books_amount))
                     logging.info('Found good user {}, who red {} books'.format(user_id, books_amount))
                 iter += 1
+    if args.select_users:
+        users_for_book = {}
+        for book_id in BOOKS.values():
+            users = upload_good_users(book_id)
+            users_for_book[book_id] = []
+            for user_id, amount in users:
+                document_id = get_user_document_id(book_id, user_id)
+                sessions_amount = len(load_user_sessions(book_id, document_id, user_id))
+                users_for_book[book_id].append((user_id, sessions_amount))
+            users_for_book[book_id].sort(key=lambda x: -x[1])
+            output_path = os.path.join('resources', 'users', '{}_users_selection.pkl'.format(book_id))
+            logging.info('Total found {} good users for book {}, we will select 100'
+                         .format(len(users_for_book[book_id]), book_id))
+            with open(output_path, 'wb') as file:
+                pickle.dump([x[0] for x in users_for_book[book_id][:100]], file)
