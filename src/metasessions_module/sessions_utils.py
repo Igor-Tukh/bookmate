@@ -1,6 +1,7 @@
 import pickle
 import os
 import logging
+import math
 
 from collections import defaultdict
 from tqdm import tqdm
@@ -113,3 +114,28 @@ def calculate_session_percents(book_id, document_ids):
         except Exception:
             logging.error('Session {} skipped due to the internal problem'.format(session['_id']))
     logging.info('Sessions book_from and book_to fields added')
+
+
+def get_book_percent(book_id, document_id, user_id):
+    sessions = load_user_sessions(book_id, document_id, user_id)
+    sessions = [session for session in sessions if 'book_from' in session]
+    sessions.sort(key=lambda session: session['book_from'])
+    logging.info('Found {} sessions for user {}'.format(len(sessions), user_id))
+
+    eps = 1e-5
+    current_end_percent = 0
+    current_start_percent = 0
+    read_percent = 0
+    for session in sessions:
+        if 'book_from' not in session or 'book_to' not in session:
+            continue
+        if math.isnan(session['book_from']) or math.isnan(session['book_to']):
+            continue
+        if session['book_from'] < current_end_percent + eps:
+            current_end_percent = max(session['book_to'], current_end_percent)
+        else:
+            read_percent += current_end_percent - current_start_percent
+            current_start_percent = session['book_from']
+            current_end_percent = session['book_to']
+
+    return read_percent + current_end_percent - current_start_percent

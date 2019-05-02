@@ -1,6 +1,7 @@
 import logging
 import pickle
 import os
+import csv
 
 from metasessions_module.utils import connect_to_mongo_database
 from metasessions_module.sessions_utils import load_sessions
@@ -108,3 +109,28 @@ def get_users_books_amount(user_id):
     books = set([session['book_id'] for session in user_sessions])
     logging.info('Found {} books for user {}'.format(len(books), user_id))
     return len(books)
+
+
+def get_users_extra_information(path=None, id_header='id'):
+    path = os.path.join('resources', 'users', 'users.csv') if path is None else path
+    info = {}
+    with open(path, 'r') as csvfile:
+        reader = csv.DictReader(csvfile)
+        headers = reader.fieldnames
+        info_headers = [header for header in headers if header != id_header]
+        for row in reader:
+            info[row[id_header]] = {header: (row[header] if header in row and row[header] != 'NULL'
+                                             else '?') for header in info_headers}
+    return info
+
+
+def get_good_users_info(book_id, path=None, user_header='user_id'):
+    path = os.path.join('resources', 'users', 'csv', '{}.csv'.format(book_id)) if path is None else path
+    users = {}
+    with open(path, 'r') as csvfile:
+        reader = csv.DictReader(csvfile)
+        headers = reader.fieldnames
+        info_headers = [header for header in headers if header != user_header]
+        for row in reader:
+            users[int(row[user_header])] = {header: row[header] for header in info_headers}
+    return users
