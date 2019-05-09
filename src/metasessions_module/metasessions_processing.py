@@ -38,6 +38,7 @@ rootLogger.addHandler(consoleHandler)
 rootLogger.setLevel(logging.INFO)
 log_step = 100000
 
+
 def get_metasessions_breaks(book_id, document_id, user_id, break_time_seconds=1800):
     logging.info('Looking for metasessions break for user {} and document {} of book {}'.format(user_id,
                                                                                                 document_id,
