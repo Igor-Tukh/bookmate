@@ -5,12 +5,13 @@ import math
 
 from collections import defaultdict
 from tqdm import tqdm
-from metasessions_module.utils import connect_to_mongo_database, date_from_timestamp
-from metasessions_module.item_utils import get_items
+from src.metasessions_module.utils import connect_to_mongo_database, date_from_timestamp
+from src.metasessions_module.item_utils import get_items
+from src.metasessions_module.config import *
 
 
-INFINITE_SPEED = 10000000
-UNKNOWN_SPEED = -1
+def is_target_speed(speed):
+    return speed is not None and not math.isnan(speed) and speed != UNKNOWN_SPEED and speed != UNKNOWN_SPEED
 
 
 def load_sessions(book_id):

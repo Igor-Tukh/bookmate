@@ -3,8 +3,10 @@ import pickle
 import os
 import csv
 
-from metasessions_module.utils import connect_to_mongo_database
-from metasessions_module.sessions_utils import load_sessions
+from src.metasessions_module.utils import connect_to_mongo_database
+from src.metasessions_module.sessions_utils import load_sessions, load_user_sessions
+
+from collections import defaultdict
 
 
 def get_users(book_id):
@@ -134,3 +136,60 @@ def get_good_users_info(book_id, path=None, user_header='user_id'):
         for row in reader:
             users[int(row[user_header])] = {header: row[header] for header in info_headers}
     return users
+
+
+def upload_good_users(book_id):
+    users_path = os.path.join('resources', 'users', '{}_good_users_id_amount.pkl'.format(book_id))
+    if os.path.isfile(users_path):
+        with open(users_path, 'rb') as file:
+            return pickle.load(file)
+    else:
+        logging.error('Unable to upload good users for book {}'.format(book_id))
+
+
+def upload_good_users_with_percents(book_id):
+    users_path = os.path.join('resources', 'users', '{}_good_users_id_amount_percent.pkl'.format(book_id))
+    if os.path.isfile(users_path):
+        with open(users_path, 'rb') as file:
+            return pickle.load(file)
+    else:
+        logging.error('Unable to upload good users for book {}'.format(book_id))
+
+
+def get_user_selection(book_id):
+    output_path = os.path.join('resources', 'users', '{}_users_selection.pkl'.format(book_id))
+    if os.path.isfile(output_path):
+        with open(output_path, 'rb') as file:
+            return pickle.load(file)
+    logging.error('Unable to load users selection for book {}'.format(book_id))
+    return []
+
+
+def save_user_sessions_by_place_in_book(book_id, document_id, user_id, output_path=None):
+    output_path = output_path if output_path is not None \
+        else os.path.join('resources', 'sessions_filtered', '{}_{}_{}.pkl'.format(book_id, document_id, user_id))
+    logging.info('Saving sessions by place in document {} of book {} for user {}'.format(user_id,
+                                                                                         document_id,
+                                                                                         book_id))
+    user_sessions = load_user_sessions(book_id, document_id, user_id)
+    sessions_dict = defaultdict(lambda: [])
+    for session in user_sessions:
+        sessions_dict[(session['book_from'], session['book_to'])].append(session)
+    unique_sessions = {}
+    for key, value in sessions_dict.items():
+        value.sort(key=lambda session_reading: session_reading['read_at'])
+        unique_sessions[key] = value[0] if len(value) == 1 else value[1]
+    with open(output_path, 'wb') as file:
+        pickle.dump(unique_sessions, file)
+    logging.info('Sessions by place in document {} of book {} for user {} saved to {}'
+                 .format(document_id, book_id, user_id, output_path))
+
+
+def get_user_sessions_by_place_in_book(book_id, document_id, user_id, rebuild=False):
+    output_path = os.path.join('resources', 'sessions_filtered', '{}_{}_{}.pkl'.format(book_id, document_id, user_id))
+    if not os.path.isfile(output_path) or rebuild:
+        save_user_sessions_by_place_in_book(book_id, document_id, user_id, output_path)
+    logging.info('Loading sessions by place in document {} of book {} for user {}'
+                 .format(document_id, book_id, user_id))
+    with open(output_path, 'rb') as file:
+        return pickle.load(file)
