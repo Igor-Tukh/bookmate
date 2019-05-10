@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from tqdm import tqdm
 from enum import Enum
-from sklearn.cluster import KMeans
 
 sys.path.append(os.pardir)
 sys.path.append(os.path.join(os.pardir, os.pardir))
