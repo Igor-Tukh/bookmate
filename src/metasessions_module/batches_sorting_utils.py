@@ -1,11 +1,6 @@
 import numpy as np
 
 
-def sort_batches_by_label(batches, labels):
-    indexes = np.argsort(labels)
-    return batches[indexes], labels[indexes]
-
-
 class BatchesSorter(object):
     def __init__(self, batches, labels):
         self.batches = batches
@@ -15,10 +10,12 @@ class BatchesSorter(object):
         raise NotImplementedError()
 
 
-# def sort_batches_greedy(batches, labels):
-#     batches, labels = sort_batches_by_label(batches, labels)
-#     prev_label = None
-#     pass
+class GreedyBatchesSorter(BatchesSorter):
+    def __init__(self, batches, labels):
+        BatchesSorter.__init__(batches, labels)
+
+    def get_sorted_batches_and_labels(self):
+        pass
 
 
 class AnnealingBatchesSorter(BatchesSorter):

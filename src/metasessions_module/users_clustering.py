@@ -117,10 +117,6 @@ def cluster_users_by_batches_speed_sklearn_spectral(book_id, batches_amount, clu
 
 def visualize_batches_speed_clusters(book_id, batches, labels, plot_title, plot_name, colors):
     batches_amount = batches.shape[1]
-    indexes = np.argsort(labels)
-    batches = batches[indexes, :]
-    colors = colors[indexes, :]
-    labels = labels[indexes]
     fig, ax = plt.subplots(figsize=(14, 14))
     ax.set_xlabel('Book percent')
     ax.set_ylabel('Users')
@@ -151,6 +147,21 @@ def visualize_batches_speed_clusters(book_id, batches, labels, plot_title, plot_
 
     plot_path = os.path.join('resources', 'plots', 'batches_clusters', plot_name)
     plt.savefig(plot_path)
+
+
+def sort_by_batches_by_labels(batches, labels):
+    indexes = np.argsort(labels)
+    return batches[indexes], labels[indexes]
+
+
+def get_clusters_boundaries(batches, labels):
+    prev_label = labels[0]
+    boundaries = [0]
+    for ind in range(1, labels.shape[0]):
+        if labels[ind] != prev_label:
+            prev_label = labels[ind]
+            boundaries.append(ind)
+    return boundaries
 
 
 def get_scores(X, y):
@@ -244,12 +255,27 @@ if __name__ == '__main__':
                         current_scores['Book'] = book[0]
                         clustering_scores.append(current_scores)
 
-                    sorter = AnnealingBatchesSorter(book_batches, book_labels, random_state=23923)
-                    book_batches, book_labels = sorter.get_sorted_batches_and_labels()
+                    book_batches, book_labels = sort_by_batches_by_labels(book_batches, book_labels)
+                    boundaries = get_clusters_boundaries(book_batches, book_labels)
+                    sorted_batches = None
+                    sorted_labels = None
+                    for ind, boundary in enumerate(boundaries):
+                        next_boundary = boundaries[ind + 1] if ind < len(boundaries) - 1 else book_labels.shape[0]
 
-                    plot_name = '{}_{}_{}_{}'.format(book[1], n_clusters, n_batches, algorithm)
-                    book_colors = get_colors_speed_using_users_min_max_scale(book_batches)
-                    visualize_batches_speed_clusters(book[1], book_batches, book_labels, 'Book {} readers clusters'.format(book[0]),
+                        sorter = AnnealingBatchesSorter(book_batches[boundary:next_boundary],
+                                                        book_labels[boundary:next_boundary],
+                                                        random_state=23923)
+                        current_batches, current_labels = sorter.get_sorted_batches_and_labels()
+                        if sorted_batches is None:
+                            sorted_batches, sorted_labels = current_batches, current_labels
+                        else:
+                            sorted_batches = np.vstack([sorted_batches, current_batches])
+                            sorted_labels = np.hstack([sorted_labels, current_labels])
+
+                    plot_name = '{}_{}_{}_{}_annealing'.format(book[1], n_clusters, n_batches, algorithm)
+                    book_colors = get_colors_speed_using_users_min_max_scale(sorted_batches)
+                    visualize_batches_speed_clusters(book[1], sorted_batches, sorted_labels,
+                                                     'Book {} readers clusters'.format(book[0]),
                                                      plot_name,
                                                      book_colors)
     if args.scores:
