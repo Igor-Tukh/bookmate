@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import sys
+import csv
+
 
 sys.path.append(os.pardir)
 sys.path.append(os.path.join(os.pardir, os.pardir))
@@ -16,7 +18,10 @@ from src.metasessions_module.text_utils import get_chapter_percents
 from src.metasessions_module.config import UNKNOWN_SPEED, DOCUMENTS, BOOK_LABELS, BOOKS
 from src.metasessions_module.speed_to_color import to_matplotlib_color, \
     get_colors_speed_using_absolute_min_max_scale, get_colors_speed_using_users_min_max_scale
+from src.metasessions_module.batches_sorting_utils import AnnealingBatchesSorter
 
+from sklearn.metrics import pairwise_distances
+from sklearn import metrics
 from sklearn.cluster import KMeans, AgglomerativeClustering, SpectralClustering
 from sklearn.preprocessing import MinMaxScaler
 from tqdm import tqdm
@@ -148,12 +153,59 @@ def visualize_batches_speed_clusters(book_id, batches, labels, plot_title, plot_
     plt.savefig(plot_path)
 
 
+def get_scores(X, y):
+    return {
+        'Silhouette Coefficient': metrics.silhouette_score(X, y, metric='euclidean'),  # [-1; 1] 1 for highly dense
+        'Calinski-Harabasz Index': metrics.calinski_harabasz_score(X, y),  # higher score relates to better clusters def
+        'Davies-Bouldin Index':  metrics.davies_bouldin_score(X, y)  # >= 0, closer to 0 indicates better partition
+    }
+
+
+def get_scores_path():
+    return os.path.join('resources', 'scores', 'users_clustering', 'scores.scv')
+
+
+def save_scores(scores):
+    if len(scores) == 0:
+        return
+    with open(get_scores_path(), 'w') as scores_file:
+        logging.info('Saving users clustering scores to {}'.format(get_scores_path()))
+        writer = csv.DictWriter(scores_file, scores[0].keys())
+        writer.writeheader()
+        writer.writerows(scores)
+
+
+def load_scores():
+    if not os.path.isfile(get_scores_path()):
+        logging.info('Early scores not found')
+        return []
+
+    with open(get_scores_path(), 'r') as scores_file:
+        reader = csv.reader(scores_file)
+        lines = [row for row in reader]
+        scores = [{lines[0][i]: line[i] for i in range(len(line))} for line in lines[1:]]
+
+    return scores
+
+
+def extend_scores(scores):
+    logging.info('Extending users clustering scores')
+    if not os.path.isfile(get_scores_path()):
+        logging.info('Early scores not found')
+        save_scores(scores)
+    scores += load_scores()
+    save_scores(scores)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_clusters', help='cluster to N clusters', type=int, metavar='N')
     parser.add_argument('--n_batches', help='split to N batches', type=int, metavar='N')
     parser.add_argument('--algorithm', help='Apply algorithm algo', type=str, metavar='algo')
     parser.add_argument('--search', help='Run with a different clustering configurations', action='store_true')
+    parser.add_argument('--scores', help='Run with a different clustering configurations ans score clusters',
+                        action='store_true')
+
     args = parser.parse_args()
 
     n_clusters = args.n_clusters if args.n_clusters is not None else 5
@@ -161,8 +213,10 @@ if __name__ == '__main__':
     algorithm = args.algorithm
     algorithm = 'k_means' if algorithm is None else algorithm
 
-    search_range = ([[n_batches], [n_clusters], [algorithm]]) if not args.search else \
-        [[200], [8, 10], ['agglomerative', 'spectral', 'k_means']]
+    clustering_scores = []
+    search_range = ([[n_batches], [n_clusters], [algorithm]]) if not args.search and not args.scores else \
+        [[50, 100, 200], [3], ['agglomerative', 'spectral', 'k_means']]
+    search_range = [[200], [2], ['k_means']]
     for n_batches in search_range[0]:
         for n_clusters in search_range[1]:
             for algorithm in search_range[2]:
@@ -182,8 +236,21 @@ if __name__ == '__main__':
                                                                                                    n_batches,
                                                                                                    n_clusters,
                                                                                                    scale_each=True)
+                    if args.scores:
+                        current_scores = get_scores(book_batches, book_labels)
+                        current_scores['Model'] = algorithm
+                        current_scores['Batches amount'] = n_batches
+                        current_scores['Clusters amount'] = n_clusters
+                        current_scores['Book'] = book[0]
+                        clustering_scores.append(current_scores)
+
+                    sorter = AnnealingBatchesSorter(book_batches, book_labels, random_state=23923)
+                    book_batches, book_labels = sorter.get_sorted_batches_and_labels()
+
                     plot_name = '{}_{}_{}_{}'.format(book[1], n_clusters, n_batches, algorithm)
                     book_colors = get_colors_speed_using_users_min_max_scale(book_batches)
                     visualize_batches_speed_clusters(book[1], book_batches, book_labels, 'Book {} readers clusters'.format(book[0]),
                                                      plot_name,
                                                      book_colors)
+    if args.scores:
+        extend_scores(clustering_scores)

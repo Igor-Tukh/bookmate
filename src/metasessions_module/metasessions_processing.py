@@ -402,7 +402,7 @@ def visualize_users_speed_spectrum(book_id, user_ids, batches_amount, book_name=
         if not smooth_limits:
             avg_speed = 1.0 * sum(speeds) / len(speeds)
         else:
-            percent = int(1.0 * len(speeds) / 100)
+            percent = int(1.0 * len(speeds) / 100 + 1)
             speeds = sorted(speeds)
             avg_speed = 1.0 * (sum(speeds[percent:-percent]) +
                                percent * speeds[percent] + percent * speeds[-percent]) / len(speeds)
@@ -415,9 +415,11 @@ def visualize_users_speed_spectrum(book_id, user_ids, batches_amount, book_name=
     else:
         speeds = sorted([speed for batches_speed in batches_speeds for speed in batches_speed if speed is not None
                          and not math.isnan(speed)])
-        percent = int(1.0 * len(speeds) / 100)
+        percent = int(1.0 * len(speeds) / 100 + 1)
         max_speed = speeds[-percent]
         min_speed = speeds[percent]
+
+    print(max_speed, min_speed, percent)
 
     rgb_sum = lambda first, second, weight: (first[0] * (1 - weight) + second[0] * weight,
                                              first[1] * (1 - weight) + second[1] * weight,
@@ -433,7 +435,7 @@ def visualize_users_speed_spectrum(book_id, user_ids, batches_amount, book_name=
         not_null_speeds = [speed for speed in batches_speed if speed is not None and not math.isnan(speed)]
         if not absolute_colors:
             if smooth_limits:
-                percent = int(1.0 * len(not_null_speeds) / 100)
+                percent = int(1.0 * len(not_null_speeds) / 100 + 1)
                 not_null_speeds = sorted(not_null_speeds)
                 max_speed = not_null_speeds[-percent]
                 min_speed = not_null_speeds[percent]
@@ -444,7 +446,7 @@ def visualize_users_speed_spectrum(book_id, user_ids, batches_amount, book_name=
                 if not smooth_limits:
                     avg_speed = 1.0 * sum(not_null_speeds) / len(not_null_speeds)
                 else:
-                    percent = int(1.0 * len(not_null_speeds) / 100)
+                    percent = int(1.0 * len(not_null_speeds) / 100 + 1)
                     not_null_speeds = sorted(not_null_speeds)
                     avg_speed = (sum(not_null_speeds[percent:-percent]) + percent * not_null_speeds[percent]
                                  + percent * not_null_speeds[-percent]) / len(not_null_speeds)
@@ -458,7 +460,7 @@ def visualize_users_speed_spectrum(book_id, user_ids, batches_amount, book_name=
                     else batches_speed[ind]
                 if relative_speed:
                     if speed > avg_speed:
-                        percent = (speed - avg_speed) / (max_speed - avg_speed) if max_speed > avg_speed else 0
+                        percent = (speed - avg_speed) / (max_speed - avg_speed) if max_speed > avg_speed else 1
                         color = (0.5 * percent,
                                  0,
                                  0.5 * percent + 1.0 * (1 - percent))
@@ -467,6 +469,8 @@ def visualize_users_speed_spectrum(book_id, user_ids, batches_amount, book_name=
                         color = (0.5 * (1 - percent) + 1.0 * percent,
                                  0,
                                  0.5 * (1 - percent))
+                    # logging.info('Percent : {}, color: {}, avg speed: {}, min speed: {}, max speed: {}'
+                    #              .format(percent, color, avg_speed, min_speed, max_speed))
 
                     circle = plt.Circle((batch_from, users_y), batch_percent / 2,
                                         color=color)
