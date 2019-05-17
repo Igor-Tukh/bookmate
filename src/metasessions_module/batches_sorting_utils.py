@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 
 
 class BatchesSorter(object):
@@ -12,7 +13,7 @@ class BatchesSorter(object):
 
 class GreedyBatchesSorter(BatchesSorter):
     def __init__(self, batches, labels):
-        BatchesSorter.__init__(batches, labels)
+        BatchesSorter.__init__(self, batches, labels)
 
     def get_sorted_batches_and_labels(self):
         pass
@@ -20,8 +21,8 @@ class GreedyBatchesSorter(BatchesSorter):
 
 class AnnealingBatchesSorter(BatchesSorter):
     def __init__(self, batches, labels,
-                 initial_temperature=20.0,
-                 min_temperature=0.1,
+                 initial_temperature=5000.0,
+                 min_temperature=0.005,
                  decrease_temperature_function='linear',
                  transition_apply_function='standard',
                  random_state=None):
@@ -41,6 +42,8 @@ class AnnealingBatchesSorter(BatchesSorter):
 
     def get_sorted_batches_and_labels(self):
         n = self.batches.shape[0]
+        if n <= 1:
+            return self.batches, self.labels, np.arange(1)
         permutation = np.arange(n)
         energy = self.get_energy(permutation)
 
@@ -52,8 +55,11 @@ class AnnealingBatchesSorter(BatchesSorter):
                 permutation[transition[1]], permutation[transition[0]]
             new_energy = self.get_energy(permutation)
 
+            # logging.info('Transition probability {}'
+            #              .format(self.apply_transition_standard(energy, new_energy, temperature)))
             if self.apply_transition_standard(energy, new_energy, temperature) > np.random.uniform():
                 energy = new_energy
+                logging.info('Energy changed from {} to {}'.format(energy, new_energy))
             else:
                 permutation[transition[0]], permutation[transition[1]] = \
                     permutation[transition[1]], permutation[transition[0]]
@@ -61,7 +67,7 @@ class AnnealingBatchesSorter(BatchesSorter):
             temperature = self.decrease_temperature_function(iteration_number)
             iteration_number += 1
 
-        return self.batches[permutation], self.labels[permutation]
+        return self.batches[permutation], self.labels[permutation], permutation
 
     def decrease_temperature_linear(self, i, alpha=0.1):
         return self.initial_temperature * alpha / i
@@ -69,7 +75,7 @@ class AnnealingBatchesSorter(BatchesSorter):
     def get_energy(self, permutation):
         energy = 0
         for ind in range(permutation.shape[0] - 1):
-            energy += np.linalg.norm(self.batches[ind] - self.batches[ind + 1]) ** 2
+            energy += np.linalg.norm(self.batches[permutation[ind]] - self.batches[permutation[ind + 1]]) ** 2
         return energy
 
     @staticmethod
