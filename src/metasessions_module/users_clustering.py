@@ -45,7 +45,7 @@ def get_batches(book_id, batches_amount):
     batches = np.full((len(user_ids), batches_amount), UNKNOWN_SPEED, dtype=np.float64)
     batch_percent = 100.0 / batches_amount
 
-    for user_ind, user_id in tqdm(enumerate(user_ids)):
+    for (user_ind, user_id), _ in zip(enumerate(user_ids), tqdm(range(len(user_ids)))):
         batch_to = batch_percent
         batch_ind = 0
         current_speeds = []
@@ -162,7 +162,7 @@ def visualize_batches_speed_clusters(book_id, batches, labels, plot_title, plot_
     ax.set_xticks(ticks_pos)
     ax.set_xticklabels(BOOK_LABELS[book_id], rotation=90)
 
-    plot_path = os.path.join('resources', 'plots', 'batches_clusters', plot_name)
+    plot_path = os.path.join('resources', 'plots', 'batches_clusters', str(book_id), plot_name)
     plt.savefig(plot_path)
 
 
@@ -277,7 +277,7 @@ if __name__ == '__main__':
     clustering_scores = []
     gender_stats = []
     search_range = ([[n_batches], [n_clusters], [algorithm]]) if not args.search and not args.scores and not \
-        args.count_genders else [[150, 200], [5], ['agglomerative', 'spectral', 'k_means']]
+        args.count_genders else [[50, 100], [2], ['agglomerative', 'spectral', 'k_means']]
 
     for n_batches in search_range[0]:
         for n_clusters in search_range[1]:

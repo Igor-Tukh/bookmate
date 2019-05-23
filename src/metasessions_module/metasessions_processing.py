@@ -22,6 +22,7 @@ from src.metasessions_module.sessions_utils import *
 from src.metasessions_module.user_utils import *
 from src.metasessions_module.text_utils import *
 from src.metasessions_module.item_utils import *
+from src.metasessions_module.documents_utils import *
 
 
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -752,6 +753,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_sessions', help='Save BOOKS sessions', action='store_true')
     parser.add_argument('--save_users', help='Save BOOKS users', action='store_true')
+    parser.add_argument('--save_book_documents_stats', help='Save documents stats for BOOKS', action='store_true')
     parser.add_argument('--save_users_sessions', help='Save sessions for users of BOOKS', action='store_true')
     parser.add_argument('--calculate_session_percents', help='Calculate book_from and book_to', action='store_true')
     parser.add_argument('--save_common_users', help='Save common users of BOOKS', action='store_true')
@@ -881,6 +883,10 @@ if __name__ == '__main__':
         users_info = get_users_extra_information()
         for book_id in BOOKS.values():
             output_path = os.path.join('resources', 'users', 'csv', '{}.csv'.format(book_id))
+            if os.path.isfile(output_path):
+                logging.info('Found {}, book {} skipped'.format(output_path, book_id))
+                continue
+            logging.info('Saving users for book {}'.format(book_id))
             users = upload_good_users_with_percents(book_id)
             with open(output_path, 'w') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=['book_id', 'user_id', 'books_amount',
@@ -959,3 +965,6 @@ if __name__ == '__main__':
                 visualize_users_speed_classes(book_id, [user_id for user_id in user_ids
                                                         if info[user_id]['gender'] == 'm'],
                                               batches_amount, book_name=name, suffix='m')
+    if args.save_book_documents_stats:
+        for book_id in BOOKS.values():
+            save_book_documents_stats(book_id)

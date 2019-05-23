@@ -21,11 +21,13 @@ def get_users(book_id):
 
 def save_users(book_ids):
     for book_id in book_ids:
-        logging.info('Processing users of book {}'.format(book_id))
         users = get_users(book_id)
-        with open(os.path.join('resources', 'users', '{book_id}.pkl'.format(book_id=book_id)), 'wb') as file:
-            pickle.dump(users, file)
-        logging.info('Users of book {}: processing done'.format(book_id))
+        users_path = os.path.join('resources', 'users', '{book_id}.pkl'.format(book_id=book_id))
+        if not os.path.isfile(users_path):
+            logging.info('Processing users of book {}'.format(book_id))
+            with open(users_path, 'wb') as file:
+                pickle.dump(users, file)
+            logging.info('Users of book {}: processing done'.format(book_id))
 
 
 def load_users(book_id):
@@ -93,7 +95,7 @@ def save_books_users_sessions(book_ids):
     logging.info('Saving sessions for users of books {} to {}'.format(str(book_ids), sessions_path))
     with open(sessions_path, 'wb') as file:
         pickle.dump(sessions, file)
-    logging.info('Sessions for users of books{} saved to {}'.format(str(book_ids), sessions_path))
+    logging.info('Sessions for users of books {} saved to {}'.format(str(book_ids), sessions_path))
 
 
 def get_user_document_id(book_id, user_id):

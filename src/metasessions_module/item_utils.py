@@ -1,7 +1,7 @@
 import logging
 
 
-from metasessions_module.utils import connect_to_mongo_database
+from src.metasessions_module.utils import connect_to_mongo_database
 
 
 def save_items(document_id):

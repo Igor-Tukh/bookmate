@@ -2,6 +2,7 @@ import pickle
 import os
 import logging
 import math
+import numpy as np
 
 from collections import defaultdict
 from tqdm import tqdm
@@ -32,7 +33,7 @@ def save_sessions(book_ids):
 
     db = connect_to_mongo_database('sessions')
     db_work = connect_to_mongo_database('bookmate_work')
-    books_to_save = ['book_id' for book_id in book_ids
+    books_to_save = [book_id for book_id in book_ids
                      if 'sessions_{book_id}'.format(book_id=book_id) not in db_work.collection_names()]
     logging.info('Books to save: {}'.format(str(books_to_save)))
     sessions = []
@@ -47,18 +48,27 @@ def save_sessions(book_ids):
         db_work[collection_name].insert_many(book_sessions)
 
     for book_id in book_ids:
-        book_sessions = list(db_work['sessions_{book_id}'.format(book_id=book_id)].find({}))
         sessions_path = os.path.join('resources', 'sessions', '{book_id}.pkl'.format(book_id=book_id))
-        os.makedirs(sessions_path)
-        with open(sessions_path, 'wb') as file:
-            pickle.dump(book_sessions, file)
-        logging.info('book {book_id}: done'.format(book_id=book_id))
+        if not os.path.isfile(sessions_path):
+            logging.info('Saving sessions for book {} to {}'.format(book_id, sessions_path))
+            book_sessions = list(db_work['sessions_{book_id}'.format(book_id=book_id)].find({}))
+            # os.makedirs(sessions_path)
+            with open(sessions_path, 'wb') as file:
+                pickle.dump(book_sessions, file)
+            logging.info('book {book_id}: done'.format(book_id=book_id))
 
 
 def load_user_sessions(book_id, document_id, user_id):
     db_work = connect_to_mongo_database('bookmate_work')
     collection_name = 'sessions_{}'.format(book_id)
     sessions = db_work[collection_name].find({'user_id': user_id, 'document_id': document_id})
+    return list(sessions)
+
+
+def load_document_sessions(book_id, document_id):
+    db_work = connect_to_mongo_database('bookmate_work')
+    collection_name = 'sessions_{}'.format(book_id)
+    sessions = db_work[collection_name].find({'document_id': document_id})
     return list(sessions)
 
 
@@ -106,12 +116,17 @@ def calculate_session_percents(book_id, document_ids):
             logging.error('Item {} for session {} not found, session skipped'.format(session['item_id'], session['_id']))
             continue
         try:
-            session_book_from = float(session_item['_from']) + \
-                                (float(session_item['_to']) - float(session_item['_from'])) * float(session['_from']) / 100
-            session_book_to = float(session_item['_from']) + \
-                              (float(session_item['_to']) - float(session_item['_from'])) * float(session['_to']) / 100
+            if np.isclose(float(session_item['_to']), float(session_item['_from'])):
+                session_book_from = float(session_item['_from'])
+                session_book_to = session_book_from
+            else:
+                session_book_from = float(session_item['_from']) + \
+                                    (float(session_item['_to']) - float(session_item['_from'])) * \
+                                    float(session['_from']) / 100
+                session_book_to = float(session_item['_from']) + \
+                                   (float(session_item['_to']) - float(session_item['_from'])) * float(session['_to']) / 100
             db_work[collection_name].update({'_id': session['_id']}, {'$set': {'book_from': session_book_from,
-                                                                               'book_to': session_book_to}})
+                                                                           'book_to': session_book_to}})
         except Exception:
             logging.error('Session {} skipped due to the internal problem'.format(session['_id']))
     logging.info('Sessions book_from and book_to fields added')

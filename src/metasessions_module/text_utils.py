@@ -26,7 +26,7 @@ def load_text(book_id, document_id):
 
 
 def load_chapters(book_id, document_id):
-    chapters = load_text(book_id, document_id).split('---')
+    chapters = load_text(book_id, document_id).split('-----')
     chapters[1] = chapters[0] + chapters[1]
     logging.info('Found {} chapters for document_id {} of book {}'.format(len(chapters) - 1, document_id, book_id))
     return chapters[1:]
