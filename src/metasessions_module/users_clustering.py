@@ -316,12 +316,13 @@ if __name__ == '__main__':
     clustering_scores = []
     gender_stats = []
     search_range = ([[n_batches], [n_clusters], [algorithm]]) if not args.search and not args.scores and not \
-        args.count_genders else [[150, 200], [2], ['agglomerative', 'spectral', 'k_means']]
+        args.count_genders else [[107], [2], ['agglomerative', 'spectral', 'k_means']]
 
     for n_batches in search_range[0]:
         for n_clusters in search_range[1]:
             for algorithm in search_range[2]:
-                for book in BOOKS.items():
+                # for book in BOOKS.items():
+                for book in [('Fifty Shades Darker ', 259222)]:
                     info = get_good_users_info(book[1])
                     if algorithm == 'agglomerative':
                         book_batches, book_labels, book_user_ids = \

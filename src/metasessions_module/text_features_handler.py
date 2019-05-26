@@ -1,6 +1,7 @@
 import csv
 import os
 import nltk
+import logging
 import numpy as np
 
 from src.metasessions_module.text_utils import load_text
@@ -18,20 +19,24 @@ class TextFeaturesHandler(object):
     """
 
     def __init__(self, book_id, batches_amount=100, batch_size=None):
+        logging.info('Creating features handler for book {}'.format(book_id))
         self.book_id = book_id
         self.text = load_text(book_id)
         if batches_amount is None:
-            self.batches_amount = (len(self.text) + batch_size - 1) // batch_size
+            self.batches_amount = round((len(self.text) + batch_size - 1) / batch_size)
         else:
             self.batches_amount = batches_amount
 
         self.batch_size = 1. * len(self.text) / self.batches_amount
         self.batches_borders = [(round(ind * self.batch_size), round(min((ind + 1) * self.batch_size, len(self.text))))
                                 for ind in range(self.batches_amount)]
+        logging.info('Batches amount: {}, batch size: {}'.format(self.batches_amount, self.batch_size))
         self.fix_borders()
         self.batches_text = [self.text[first:last] for first, last in self.batches_borders]
         self.mystem = Mystem()
+        logging.info('Building lemmatized tokens')
         self.lemmatized_tokens = [self.mystem.lemmatize(self.text[first:last]) for first, last in self.batches_borders]
+        logging.info('Building tagged tokens')
         self.tagged_tokens = [pos_tag(word_tokenize(self.text[first:last]), lang='rus')
                               for first, last in self.batches_borders]
         nltk.download("stopwords")
@@ -86,8 +91,10 @@ class TextFeaturesHandler(object):
 
     def get_main_characters_names_percent(self, ind):
         names = self.get_characters_name(ind)[0]
+        if len(names) == 0:
+            return 0.0
         main_characters_amount = 0
-        main_names = set(MAIN_CHARACTERS[self.book_id])
+        main_names = set(map(lambda s: s.lower(), MAIN_CHARACTERS[self.book_id]))
         for name in names:
             main_characters_amount += 1 if name in main_names else 0
         return 1. * main_characters_amount / len(names)
@@ -106,7 +113,7 @@ class TextFeaturesHandler(object):
 
     def get_characters_name(self, ind):
         names = []
-        characters = set(CHARACTERS[self.book_id])
+        characters = set(map(lambda s: s.lower(), CHARACTERS[self.book_id]))
         total_amount = 0
         for word_info in self.mystem.analyze(self.batches_text[ind]):
             total_amount += 1
@@ -136,11 +143,12 @@ class TextFeaturesHandler(object):
         for ind, (first, last) in enumerate(self.batches_borders):
             while self.text[first] != ' ' and first > 0:
                 first -= 1
-            while self.text[last] != ' ' and last < len(self.text) - 1:
+            while last < len(self.text) and self.text[last] != ' ':
                 last += 1
             self.batches_borders[ind] = (first, last)
 
     def load_emotional_verbs(self):
+        logging.info('Loading emotional verbs')
         with open(os.path.join('resources', 'vocabulary', 'verbs', 'verbs_emotional.csv')) as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
