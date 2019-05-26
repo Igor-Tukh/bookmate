@@ -24,6 +24,7 @@ from sklearn import metrics
 from sklearn.cluster import KMeans, AgglomerativeClustering, SpectralClustering
 from sklearn.preprocessing import MinMaxScaler
 from tqdm import tqdm
+from collections import defaultdict
 
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 rootLogger = logging.getLogger()
@@ -86,8 +87,13 @@ def load_batches(book_id, batches_amount, rebuild=False):
     return load_from_pickle(output_batches_path)
 
 
-def cluster_users_by_batches_speed_sklearn(book_id, batches_amount, algo, scale, scale_each, with_ids=False):
+def cluster_users_by_batches_speed_sklearn(book_id, batches_amount, algo,
+                                           scale,
+                                           scale_each,
+                                           with_ids=False,
+                                           return_old_batches=False):
     batches, user_ids = load_batches(book_id, batches_amount)
+    old_batches = batches.copy()
     if scale_each:
         for speeds_ind in range(batches.shape[0]):
             scaler = MinMaxScaler(copy=True)
@@ -96,6 +102,8 @@ def cluster_users_by_batches_speed_sklearn(book_id, batches_amount, algo, scale,
         scaler = MinMaxScaler(copy=False)
         scaler.fit_transform(batches)
     labels = algo.fit_predict(batches)
+    if return_old_batches:
+        batches = old_batches
     if with_ids:
         return batches, labels, user_ids
     return batches, labels
@@ -104,37 +112,53 @@ def cluster_users_by_batches_speed_sklearn(book_id, batches_amount, algo, scale,
 def cluster_users_by_batches_speed_sklearn_k_means(book_id, batches_amount, clusters_amount, scale=True,
                                                    scale_each=False,
                                                    random_state=23923,
-                                                   with_ids=False):
+                                                   with_ids=False,
+                                                   return_old_batches=False):
     return cluster_users_by_batches_speed_sklearn(book_id,
                                                   batches_amount,
                                                   KMeans(n_clusters=clusters_amount,
                                                          random_state=random_state,
                                                          max_iter=1000,
                                                          init='random'),
-                                                  scale, scale_each, with_ids)
+                                                  scale, scale_each, with_ids, return_old_batches)
 
 
 def cluster_users_by_batches_speed_sklearn_agglomerative(book_id, batches_amount, clusters_amount, scale=True,
                                                          scale_each=False,
-                                                         with_ids=False):
+                                                         with_ids=False,
+                                                         return_old_batches=False):
     return cluster_users_by_batches_speed_sklearn(book_id,
                                                   batches_amount,
                                                   AgglomerativeClustering(n_clusters=clusters_amount),
-                                                  scale, scale_each, with_ids)
+                                                  scale, scale_each, with_ids, return_old_batches)
 
 
 def cluster_users_by_batches_speed_sklearn_spectral(book_id, batches_amount, clusters_amount, scale=True,
                                                     scale_each=False,
-                                                    with_ids=False):
+                                                    with_ids=False,
+                                                    return_old_batches=False):
     return cluster_users_by_batches_speed_sklearn(book_id,
                                                   batches_amount,
                                                   SpectralClustering(n_clusters=clusters_amount),
-                                                  scale, scale_each, with_ids)
+                                                  scale, scale_each, with_ids, return_old_batches)
+
+
+def save_clusters(book_id, clusters, filename, resave=False):
+    output_file = os.path.join('resources', 'clusters', str(book_id), filename)
+    if os.path.isfile(output_file) and not resave:
+        logging.info('Clusters for {} have been already saved'.format(filename))
+    else:
+        save_via_pickle(clusters, output_file)
+
+
+def load_clusters(book_id, filename):
+    return load_from_pickle(os.path.join('resources', 'clusters', str(book_id), filename))
 
 
 def visualize_batches_speed_clusters(book_id, batches, labels, plot_title, plot_name, colors):
     batches_amount = batches.shape[1]
-    fig, ax = plt.subplots(figsize=(14, 14))
+    fig, ax = plt.subplots(figsize=(15, 15))
+    fig.subplots_adjust(bottom=0.2)
     ax.set_xlabel('Book percent')
     ax.set_ylabel('Users')
     ax.set_title(plot_title)
@@ -262,12 +286,27 @@ if __name__ == '__main__':
     parser.add_argument('--n_batches', help='split to N batches', type=int, metavar='N')
     parser.add_argument('--algorithm', help='Apply algorithm algo', type=str, metavar='algo')
     parser.add_argument('--search', help='Run with a different clustering configurations', action='store_true')
+    parser.add_argument('--save_clusters', help='Save clusters', action='store_true')
     parser.add_argument('--scores', help='Run with a different clustering configurations ans score clusters',
                         action='store_true')
     parser.add_argument('--count_genders', help='Run with a different clustering configurations count genders ratio',
                         action='store_true')
+    parser.add_argument('--print_common_users', help='Print common users of book',
+                        action='store_true')
 
     args = parser.parse_args()
+
+    if args.print_common_users:
+        user_count = defaultdict(lambda: 0)
+        for book_id in BOOKS.values():
+            for user_id in list(get_good_users_info(book_id).keys()):
+                user_count[user_id] += 1
+        count = 0
+        for user_id, value in user_count.items():
+            if value == len(BOOKS):
+                count += 1
+        print(count)
+        exit(0)
 
     n_clusters = args.n_clusters if args.n_clusters is not None else 5
     n_batches = args.n_batches if args.n_batches is not None else 100
@@ -277,7 +316,7 @@ if __name__ == '__main__':
     clustering_scores = []
     gender_stats = []
     search_range = ([[n_batches], [n_clusters], [algorithm]]) if not args.search and not args.scores and not \
-        args.count_genders else [[50, 100], [2], ['agglomerative', 'spectral', 'k_means']]
+        args.count_genders else [[150, 200], [2], ['agglomerative', 'spectral', 'k_means']]
 
     for n_batches in search_range[0]:
         for n_clusters in search_range[1]:
@@ -290,21 +329,24 @@ if __name__ == '__main__':
                                                                                  n_batches,
                                                                                  n_clusters,
                                                                                  scale_each=True,
-                                                                                 with_ids=True)
+                                                                                 with_ids=True,
+                                                                                 return_old_batches=True)
                     elif algorithm == 'spectral':
                         book_batches, book_labels, book_user_ids = \
                             cluster_users_by_batches_speed_sklearn_spectral(book[1],
                                                                             n_batches,
                                                                             n_clusters,
                                                                             scale_each=True,
-                                                                            with_ids=True)
+                                                                            with_ids=True,
+                                                                            return_old_batches=True)
                     else:
                         book_batches, book_labels, book_user_ids = \
                             cluster_users_by_batches_speed_sklearn_k_means(book[1],
                                                                            n_batches,
                                                                            n_clusters,
                                                                            scale_each=True,
-                                                                           with_ids=True)
+                                                                           with_ids=True,
+                                                                           return_old_batches=True)
                     if args.scores:
                         current_scores = get_scores(book_batches, book_labels)
                         current_scores['Model'] = algorithm
@@ -319,6 +361,7 @@ if __name__ == '__main__':
                     boundaries = get_clusters_boundaries(book_batches, book_labels)
                     sorted_batches = None
                     sorted_labels = None
+                    current_clusters = []
                     for ind, boundary in enumerate(boundaries):
                         next_boundary = boundaries[ind + 1] if ind < len(boundaries) - 1 else book_labels.shape[0]
 
@@ -346,12 +389,17 @@ if __name__ == '__main__':
 
                             gender_stats.append(current_stats)
 
+                        current_clusters.append((current_batches, ids))
                         if sorted_batches is None:
                             sorted_batches, sorted_labels = current_batches, current_labels
                         else:
                             sorted_batches = np.vstack([sorted_batches, current_batches])
                             sorted_labels = np.hstack([sorted_labels, current_labels])
 
+                    if args.save_clusters:
+                        save_clusters(book[1], current_clusters, '{}_{}_{}.pkl'.format(n_clusters,
+                                                                                       n_batches,
+                                                                                       algorithm))
                     if args.scores or args.search:
                         plot_name = '{}_{}_{}_{}_annealing'.format(book[1], n_clusters, n_batches, algorithm)
                         book_colors = get_colors_speed_using_users_min_max_scale(sorted_batches)
