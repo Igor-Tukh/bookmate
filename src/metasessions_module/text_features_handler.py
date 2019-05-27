@@ -111,6 +111,19 @@ class TextFeaturesHandler(object):
                 emotional_verbs_amount += 1 if info['lex'] in self.emotional_verbs else 0
         return 1. * emotional_verbs_amount / total_verbs_amount
 
+    def get_bodyparts_percent(self, ind):
+        bodyparts_amount = 0
+        total_amount = 0
+        for info in self.mystem.analyze(self.batches_text[ind]):
+            if 'analysis' not in info or len(info['analysis']) == 0:
+                continue
+            total_amount += 1
+            info = info['analysis'][0]
+            if 'lex' in info:
+                bodyparts_amount += 1 if info['lex'].lower() in BODYPARTS else 0
+
+        return 1. * bodyparts_amount / total_amount
+
     def get_characters_name(self, ind):
         names = []
         characters = set(map(lambda s: s.lower(), CHARACTERS[self.book_id]))

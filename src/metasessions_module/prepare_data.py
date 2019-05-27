@@ -14,7 +14,9 @@ from src.metasessions_module.users_clustering import load_clusters
 from src.metasessions_module.utils import save_via_pickle, load_from_pickle
 from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.ensemble import RandomForestClassifier
-
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
 
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 rootLogger = logging.getLogger()
@@ -124,11 +126,15 @@ if __name__ == '__main__':
         X_train = load_features(210901, 100)
         train_models = ['2_100_agglomerative', '2_100_k_means', '2_100_spectral']
         y_train = load_labels(210901, train_models[0])
-        X_test = load_features(259222, 107)
-        y_test = load_labels(259222, '2_107_agglomerative')
-        for clf in [RandomForestClassifier(n_estimators=1000, criterion='entropy')]:
+        X_test = load_features(215591, 114)
+        y_test = load_labels(215591, '2_114_agglomerative')
+        for clf in [DecisionTreeClassifier(),
+                    KNeighborsClassifier(),
+                    SVC(gamma='auto'),
+                    RandomForestClassifier(n_estimators=1000, criterion='entropy')]:
             clf.fit(X_train, y_train)
             y_pred = clf.predict(X_test)
+            print(list(zip(y_test, y_pred)))
             print('F1: {}, precision: {}, recall: {}'.format(f1_score(y_test, y_pred),
                                                              precision_score(y_test, y_pred),
                                                              recall_score(y_test, y_pred)))
