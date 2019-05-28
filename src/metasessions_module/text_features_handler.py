@@ -53,7 +53,8 @@ class TextFeaturesHandler(object):
                                      'characters_names_percent': self.get_characters_names_percent,
                                      'main_characters_names_percent': self.get_main_characters_names_percent,
                                      'emotional_verbs_percent': self.get_emotional_verbs_percent,
-                                     'book_placement_percent': self.get_book_placement_percent}
+                                     'book_placement_percent': self.get_book_placement_percent,
+                                     'bodyparts_percent': self.get_bodyparts_percent}
 
         self.features_names_list = list(self.features_calculators.keys())
 

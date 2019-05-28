@@ -316,7 +316,7 @@ if __name__ == '__main__':
     clustering_scores = []
     gender_stats = []
     search_range = ([[n_batches], [n_clusters], [algorithm]]) if not args.search and not args.scores and not \
-        args.count_genders else [[300], [2], ['agglomerative', 'spectral', 'k_means']]
+        args.count_genders else [[100], [3], ['agglomerative', 'spectral', 'k_means']]
 
     for n_batches in search_range[0]:
         for n_clusters in search_range[1]:

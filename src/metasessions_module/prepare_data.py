@@ -100,8 +100,8 @@ if __name__ == '__main__':
     if args.prepare_features:
         train_handler = TextFeaturesHandler(args.train_book_id, batches_amount=args.batches_amount)
         X_train = train_handler.get_features()
-        save_features(X_train, args.test_book_id, train_handler.batches_amount)
-        save_features_csv(X_train, args.test_book_id, train_handler.batches_amount, train_handler)
+        save_features(X_train, args.train_book_id, train_handler.batches_amount)
+        save_features_csv(X_train, args.train_book_id, train_handler.batches_amount, train_handler)
         test_handler = TextFeaturesHandler(args.test_book_id, batches_amount=None, batch_size=train_handler.batch_size)
         X_test = test_handler.get_features()
         save_features(X_test, args.test_book_id, test_handler.batches_amount)
@@ -125,9 +125,9 @@ if __name__ == '__main__':
     if args.predict_swipes:
         X_train = load_features(210901, 100)
         train_models = ['2_100_agglomerative', '2_100_k_means', '2_100_spectral']
-        y_train = load_labels(210901, train_models[0])
+        y_train = load_labels(210901, train_models[1])
         X_test = load_features(215591, 114)
-        y_test = load_labels(215591, '2_114_agglomerative')
+        y_test = load_labels(215591, '2_114_k_means')
         for clf in [DecisionTreeClassifier(),
                     KNeighborsClassifier(),
                     SVC(gamma='auto'),

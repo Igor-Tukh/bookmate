@@ -159,7 +159,8 @@ def get_metasessions_by_deviant_percent(book_id, document_id, user_id):
 
 def visualize_metasessions_by_reading_style(book_id, document_id, user_id):
     plt.clf()
-    fig, ax = plt.subplots(figsize=(12, 10))
+    fig, ax = plt.subplots(figsize=(15, 15))
+    fig.subplots_adjust(bottom=0.2)
     # plt.xlabel('Book percent')
     # plt.ylabel('Session speed')
     # plt.title('Metasessions visualization')
@@ -178,7 +179,7 @@ def visualize_metasessions_by_reading_style(book_id, document_id, user_id):
         ticks_pos.append((chapter_len + prev_len) / 2)
         prev_len = chapter_len
     ax.set_xticks(ticks_pos)
-    ax.set_xticklabels(BOOK_LABELS[book_id], rotation=70)
+    ax.set_xticklabels(BOOK_LABELS[book_id], rotation=90)
     for chapter_len in chapters_lens[:-1]:
         # plt.axvline(x=chapter_len, color='black', linestyle='--', linewidth=0.5)
         ax.axvline(x=chapter_len, color='black', linestyle='--', linewidth=0.5)
@@ -199,7 +200,8 @@ def visualize_metasessions_by_reading_style(book_id, document_id, user_id):
 
 
 def visualize_metasessions_by_deviant_percent(book_id, document_id, user_id):
-    fig, ax = plt.subplots(figsize=(12, 10))
+    fig, ax = plt.subplots(figsize=(15, 15))
+    fig.subplots_adjust(bottom=0.2)
     # plt.xlabel('Book percent')
     # plt.ylabel('Session speed')
     # plt.title('Metasessions visualization')
