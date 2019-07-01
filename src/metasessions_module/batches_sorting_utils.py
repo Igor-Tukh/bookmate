@@ -19,6 +19,44 @@ class GreedyBatchesSorter(BatchesSorter):
         pass
 
 
+class RankingBatchesSorter(BatchesSorter):
+    def __init__(self, batches, labels, high_speed_percentile=70):
+        BatchesSorter.__init__(self, batches, labels)
+        self.high_speed_percentile = high_speed_percentile
+
+    def get_sorted_batches_and_labels(self):
+        n = self.batches.shape[0]
+        permutation = np.zeros(n, dtype=np.int64)
+
+        all_values = np.concatenate(self.batches)
+        high_speed = np.percentile(all_values, self.high_speed_percentile)
+        high_speed_amount = np.zeros(self.batches.shape[0], dtype=np.int64)
+        for ind, batch in enumerate(self.batches):
+            high_speed_amount[ind] += np.sum(np.array(batch >= high_speed, dtype=np.int64))
+
+        previous_ind = np.argmax(high_speed_amount)
+        previous_batch = self.batches[previous_ind]
+
+        used = np.zeros(self.batches.shape[0], dtype=np.bool)
+        used[previous_ind] = True
+        permutation[0] = previous_ind
+        for index in range(n - 1):
+            dists = [(np.linalg.norm(previous_batch - batch), ind)
+                     for ind, batch in enumerate(self.batches)]
+            dists.sort(key=lambda value: value[0])
+            next_ind = dists[0][1]
+            cur_ind = 0
+            while used[next_ind]:
+                cur_ind += 1
+                next_ind = dists[cur_ind][1]
+            permutation[index + 1] = next_ind
+            used[next_ind] = True
+            previous_ind = next_ind
+            previous_batch = self.batches[previous_ind]
+
+        return self.batches[permutation], self.labels[permutation], permutation
+
+
 class AnnealingBatchesSorter(BatchesSorter):
     def __init__(self, batches, labels,
                  initial_temperature=5000.0,

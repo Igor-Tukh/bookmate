@@ -17,7 +17,9 @@ from src.metasessions_module.text_utils import get_chapter_percents
 from src.metasessions_module.config import UNKNOWN_SPEED, DOCUMENTS, BOOK_LABELS, BOOKS
 from src.metasessions_module.speed_to_color import to_matplotlib_color, \
     get_colors_speed_using_absolute_min_max_scale, get_colors_speed_using_users_min_max_scale
-from src.metasessions_module.batches_sorting_utils import AnnealingBatchesSorter
+from src.metasessions_module.batches_sorting_utils import AnnealingBatchesSorter, RankingBatchesSorter
+from src.metasessions_module.user_utils import load_hidden_ids_map
+
 
 from sklearn.metrics import pairwise_distances
 from sklearn import metrics
@@ -155,7 +157,8 @@ def load_clusters(book_id, filename):
     return load_from_pickle(os.path.join('resources', 'clusters', str(book_id), filename))
 
 
-def visualize_batches_speed_clusters(book_id, batches, labels, plot_title, plot_name, colors):
+def visualize_batches_speed_clusters(book_id, batches, labels, plot_title, plot_name, colors,
+                                     user_ids, xticks_in_middle=True):
     batches_amount = batches.shape[1]
     fig, ax = plt.subplots(figsize=(15, 15))
     fig.subplots_adjust(bottom=0.2)
@@ -164,14 +167,18 @@ def visualize_batches_speed_clusters(book_id, batches, labels, plot_title, plot_
     ax.set_title(plot_title)
     ax.set_xlim(0.0, 100.0)
     batch_percent = 100.0 / batches_amount
-    ax.set_ylim(batch_percent * batches.shape[0] + batch_percent / 2)
+    ax.set_ylim(0, batch_percent * batches.shape[0])
+
+    ids_map = load_hidden_ids_map(book_id)
+    ax.set_yticks([index * batch_percent + batch_percent / 2 for index in range(batches.shape[0])])
+    ax.set_yticklabels([ids_map[user_ids[index]] for index in range(batches.shape[0])])
 
     for user_ind, speeds in tqdm(enumerate(batches)):
         if user_ind != 0 and labels[user_ind] != labels[user_ind - 1]:
             ax.axhline(y=batch_percent * user_ind, color='black', markersize=10)
         batch_from = batch_percent / 2
+        users_y = batch_percent * user_ind + batch_percent / 2
         for ind in range(batches_amount):
-            users_y = batch_percent * user_ind + batch_percent / 2
             circle = plt.Circle((batch_from, users_y), batch_percent / 2,
                                 color=to_matplotlib_color(colors[user_ind][ind]))
             ax.add_artist(circle)
@@ -181,7 +188,7 @@ def visualize_batches_speed_clusters(book_id, batches, labels, plot_title, plot_
     prev_len = 0
     ticks_pos = []
     for chapter_len in chapters_lens:
-        ticks_pos.append((chapter_len + prev_len) / 2)
+        ticks_pos.append((chapter_len if xticks_in_middle else prev_len + prev_len) / 2)
         prev_len = chapter_len
     ax.set_xticks(ticks_pos)
     ax.set_xticklabels(BOOK_LABELS[book_id], rotation=90)
@@ -286,6 +293,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_batches', help='split to N batches', type=int, metavar='N')
     parser.add_argument('--algorithm', help='Apply algorithm algo', type=str, metavar='algo')
     parser.add_argument('--search', help='Run with a different clustering configurations', action='store_true')
+    parser.add_argument('--ranking', help='Use ranking for sort', action='store_true')
     parser.add_argument('--save_clusters', help='Save clusters', action='store_true')
     parser.add_argument('--scores', help='Run with a different clustering configurations ans score clusters',
                         action='store_true')
@@ -316,13 +324,13 @@ if __name__ == '__main__':
     clustering_scores = []
     gender_stats = []
     search_range = ([[n_batches], [n_clusters], [algorithm]]) if not args.search and not args.scores and not \
-        args.count_genders else [[100], [3], ['agglomerative', 'spectral', 'k_means']]
+        args.count_genders else [[400], [1, 2, 3], ['agglomerative', 'spectral', 'k_means']]
 
     for n_batches in search_range[0]:
         for n_clusters in search_range[1]:
             for algorithm in search_range[2]:
                 # for book in BOOKS.items():
-                for book in [('Fifty Shades of Grey', 210901)]:
+                for book in [('War and Peace', 135089)]:
                     info = get_good_users_info(book[1])
                     if algorithm == 'agglomerative':
                         book_batches, book_labels, book_user_ids = \
@@ -363,6 +371,7 @@ if __name__ == '__main__':
                     sorted_batches = None
                     sorted_labels = None
                     current_clusters = []
+                    all_user_ids = []
                     for ind, boundary in enumerate(boundaries):
                         next_boundary = boundaries[ind + 1] if ind < len(boundaries) - 1 else book_labels.shape[0]
 
@@ -370,10 +379,14 @@ if __name__ == '__main__':
                                                         book_labels[boundary:next_boundary],
                                                         initial_temperature=100.0,
                                                         min_temperature=0.01,
-                                                        random_state=23923)
+                                                        random_state=23923) if not args.ranking else \
+                            RankingBatchesSorter(book_batches[boundary:next_boundary],
+                                                 book_labels[boundary:next_boundary])
+
                         current_batches, current_labels, permutation = sorter.get_sorted_batches_and_labels()
                         ids = book_user_ids[boundary:next_boundary].copy()
                         ids = ids[permutation]
+                        all_user_ids.extend(list(ids))
 
                         if args.count_genders:
                             males_amount = len([user_id for user_id in ids if info[user_id]['gender'] == 'm'])
@@ -402,12 +415,18 @@ if __name__ == '__main__':
                                                                                        n_batches,
                                                                                        algorithm))
                     if args.scores or args.search:
-                        plot_name = '{}_{}_{}_{}_annealing'.format(book[1], n_clusters, n_batches, algorithm)
+                        plot_name = '{}_{}_{}_{}'.format(book[1], n_clusters, n_batches, algorithm)
+                        if args.ranking:
+                            plot_name += '_ranking'
+                        else:
+                            plot_name += '_annealing'
                         book_colors = get_colors_speed_using_users_min_max_scale(sorted_batches)
                         visualize_batches_speed_clusters(book[1], sorted_batches, sorted_labels,
-                                                         'Book {} readers clusters'.format(book[0]),
+                                                         'Book \'{}\' readers'.format(book[0]),
                                                          plot_name,
-                                                         book_colors)
+                                                         book_colors,
+                                                         all_user_ids,
+                                                         xticks_in_middle=False)
     if args.scores:
         extend_scores(clustering_scores)
     if args.count_genders:

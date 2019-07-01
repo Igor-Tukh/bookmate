@@ -371,7 +371,7 @@ def visualize_users_speed_spectrum(book_id, user_ids, batches_amount, book_name=
     ax.set_title('Sessions batches for book \'{}\''.format(book_name if book_name is not None else book_id))
     ax.set_xlim(0.0, 100.0)
     batch_percent = 100.0 / batches_amount
-    ax.set_ylim(batch_percent * len(user_ids) + batch_percent / 2)
+    ax.set_ylim(0, batch_percent * len(user_ids) + batch_percent / 2)
     batches_speeds = []
 
     for user_id in tqdm(user_ids):

@@ -195,3 +195,16 @@ def get_user_sessions_by_place_in_book(book_id, document_id, user_id, rebuild=Fa
                  .format(document_id, book_id, user_id))
     with open(output_path, 'rb') as file:
         return pickle.load(file)
+
+
+def load_hidden_ids_map(book_id):
+    ids_path = os.path.join('resources', 'users', 'ids', '{}.csv'.format(book_id))
+    if not os.path.isfile(ids_path):
+        logging.error('Error loading user ids map for book {}, file {} not found'.format(book_id, ids_path))
+        raise ValueError('Incorrect book for loading ids: {}'.format(book_id))
+    result = dict()
+    with open(ids_path, 'r') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            result[int(row['real_id'])] = int(row['id'])
+    return result

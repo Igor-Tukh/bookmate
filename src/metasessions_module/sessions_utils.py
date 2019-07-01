@@ -12,7 +12,7 @@ from src.metasessions_module.config import *
 
 
 def is_target_speed(speed):
-    return speed is not None and not math.isnan(speed) and speed != UNKNOWN_SPEED and speed != UNKNOWN_SPEED
+    return speed is not None and not math.isnan(speed) and speed != INFINITE_SPEED and speed != UNKNOWN_SPEED
 
 
 def load_sessions(book_id):

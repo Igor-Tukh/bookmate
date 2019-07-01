@@ -1,5 +1,15 @@
 import logging
 import os
+import sys
+import numpy as np
+
+from src.metasessions_module.sessions_utils import load_user_sessions
+from src.metasessions_module.user_utils import get_good_users_info, get_user_document_id
+from tqdm import tqdm
+from collections import defaultdict
+
+sys.path.append(os.pardir)
+sys.path.append(os.path.join(os.pardir, os.pardir))
 
 
 def get_text_from_txt(filepath):
@@ -47,3 +57,36 @@ def get_chapter_percents(book_id, document_id):
 
 def is_text_character(letter):
     return letter.isalpha() or letter.isalnum()
+
+
+def get_the_most_popular_screen_size(book_id):
+    user_ids = list(get_good_users_info(book_id).keys())
+    size_frequencies = defaultdict(lambda: 0)
+    for user_id, _ in zip(user_ids, tqdm(range(len(user_ids)))):
+        document_id = get_user_document_id(book_id, user_id)
+        sessions = load_user_sessions(book_id, document_id, user_id)
+        for session in sessions:
+            size_frequencies[int(session['size'])] += 1
+    size_stats = list(size_frequencies.items())
+    size_stats.sort(key=lambda value: -value[1])
+    return int(np.mean(np.array(size_stats)[:100, 0]))
+
+
+def save_the_most_popular_screen_size_split(book_id, batches_amount=400):
+    text = load_text(book_id)
+    # slice_size = get_the_most_popular_screen_size(book_id)
+    slice_size = int(len(text) / 400)
+    print('Slice size: {}'.format(slice_size))
+    start_index = 0
+    while start_index < len(text):
+        finish_index = start_index + slice_size
+        while finish_index < len(text) and text[finish_index] != ' ':
+            finish_index += 1
+        with open(os.path.join('resources', 'books', 'splitted_text', '{}_{}_{}.txt'
+                .format(book_id, start_index, finish_index)), 'w') as text_file:
+            text_file.write(text[start_index:finish_index])
+        start_index = finish_index
+
+
+if __name__ == '__main__':
+    save_the_most_popular_screen_size_split(135089)

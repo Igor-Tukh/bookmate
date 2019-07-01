@@ -59,7 +59,8 @@ def get_colors_speed_using_users_min_max_scale(speeds, min_speed=None, max_speed
         for speed_ind in range(speeds.shape[1]):
             speed = speeds[user_ind, speed_ind]
             if is_known_speed(speed):
-                ratio = (speed - cur_min_speed) / (cur_max_speed - cur_min_speed)
+                ratio = 1.0 * (speed - cur_min_speed) / (cur_max_speed - cur_min_speed)
                 colors[user_ind, speed_ind] = get_red_to_blue_color_by_ratio(ratio)
+                # print(speed, cur_min_speed, cur_max_speed, ratio, colors[user_ind, speed_ind])
 
     return colors
