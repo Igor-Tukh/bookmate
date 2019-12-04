@@ -6,7 +6,8 @@ import numpy as np
 
 from collections import defaultdict
 from tqdm import tqdm
-from src.metasessions_module.utils import connect_to_mongo_database, date_from_timestamp
+from src.metasessions_module.utils import connect_to_mongo_database, date_from_timestamp, load_from_pickle, \
+    save_via_pickle
 from src.metasessions_module.item_utils import get_items
 from src.metasessions_module.config import *
 
@@ -63,6 +64,17 @@ def load_user_sessions(book_id, document_id, user_id):
     collection_name = 'sessions_{}'.format(book_id)
     sessions = db_work[collection_name].find({'user_id': user_id, 'document_id': document_id})
     return list(sessions)
+
+
+def get_user_sessions(book_id, document_id, user_id):
+    sessions_path = os.path.join('resources', 'sessions_book_document_user', '{}_{}_{}.pkl'.format(book_id,
+                                                                                                   document_id,
+                                                                                                   user_id))
+    if os.path.exists(sessions_path):
+        return load_from_pickle(sessions_path)
+    sessions = load_user_sessions(book_id, document_id, user_id)
+    save_via_pickle(sessions, sessions_path)
+    return sessions
 
 
 def load_document_sessions(book_id, document_id):

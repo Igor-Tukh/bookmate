@@ -24,3 +24,8 @@ def save_via_pickle(value, output_pickle_path):
     with open(output_pickle_path, 'wb') as output_pickle_path:
         logging.info('Saving value to {}'.format(output_pickle_path))
         pickle.dump(value, output_pickle_path)
+
+
+def get_batch_by_percent(batches_number, percent):
+    batch_percent = 100.0 / batches_number
+    return min(round(percent / batch_percent), batches_number - 1)
