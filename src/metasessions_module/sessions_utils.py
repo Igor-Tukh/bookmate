@@ -11,6 +11,18 @@ from src.metasessions_module.utils import connect_to_mongo_database, date_from_t
 from src.metasessions_module.item_utils import get_items
 from src.metasessions_module.config import *
 
+log_formatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s]  %(message)s")
+root_logger = logging.getLogger()
+
+file_handler = logging.FileHandler(os.path.join('logs', 'sessions_utils.log'), 'a')
+file_handler.setFormatter(log_formatter)
+
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(log_formatter)
+
+root_logger.addHandler(file_handler)
+root_logger.addHandler(console_handler)
+root_logger.setLevel(logging.INFO)
 
 def is_target_speed(speed):
     return speed is not None and not math.isnan(speed) and speed != INFINITE_SPEED and speed != UNKNOWN_SPEED
@@ -167,3 +179,71 @@ def get_book_percent(book_id, document_id, user_id):
             current_end_percent = session['book_to']
 
     return read_percent + current_end_percent - current_start_percent
+
+
+def get_all_user_sessions_path(user_id):
+    return os.path.join('resources', 'all_user_sessions', f'{user_id}.pkl')
+
+
+def collect_all_user_sessions(user_id):
+    logging.info(f'Collecting all user sessions for user {user_id} started')
+    db = connect_to_mongo_database('sessions')
+    sessions = list(db['sessions'].find({'user_id': int(user_id)}))
+    logging.info(f'Collecting all user sessions for user {user_id} finished')
+    return sessions
+
+
+def get_all_user_sessions(user_id):
+    sessions_path = get_all_user_sessions_path(user_id)
+    if not os.path.exists(sessions_path):
+        sessions = save_via_pickle(collect_all_user_sessions(user_id), sessions_path)
+    else:
+        sessions = load_from_pickle(sessions_path)
+    logging.info(f'All user sessions for user {user_id} loaded')
+    # logging.info(f'Totally found {len(sessions)} sessions for user {user_id} from '
+    #              f'{len(set([session["book_id"] for session in sessions]))} books')
+    return sessions
+
+
+def collect_users_sessions(user_ids):
+    logging.info('Collecting user sessions started')
+    db = connect_to_mongo_database('sessions')
+    sessions = {}
+    for user_id in tqdm(user_ids):
+        sessions[user_id] = list(db['sessions'].find({'user_id': int(user_id)}))
+    logging.info('Collecting user sessions finished')
+    return sessions
+
+
+def get_users_sessions_path(users_group_name):
+    return os.path.join('resources', 'users_sessions', f'{users_group_name}.pkl')
+
+
+def get_users_sessions(user_ids, users_group_name=''):
+    """
+    :return: dict from user_id to the sessions with this user_id
+    """
+    logging.info(f'Collecting user sessions for {users_group_name} started')
+    sessions_path = get_users_sessions_path(users_group_name)
+    if os.path.exists(sessions_path):
+        return load_from_pickle(sessions_path)
+    else:
+        return save_via_pickle(collect_users_sessions(user_ids), sessions_path)
+
+
+def save_all_sessions_by_user():
+    logging.info('Collecting all sessions by user started')
+    db = connect_to_mongo_database('sessions')
+    sessions = list(db['sessions'].find({}))
+    logging.info('All sessions collected')
+    sessions_by_user = defaultdict(lambda: [])
+    for session in tqdm(sessions):
+        sessions_by_user[int(session['user_id'])].append(session)
+    for user_id, user_sessions in tqdm(sessions_by_user.keys()):
+        path = get_all_user_sessions_path(user_id)
+        if not os.path.exists(path):
+            save_via_pickle(user_sessions, path)
+
+
+if __name__ == '__main__':
+    save_all_sessions_by_user()

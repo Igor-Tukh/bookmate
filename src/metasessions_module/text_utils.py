@@ -3,6 +3,7 @@ import os
 import sys
 import numpy as np
 
+from src.metasessions_module.config import get_book_fragments_path
 from src.metasessions_module.sessions_utils import load_user_sessions
 from src.metasessions_module.user_utils import get_good_users_info, get_user_document_id
 from tqdm import tqdm
@@ -88,5 +89,47 @@ def save_the_most_popular_screen_size_split(book_id, batches_amount=400):
         start_index = finish_index
 
 
+def get_split_text_borders(book_id):
+    text_path = os.path.join('resources', 'books', str(book_id))
+    if not os.path.exists(text_path):
+        logging.info(f'Split text for the book {book_id} not found')
+        return None
+    chunks = []
+    for index in range(len(os.listdir(text_path))):
+        with open(os.path.join(text_path, f'text_{index}.txt'), 'r') as text_file:
+            chunks.append(text_file.read())
+    total_len = sum([len(chunk) for chunk in chunks])
+    borders = []
+    current_len = 0
+    for chunk in chunks:
+        current_len += len(chunk)
+        borders.append(1. * current_len / total_len)
+    return borders
+
+
+def load_book_fragments(book_id):
+    dir_path = get_book_fragments_path(book_id)
+    filenames = os.listdir(dir_path)
+    fragments = ['' for _ in range(len(filenames))]
+    for filename in filenames:
+        text_ind = filename.split('.')[0].split('_')[1]
+        with open(os.path.join(dir_path, filename), 'r') as text_file:
+            fragments[int(text_ind)] = text_file.read()
+    return fragments
+
+
+def load_chapters_mask(book_id, chapter_label='Глава'):
+    texts = load_book_fragments(book_id)
+    chapters_mask = np.zeros(len(texts), dtype=np.bool)
+    for text_ind, text in enumerate(texts):
+        if chapter_label in text:
+            chapters_mask[text_ind] = True
+            if text_ind >= 1:
+                chapters_mask[text_ind - 1] = True
+    return chapters_mask
+
+
 if __name__ == '__main__':
-    save_the_most_popular_screen_size_split(135089)
+    # save_the_most_popular_screen_size_split(135089)
+    print(load_chapters_mask(210901))
+    print(np.sum(load_chapters_mask(210901), dtype=np.int))

@@ -8,7 +8,7 @@ from src.metasessions_module.text_utils import load_text
 from src.metasessions_module.config import *
 from pymystem3 import Mystem
 from nltk import pos_tag, word_tokenize
-from nltk.corpus import stopwords
+from nlynltk.corpus import stopwords
 
 
 class TextFeaturesHandler(object):

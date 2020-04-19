@@ -9,6 +9,7 @@ from nltk import pos_tag, word_tokenize
 from nltk.stem import SnowballStemmer
 from tqdm import tqdm
 from pymystem3 import Mystem
+from collections import defaultdict
 
 
 sys.path.append(os.pardir)
@@ -39,6 +40,7 @@ def extract_verbs(book_ids):
     verbs = set()
     # stemmer = SnowballStemmer('russian')
     mystem = Mystem()
+    freqs = defaultdict(lambda: 0)
     for book_id in book_ids:
         logging.info('Extracting verbs from book {}'.format(book_id))
         text = load_text(book_id)
@@ -54,10 +56,11 @@ def extract_verbs(book_ids):
             info = info['analysis'][0]
             if 'gr' in info and info['gr'].split(',')[0] == 'V' and 'lex' in info:
                 verbs.add(info['lex'])
+                freqs[info['lex']] += 1
 
-    with open(os.path.join('resources', 'vocabulary', 'verbs', 'all.csv'), 'w') as file:
+    with open(os.path.join('resources', 'vocabulary', 'verbs', 'all_with_frequencies.csv'), 'w') as file:
         for verb in sorted(verbs):
-            file.write(verb + '\n')
+            file.write(f'{verb},{freqs[verb]}\n')
 
 
 if __name__ == '__main__':
