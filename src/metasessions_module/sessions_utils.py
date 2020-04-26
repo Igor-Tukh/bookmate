@@ -24,6 +24,7 @@ root_logger.addHandler(file_handler)
 root_logger.addHandler(console_handler)
 root_logger.setLevel(logging.INFO)
 
+
 def is_target_speed(speed):
     return speed is not None and not math.isnan(speed) and speed != INFINITE_SPEED and speed != UNKNOWN_SPEED
 
@@ -137,7 +138,8 @@ def calculate_session_percents(book_id, document_ids):
     for session, _ in zip(sessions, tqdm(range(len(sessions)))):
         session_item = items[session['item_id']]
         if session_item is None:
-            logging.error('Item {} for session {} not found, session skipped'.format(session['item_id'], session['_id']))
+            logging.error(
+                'Item {} for session {} not found, session skipped'.format(session['item_id'], session['_id']))
             continue
         try:
             if np.isclose(float(session_item['_to']), float(session_item['_from'])):
@@ -148,9 +150,10 @@ def calculate_session_percents(book_id, document_ids):
                                     (float(session_item['_to']) - float(session_item['_from'])) * \
                                     float(session['_from']) / 100
                 session_book_to = float(session_item['_from']) + \
-                                   (float(session_item['_to']) - float(session_item['_from'])) * float(session['_to']) / 100
+                                  (float(session_item['_to']) - float(session_item['_from'])) * float(
+                    session['_to']) / 100
             db_work[collection_name].update({'_id': session['_id']}, {'$set': {'book_from': session_book_from,
-                                                                           'book_to': session_book_to}})
+                                                                               'book_to': session_book_to}})
         except Exception:
             logging.error('Session {} skipped due to the internal problem'.format(session['_id']))
     logging.info('Sessions book_from and book_to fields added')

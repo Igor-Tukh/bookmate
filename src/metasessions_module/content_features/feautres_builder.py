@@ -37,7 +37,7 @@ def _get_sentence_depth(sentence):
 class TextFeaturesBuilder(object):
     FEATURES_NAMES = ['get_bodyparts_percent', 'get_characters_names_percent',
                       'get_main_characters_names_percent', 'get_emotional_verbs_percent',
-                      'get_sentiment', 'get_average_word_len', 'get_average_word_len',
+                      'get_sentiment', 'get_average_word_len',
                       'get_personal_pronouns_percent', 'get_nouns_percent', 'get_verbs_percent',
                       'get_adjectives_percent', 'get_average_dependency_tree_depth']
 

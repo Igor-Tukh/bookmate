@@ -4,6 +4,7 @@ import pymongo
 import datetime
 import logging
 import pickle
+import csv
 import numpy as np
 
 
@@ -53,3 +54,21 @@ def array_is_trivial(a):
 
 def get_stats_path(stats_filename):
     return os.path.join('resources', 'stats', stats_filename)
+
+
+def save_result_to_csv(results, output_file):
+    if len(results) == 0:
+        logging.info('Unable to save results to csv: empty list of results provided')
+        return
+    with open(output_file, 'w') as csv_file:
+        writer = csv.DictWriter(csv_file, results[0].keys())
+        writer.writeheader()
+        writer.writerows(results)
+
+
+def min_max_scale(x):
+    min_x = np.min(x)
+    max_x = np.max(x)
+    if np.isclose(min_x, max_x):
+        logging.info('Can\'t apply min max scaling to x: x is a constant')
+    return (x - min_x) / (max_x - min_x)
