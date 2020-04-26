@@ -5,7 +5,7 @@ import argparse
 
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn import svm
-from src.metasessions_module.content_features_models.prepare import prepare_regression_data
+from src.metasessions_module.content_features_models.prepare_old import prepare_regression_data
 
 log_formatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s]  %(message)s")
 root_logger = logging.getLogger()

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from src.metasessions_module.interest_marker.config import MarkerManifestation, get_markers_path_for_book
 from src.metasessions_module.sessions_utils import get_user_sessions
 from src.metasessions_module.text_utils import get_split_text_borders
-from src.metasessions_module.user_utils import get_user_document_id
+from src.metasessions_module.user_utils import get_user_document_id, get_good_users_info
 
 sys.path.append(os.pardir)
 sys.path.append(os.path.join(os.pardir, os.pardir))
@@ -16,7 +16,7 @@ sys.path.append(os.path.join(os.pardir, os.pardir, os.pardir))
 
 from tqdm import tqdm
 from collections import defaultdict
-from src.metasessions_module.utils import get_batch_by_percent, is_int, load_from_pickle
+from src.metasessions_module.utils import get_batch_by_percent, is_int, load_from_pickle, save_via_pickle
 
 SAVED_MARKERS_PATH = os.path.join('resources', 'all_markers')
 
@@ -170,11 +170,19 @@ def get_cumulative_marker(markers, binarize=False, normalization_weight=None):
 def visualize_cumulative_marker(markers, output_path, title='', binarize=False, normalization_weight=None):
     numbers = get_cumulative_marker(markers, binarize, normalization_weight)
     plt.clf()
+    plt.rcParams["figure.figsize"] = (30, 20)
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 16}
+    plt.rc('font', **font)
     plt.plot(np.arange(markers[0].shape[0]), numbers)
+    title = ' '.join(title.split('_'))
+    if title == 'Normalized re reading marker':
+        title = 'Normalized re-reading marker'
     plt.title(title)
     plt.xlabel('Fragment')
     plt.ylabel('Cumulative marker value')
-    plt.savefig(output_path)
+    plt.savefig(output_path, bbox_inches='tight')
 
 
 def get_read_fragments(book_id, user_id, sessions=None, fragment_borders=None):
@@ -192,10 +200,23 @@ def get_read_fragments(book_id, user_id, sessions=None, fragment_borders=None):
     return result
 
 
-def calculate_numbers_of_readers_per_fragment(book_id, user_ids, n_fragments):
+def detect_anomaly_in_read_moments(book_id, user_id, min_to_left=1, min_to_right=1):
+    read_fragment = get_read_fragments(book_id, user_id)
+    anomaly = np.zeros_like(read_fragment, dtype=np.bool)
+    for ind in range(min_to_left, read_fragment.shape[0] - min_to_right):
+        anomaly[ind] = np.all(read_fragment[ind - min_to_left: ind] &
+                              np.all(read_fragment[ind + 1: ind + min_to_right + 1]))
+        anomaly[ind] &= (not read_fragment[ind])
+    return anomaly
+
+
+def calculate_numbers_of_readers_per_fragment(book_id, user_ids, n_fragments, fix_anomaly=True):
     result = np.zeros(n_fragments, dtype=np.int)
     for user_id in user_ids:
-        result += get_read_fragments(book_id, user_id)
+        current_user_mask = get_read_fragments(book_id, user_id)
+        if fix_anomaly:
+            current_user_mask = current_user_mask | detect_anomaly_in_read_moments(book_id, user_id)
+        result += current_user_mask
 
     return result
 
@@ -226,3 +247,58 @@ def load_markers_for_user(book_id, user_id):
         if os.path.exists(pkl_path):
             markers[dir_name] = load_from_pickle(pkl_path)
     return markers
+
+
+def fix_anomaly_in_marker(anomaly_mask, marker, min_to_left=1, min_to_right=1):
+    for ind in range(min_to_left, anomaly_mask.shape[0] - min_to_right):
+        if anomaly_mask[ind] and not marker[ind]:
+            marker[ind] = np.all(marker[ind - min_to_left: ind]) & np.all(marker[ind + 1: ind + min_to_right + 1])
+    return marker
+
+
+def load_quit_marker(book_id):
+    markers_path = os.path.join(get_markers_path_for_book(book_id), 'quit_marker')
+    if not os.path.exists(markers_path):
+        return None
+    results = []
+    user_ids = []
+    for filename in os.listdir(markers_path):
+        user_id = int(filename.split('.')[0])
+        results.append(load_from_pickle(os.path.join(markers_path, filename)))
+        user_ids.append(user_id)
+
+    marker = np.zeros_like(results[0], dtype=np.int)
+    for result in results:
+        marker += result
+    return 1. * marker / calculate_numbers_of_readers_per_fragment(book_id, user_ids, marker.shape[0])
+
+
+def get_normalized_interest_markers_path(book_id):
+    dir_path = os.path.join('resources', 'normalized_markers', str(book_id))
+    os.makedirs(dir_path, exist_ok=True)
+    return dir_path
+
+
+def save_normalized_interest_markers(book_id):
+    users = list(get_good_users_info(book_id).keys())
+    users_markers = [load_markers_for_user(book_id, user) for user in users]
+    fragments_borders = get_split_text_borders(book_id)
+    normalization_weight = calculate_numbers_of_readers_per_fragment(book_id, users, len(fragments_borders))
+    results = defaultdict(lambda: np.zeros(len(fragments_borders), dtype=np.float32))
+    for user_markers in users_markers:
+        for description, marker in user_markers.items():
+            results[description] += marker / normalization_weight
+    for description in results.keys():
+        save_via_pickle(results[description], os.path.join(get_normalized_interest_markers_path(book_id),
+                                                           f'{description}.pkl'))
+
+
+def load_normalized_interest_markers(book):
+    dir_path = get_normalized_interest_markers_path(book)
+    signals = {}
+    for filename in os.listdir(dir_path):
+        description = ' '.join((filename.split('.')[0]).split('_'))
+        if description == 're reading marker':
+            description = 're-reading marker'
+        signals[description] = load_from_pickle(os.path.join(dir_path, filename))
+    return signals

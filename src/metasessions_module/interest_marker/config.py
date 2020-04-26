@@ -51,7 +51,17 @@ def get_markers_path_for_book(book_id):
     return dir_path
 
 
+def get_stats_path():
+    return os.path.join('resources', 'stats')
+
+
 def get_marker_dumps_path(marker_description, book_id, user_id):
     dir_path = os.path.join(get_markers_path_for_book(book_id), marker_description)
     os.makedirs(dir_path, exist_ok=True)
     return os.path.join(dir_path, f'{user_id}.pkl')
+
+
+def get_book_stats_path(book_id, stats_filename):
+    dir_path = os.path.join('resources', 'stats', str(book_id))
+    os.makedirs(dir_path, exist_ok=True)
+    return os.path.join(dir_path, stats_filename)
