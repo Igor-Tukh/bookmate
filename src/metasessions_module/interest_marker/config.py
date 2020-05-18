@@ -26,6 +26,16 @@ class MarkerManifestation(IntEnum):
     INTERESTING = 1
 
 
+MARKER_TITLE_TO_RUSSIAN = {
+    'quit_marker': 'Сигнал бросаний чтения',
+    'unusual_hours_marker': 'Сигнал чтений в необычное время',
+    're_reading_marker': 'Сигнал повторных прочтений',
+    'reading_interrupt_marker': 'Сигнал прерываний в процессе чтения',
+    'speed_marker': 'Силгнал выской скорости',
+    'scrolling_marker': 'Сигнал пролистываний'
+}
+
+
 def _map(int_list):
     return list(map(MarkerManifestation, int_list))
 

@@ -72,3 +72,11 @@ def min_max_scale(x):
     if np.isclose(min_x, max_x):
         logging.info('Can\'t apply min max scaling to x: x is a constant')
     return (x - min_x) / (max_x - min_x)
+
+
+def remove_underscores(name):
+    return name.replace('_', ' ')
+
+
+def join_with_underscores(first_name, second_name):
+    return f'{first_name}_{second_name}'.replace(' ', '_')

@@ -2,6 +2,13 @@ import os
 
 from enum import Enum
 
+BOOK_ID_TO_TITLE = {
+    210901: 'Fifty Shades of Grey',
+    259222: 'Fifty Shades Darker',
+    215591: 'Fifty Shades Freed',
+    135089: 'War and Peace'
+}
+
 BOOKS = {  # 'The Fault in Our Stars': 266700,
     'Fifty Shades of Grey': 210901,
     'Fifty Shades Darker ': 259222,

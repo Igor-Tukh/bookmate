@@ -3,6 +3,7 @@ import os
 import numpy as np
 import stanfordnlp
 import warnings
+import argparse
 import pickle
 
 from pymystem3 import Mystem
@@ -35,6 +36,12 @@ def _get_sentence_depth(sentence):
 
 
 class TextFeaturesBuilder(object):
+    STR_FEATURES_NAMES = ['bodyparts percent', 'characters names percent',
+                          'main characters names percent', 'emotional verbs percent',
+                          'sentiment', 'average word len',
+                          'personal pronouns percent', 'nouns percent', 'verbs percent',
+                          'adjectives percent', 'average dependency tree depth']
+
     FEATURES_NAMES = ['get_bodyparts_percent', 'get_characters_names_percent',
                       'get_main_characters_names_percent', 'get_emotional_verbs_percent',
                       'get_sentiment', 'get_average_word_len',
@@ -42,6 +49,7 @@ class TextFeaturesBuilder(object):
                       'get_adjectives_percent', 'get_average_dependency_tree_depth']
 
     def __init__(self, texts_path, book_id=210901):
+        self.book_id = book_id
         texts_path = os.path.join(texts_path, str(book_id))
         warnings.filterwarnings("ignore")
         self.texts = []
@@ -84,6 +92,19 @@ class TextFeaturesBuilder(object):
         if path is None:
             path = TextFeaturesBuilder.get_default_path()
         save_via_pickle(self.features, path)
+
+    @staticmethod
+    def get_book_path(book_id):
+        book_path = os.path.join('resources', 'saved_features', str(book_id))
+        os.makedirs(book_path, exist_ok=True)
+        return os.path.join(book_path, 'features.pkl')
+
+    def save_for_book(self):
+        save_via_pickle(self.features, TextFeaturesBuilder.get_book_path(self.book_id))
+
+    @staticmethod
+    def load_for_book(book_id):
+        return load_from_pickle(TextFeaturesBuilder.get_book_path(book_id))
 
     @staticmethod
     def load_features(path=None):
@@ -230,8 +251,12 @@ class TextFeaturesBuilder(object):
 
 
 if __name__ == '__main__':
-    builder = TextFeaturesBuilder(os.path.join('resources', 'texts'))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--book_id', type=int, required=True)
+    args = parser.parse_args()
+    book_id = args.book_id
+    builder = TextFeaturesBuilder(os.path.join('resources', 'books'), book_id)
     builder.build()
-    builder.save_features()
+    builder.save_for_book()
     # print(TextFeaturesBuilder.load_features().shape)
 

@@ -100,7 +100,7 @@ def plot_combined_markers_bars(book, user_ids, users_markers, output_path, scale
     plt.clf()
     fragments = np.arange(fragments_number) * len(marker_descriptions)
     width = 0.9
-    fig, ax = plt.subplots(figsize=(35, 20))
+    fig, ax = plt.subplots(figsize=(25, 20))
     rects = [ax.bar(fragments + width * (ind + 1. / 2), markers[description] / normalization_weight, width,
                     label=_fix_description(description))
              for ind, description in enumerate(marker_descriptions)]

@@ -5,7 +5,8 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.metasessions_module.interest_marker.config import MarkerManifestation, get_markers_path_for_book
+from src.metasessions_module.interest_marker.config import MarkerManifestation, get_markers_path_for_book, \
+    MARKER_TITLE_TO_RUSSIAN
 from src.metasessions_module.sessions_utils import get_user_sessions
 from src.metasessions_module.text_utils import get_split_text_borders
 from src.metasessions_module.user_utils import get_user_document_id, get_good_users_info
@@ -302,3 +303,108 @@ def load_normalized_interest_markers(book):
             description = 're-reading marker'
         signals[description] = load_from_pickle(os.path.join(dir_path, filename))
     return signals
+
+
+def smooth_marker(marker, window_size=5):
+    extended_marker = np.hstack([[marker[0] for _ in range(window_size)], marker,
+                                 [marker[-1] for _ in range(window_size)]])
+    window_size = 2 * window_size + 1
+    return np.convolve(extended_marker, np.ones(window_size), 'valid') / window_size
+
+
+def custom_visualize_marker(marker, output_path, title='', x_label='', y_label=''):
+    plt.clf()
+    plt.rcParams["figure.figsize"] = (30, 20)
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 16}
+    plt.rc('font', **font)
+    plt.plot(np.arange(marker.shape[0]), marker)
+    plt.title(title)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.savefig(output_path, bbox_inches='tight')
+
+
+def custom_visualize_pair_of_markers(markers, output_path, title='', x_label='', y_label=''):
+    plt.clf()
+    plt.rcParams["figure.figsize"] = (55, 55)
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 12}
+    plt.rc('font', **font)
+    for marker_d, marker in markers.items():
+        plt.plot(np.arange(marker.shape[0]), marker, label=marker_d)
+    plt.legend()
+    plt.title(title)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.savefig(output_path, bbox_inches='tight')
+
+
+def custom_visualize_marker_with_mark_up(marker, mark_up, output_path, title='', x_label='', y_label=''):
+    plt.clf()
+    plt.rcParams["figure.figsize"] = (30, 20)
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 16}
+    plt.rc('font', **font)
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
+    n = marker.shape[0]
+    ax.plot(np.arange(n), marker, linewidth=3)
+    ax.set_title(title, fontsize=60)
+    ax.set_xlabel(x_label, fontsize=60)
+    ax.set_ylabel(y_label, fontsize=60)
+    ax.tick_params(axis='both', which='major', labelsize=36)
+    ax.set_xlim(0, n)
+    y_min = max(np.min(marker) - 0.1, 0)
+    y_max = min(np.max(marker) + 0.1, 1)
+    ax.set_ylim(y_min, y_max)
+    for color, mark in mark_up.items():
+        for ind in range(n):
+            if mark[ind]:
+                ax.add_patch(plt.Rectangle((ind, y_min), 1, y_max - y_min,
+                                           fill=True, color=color, alpha=0.3))
+    plt.savefig(output_path)
+
+
+def get_custom_path(book, filename):
+    output_path = os.path.join('resources', 'custom', str(book))
+    os.makedirs(output_path, exist_ok=True)
+    return os.path.join(output_path, filename)
+
+
+def load_mark_up():
+    return load_from_pickle(os.path.join('resources', 'mark_up', 'mark_up.pkl'))
+
+
+if __name__ == '__main__':
+    all_mark_up = load_mark_up()
+    print(all_mark_up.keys())
+    all_markers = load_normalized_interest_markers(210901)
+    for marker_description, current_marker in all_markers.items():
+        for smooth in [True]:  # False
+            current_output_path = get_custom_path(210901,
+                                                  f'{marker_description}_ru.png' if not smooth else f'{marker_description}_smoothed_hot_scene_ru.png')
+            custom_visualize_marker_with_mark_up(current_marker if not smooth else smooth_marker(current_marker),
+                                                 {'r': all_mark_up['hot_scene']},
+                                                  # 'b': all_mark_up['correspondence'] | all_mark_up['musing']},
+                                                 output_path=current_output_path,
+                                                 title=MARKER_TITLE_TO_RUSSIAN[
+                                                     marker_description.replace(' ', '_').replace('-', '_')],
+                                                 x_label='Номер фрагмента',
+                                                 y_label='Доля заинтересованных пользователей')
+    #     for second_description, second_marker in all_markers.items():
+    #         if second_description == marker_description:
+    #             continue
+    #         current_output_path = get_custom_path(210901,
+    #                                               f'{marker_description}_{second_description}_smoothed_ru.png')
+    #         first_title = MARKER_TITLE_TO_RUSSIAN[marker_description.replace(' ', '_').replace('-', '_')]
+    #         second_title = MARKER_TITLE_TO_RUSSIAN[second_description.replace(' ', '_').replace('-', '_')]
+    #         title = f'Сигналы {first_title[7:]} и {second_title[7:].lower()}'
+    #         custom_visualize_pair_of_markers({first_title: smooth_marker(current_marker),
+    #                                           second_title: smooth_marker(second_marker)},
+    #                                          output_path=current_output_path,
+    #                                          title=title,
+    #                                          x_label='Номер фрагмента',
+    #                                          y_label='Доля заинтересованных пользователей')

@@ -47,7 +47,7 @@ if __name__ == '__main__':
     normalization_weight = calculate_numbers_of_readers_per_fragment(book_id, users, len(fragments_borders)) + 1
     anomaly_mask = {user: detect_anomaly_in_read_moments(book_id, user) for user in users}
     for marker_type, marker_class in INTEREST_MARKERS_CLASSES.items():
-        if marker_type == InterestMarker.QUIT_MARKER:
+        if marker_type != InterestMarker.UNUSUAL_HOURS_MARKER:
             continue
         marker_title = marker_class.get_marker_title()
         logging.info(f'Building {marker_title}')
@@ -57,7 +57,7 @@ if __name__ == '__main__':
                                                        fragments_borders=fragments_borders)
             current_marker = fix_anomaly_in_marker(anomaly_mask[user], current_marker)
             markers.append(current_marker)
-            # save_via_pickle(markers[-1], get_marker_dumps_path(marker_class.get_marker_title(), book_id, user))
+            save_via_pickle(markers[-1], get_marker_dumps_path(marker_class.get_marker_title(), book_id, user))
         plot_path = get_marker_plots_path(book_id, marker_title)
         visualize_cumulative_marker(markers, os.path.join(plot_path, 'cumulative.png'), f'Cumulative {marker_title}')
         visualize_cumulative_marker(markers, os.path.join(plot_path, 'normalized_cumulative.png'),
